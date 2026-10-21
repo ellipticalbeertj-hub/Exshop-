@@ -209,24 +209,22 @@ const h0=names.indexOf((location.hash||'').slice(1));
 ind.style.transition='none';show(h0>=0?h0:0,true);void ind.offsetWidth;ind.style.transition='';
 }
 
-// ===== หน้าหลักแอดมิน — โหมดทดลอง (DEMO) =====
-// ข้อมูลทั้งหมดด้านล่างเป็นข้อมูลจำลอง ยังไม่เชื่อม Supabase
-// เวลาเชื่อมจริง: แก้เฉพาะ API.home() และ API.closePeriod() ให้เรียก sb.rpc('admin_home') / sb.rpc('admin_close_period')
-// (ยอดเติมเงินต้องนับเฉพาะลูกค้า ไม่นับบัญชีแอดมิน)
+// ===== หน้าหลักแอดมิน (ข้อมูลจริง) — rpc admin_home / admin_close_period =====
+// ยอดเติมเงินนับเฉพาะลูกค้า ไม่นับบัญชีแอดมิน · สต็อกใช้สินค้าจริงจากฝั่งจัดการสินค้า
 const DAY=864e5,CUR='₭',LOW=3,RES=10,NOW=Date.now();
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fm=n=>Math.round(n).toLocaleString('en-US')+' '+CUR,p2=n=>String(n).padStart(2,'0');
 const fd=t=>{const d=new Date(t);return p2(d.getDate())+'/'+p2(d.getMonth()+1)};
 const fdt=t=>{const d=new Date(t);return fd(t)+' '+p2(d.getHours())+':'+p2(d.getMinutes())};
 const ago=t=>{const m=Math.max(1,Math.round((Date.now()-t)/6e4));return m<60?m+' ນາທີກ່ອນ':m<1440?Math.round(m/60)+' ຊົ່ວໂມງກ່ອນ':Math.round(m/1440)+' ມື້ກ່ອນ'};
-const DB={nid:4,total_all:18450000,topup_count:132,customers:47,
-period:{started:NOW-3.4*DAY,total:2760000,count:19},
-history:[{id:3,s:NOW-10.4*DAY,e:NOW-3.4*DAY,total:5120000,count:38,note:'ອາທິດຂາຍດີ'},{id:2,s:NOW-17.4*DAY,e:NOW-10.4*DAY,total:3890000,count:29,note:''},{id:1,s:NOW-24.4*DAY,e:NOW-17.4*DAY,total:6680000,count:46,note:'ມີໂປຣໂມຊັນ'}],
-recent:[{u:'beer_01',a:150000,t:NOW-18*6e4},{u:'sky.ff',a:50000,t:NOW-47*6e4},{u:'nong99',a:300000,t:NOW-3.2*36e5},{u:'mx_ios',a:100000,t:NOW-7*36e5},{u:'ba_pro',a:200000,t:NOW-1.3*DAY}],
-products:[['SOPHIA IOS',0],['EXTERNAL IOS',2],['PROXY MEOWT',0],['FLUORITE FF',7],['CLOUD PUBG IOS',14],['ROV IOS',3],['BR MODS PC',9],['DOLLAR 8BP ( AD )',25],['RUIZEN PC 1 ມື້',1],['SILENT CHEATS',40]]};
 const API={
-home:async()=>{const d=JSON.parse(JSON.stringify(DB));d.products=PR.map(p=>[p.name,stk(p)]);return d},
-closePeriod:async note=>{const p=DB.period;DB.history.unshift({id:DB.nid++,s:p.started,e:Date.now(),total:p.total,count:p.count,note:(note||'').trim().slice(0,200)});DB.period={started:Date.now(),total:0,count:0}}};
+home:async()=>{const d=await rpc('admin_home');const n=x=>+x||0;
+return{total_all:n(d.total_all),topup_count:n(d.topup_count),customers:n(d.customers),
+period:{started:n(d.period&&d.period.started)||Date.now(),total:n(d.period&&d.period.total),count:n(d.period&&d.period.count)},
+history:(d.history||[]).map(h=>({id:h.id,s:n(h.s),e:n(h.e),total:n(h.total),count:n(h.count),note:h.note||''})),
+recent:(d.recent||[]).map(r=>({u:r.u||'?',a:n(r.a),t:n(r.t)})),
+products:PR.map(p=>[p.name,stk(p)])}},
+closePeriod:async note=>{await rpc('admin_close_period',{note:(note||'').trim().slice(0,200)})}};
 const q=s=>document.querySelector(s);
 // ===== ຈັດການສິນຄ້າ (ຂໍ້ມູນຈິງ) — ເຊື່ອມ Supabase ຜ່ານ rpc admin_* (ກວດສິດແອດມິນຝັ່ງຖານຂໍ້ມູນ) =====
 var PR=[];let PV='add',PS={p:'',o:'',f:'',t:''},PSEL=new Set(),PX=null,OID=0,BUSY=false;
@@ -316,11 +314,15 @@ if(x.k==='dp')await run(()=>rpc('admin_delete_product',{pid:x.id}),'ລຶບສ
 else if(x.k==='rm'){const L=[...PSEL];if(!o||!L.length)return;if(await run(async()=>{const n=await rpc('admin_remove_codes',{oid:o.id,codes:L});return 'ເອົາອອກ '+n+' ລະຫັດແລ້ວ'}))PSEL.clear()}
 else if(o){if(await run(()=>rpc('admin_clear_codes',{oid:o.id}),'ລ້າງລະຫັດແລ້ວ'))PSEL.clear()}}})}
 
-// ===== ຈັດການບັນຊີ (DEMO) — ຂໍ້ມູນຈຳລອງ =====
-// ເວລາເຊື່ອມຈິງ: ID 4 ຫຼັກ ຕ້ອງສ້າງຝັ່ງ DB ຕອນສະໝັກ (ຄໍລຳ unique) ແລະ ການປັບຍອດຕ້ອງຜ່ານ RPC ທີ່ບັນທຶກ log
-const IDS=new Set(),rid=()=>{let n;do{n=1000+Math.floor(Math.random()*9000)}while(IDS.has(n));IDS.add(n);return String(n)};
-const mk=(u,top,cnt,spent,adj,bo,ld,jd)=>({id:rid(),u,top,cnt,spent,adj,bal:bo==null?top+adj-spent:bo,last:ld==null?null:NOW-ld*DAY,join:NOW-jd*DAY,g0:0,chk:false,log:adj?[{t:NOW-2*DAY,a:adj,note:'ໂປຣໂມຊັນ'}]:[]});
-const AC=[mk('kaew_ml',4100000,12,900000,0,null,.4,120),mk('beer_01',1850000,9,700000,0,null,.0125,95),mk('sky.ff',2400000,10,1600000,0,null,.03,80),mk('dragon8',500000,3,200000,0,1300000,2,40),mk('ice_br',900000,5,400000,0,null,1,60),mk('nong99',1200000,7,950000,0,null,.13,70),mk('jirasak',250000,2,100000,50000,null,5,30),mk('mx_ios',600000,4,480000,0,null,.3,50),mk('ba_pro',300000,3,270000,0,null,1.3,45),mk('rock_8bp',50000,1,20000,0,null,9,25),mk('meow_rov',80000,2,60000,0,null,12,22),mk('tonn.ff',150000,2,150000,0,null,14,35),mk('lek_pubg',100000,1,180000,0,null,20,28),mk('ghost_ios',0,0,0,0,350000,null,15),mk('pangpond',0,0,0,0,null,null,10),mk('zero_x',0,0,0,0,null,null,6),mk('newbie77',0,0,0,0,null,null,2),mk('ploy.cloud',0,0,0,0,null,null,1)];
+// ===== ຈັດການບັນຊີ (ຂໍ້ມູນຈິງ) — rpc admin_accounts / admin_adjust_balance / admin_mark_checked =====
+// ບັນຊີລູກຄ້າມາຈາກຜູ້ໃຊ້ທີ່ສະໝັກຈິງ (ບໍ່ນັບແອດມິນ) · ID 4 ຫຼັກ ແລະ ຍອດເງິນເກັບຝັ່ງຖານຂໍ້ມູນ
+let AC=[];
+const loadAcc=async()=>{const d=await rpc('admin_accounts');AC=Array.isArray(d)?d.map(c=>({uid:c.uid,id:String(c.id),u:c.u||'?',top:+c.top||0,cnt:+c.cnt||0,spent:+c.spent||0,adj:+c.adj||0,bal:+c.bal||0,g0:+c.g0||0,chk:!!c.chk,last:c.last==null?null:+c.last,join:+c.join||Date.now(),log:(c.log||[]).map(l=>({t:+l.t,a:+l.a,note:l.note||''}))})):[]};
+let ABUSY=false;
+const arun=async(fn,okMsg)=>{if(ABUSY)return false;ABUSY=true;document.body.style.cursor='progress';
+try{await fn();await loadAcc();toast(okMsg);return true}
+catch(e){const m=e&&e.message||'';toast(e&&e.code==='42501'?'ບໍ່ມີສິດແອດມິນ':/insufficient/.test(m)?'ຫັກເກີນຍອດຄົງເຫຼືອບໍ່ໄດ້':'ບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ');try{await loadAcc()}catch(_){}return false}
+finally{ABUSY=false;document.body.style.cursor=''}};
 let AV='bal',AQ='',AP=null,AX=-1,AO=null;
 const AT=[['bal','ຍອດເງິນ',SI('<path d="M3 7h16a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M3 7V6a2 2 0 012-2h11M16 14h2"/>')],['nev','ບໍ່ເຄີຍເຕີມ',SI('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M17 11h5"/>')],['ab','ຜິດປົກກະຕິ',SI('<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>')]];
 const TI=[['ເງິນຫຼາຍ','≥ 1,000,000',b=>b>=1e6,'#ff4560'],['ປານກາງ','200,000 – 999,999',b=>b>=2e5&&b<1e6,'#ff9a3d'],['ເງິນນ້ອຍ','1 – 199,999',b=>b>0&&b<2e5,'#ffc233'],['ຍອດ 0 / ຕິດລົບ','≤ 0',b=>b<=0,'#8f8f8f']];
@@ -340,7 +342,7 @@ h=hd('ຜົນຄົ້ນຫາ',L.length+' ບັນຊີ')+(L.length?L.map(
 else if(AV==='bal'){TI.forEach(t=>{const L=S.filter(c=>t[2](c.bal));if(L.length)h+=hd(t[0],t[1]+' · '+L.length+' ບັນຊີ',t[3])+L.map(aRow).join('')})}
 else if(AV==='nev'){const L=AC.filter(c=>!c.top).sort((a,b)=>a.join-b.join);h=hd('ບໍ່ເຄີຍເຕີມເງິນ',L.length+' ບັນຊີ · ເກົ່າສຸດກ່ອນ','#9a9a9a')+(L.length?L.map(aRow).join(''):em('ທຸກຄົນເຄີຍເຕີມເງິນແລ້ວ'))}
 else{const L=S.filter(c=>why(c).length);h=hd('ຍອດເງິນຜິດປົກກະຕິ',L.length+' ບັນຊີ','#ff4560')+(L.length?L.map(aRow).join(''):em('ບໍ່ພົບຄວາມຜິດປົກກະຕິ'))}
-q('#aL').innerHTML=h}
+q('#aL').innerHTML=h||em('ຍັງບໍ່ມີບັນຊີລູກຄ້າ')}
 function paintAcc(){
 q('#aTot').textContent=fm(AC.reduce((n,c)=>n+c.bal,0));
 q('#aN1').textContent=AC.length;q('#aN2').textContent=AC.filter(c=>!c.top).length;q('#aN3').textContent=AC.filter(c=>why(c).length).length;
@@ -359,20 +361,20 @@ ${w.length?'<div class="wn">'+w.join(' · ')+'</div>':''}${fixable(c)?'<button c
 <div class="ch" style="margin:16px 0 2px"><b>ປະຫວັດການປັບຍອດ</b><span>${c.log.length} ລາຍການ</span></div>
 ${c.log.length?c.log.slice(0,5).map(l=>'<div class="kv"><span>'+fdt(l.t)+(l.note?' · '+esc(l.note):'')+'</span><b>'+(l.a?sg(l.a):'—')+'</b></div>').join(''):'<div class="em">ຍັງບໍ່ມີປະຫວັດ</div>'}
 <div class="sub">ການປັບຍອດບໍ່ນັບເປັນຍອດເຕີມເງິນ</div><button class="hb gh" id="aNo">ປິດ</button>`)}
-function initAcc(){const pt=q('#pg-accounts');
-pt.innerHTML=`<span class="dm">ຂໍ້ມູນທົດລອງ (DEMO)</span>
-<div class="cd"><div class="ch"><b>ຍອດເງິນຄ້າງໃນລະບົບ</b><span>ທຸກບັນຊີລູກຄ້າ</span></div><div class="big" style="font-size:26px" id="aTot"></div>
+async function initAcc(){const pt=q('#pg-accounts');try{await loadAcc()}catch(e){AC=[];toast('ໂຫຼດບັນຊີບໍ່ສຳເລັດ')}
+pt.innerHTML=`<div class="cd"><div class="ch"><b>ຍອດເງິນຄ້າງໃນລະບົບ</b><span>ທຸກບັນຊີລູກຄ້າ</span></div><div class="big" style="font-size:26px" id="aTot"></div>
 <div class="chips" style="margin:12px 0 0"><button class="chip n" data-go="bal"><b id="aN1"></b><small>ລູກຄ້າທັງໝົດ</small></button><button class="chip r" data-go="nev"><b id="aN2"></b><small>ບໍ່ເຄີຍເຕີມ</small></button><button class="chip o" data-go="ab"><b id="aN3"></b><small>ຜິດປົກກະຕິ</small></button></div></div>
 <label class="aq">${SI('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>')}<input id="aQ" maxlength="30" placeholder="ຄົ້ນຫາ ID 4 ຫຼັກ ຫຼື ຊື່ລູກຄ້າ" autocomplete="off"></label>
 <div class="stabs" id="atabs" style="--n:3"><div class="sind" id="aind"><i></i></div>${AT.map(t=>'<button class="stab" data-av="'+t[0]+'">'+t[2]+'<span>'+t[1]+'</span></button>').join('')}</div><div id="aL"></div>`;
 paintAcc();
+q('.tab[data-t=accounts]').addEventListener('click',async()=>{try{await loadAcc();paintAcc()}catch(e){}});
 const pv=()=>{const a=+q('#aAmt').value||0,c=AC.find(x=>x.id===AO);q('#aPrev').textContent=a&&c?'ຫຼັງເພີ່ມ '+fm(c.bal+a)+' · ຫຼັງຫັກ '+fm(c.bal-a):''};
 pt.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
 if(d.av||d.go){AV=d.av||d.go;AQ='';q('#aQ').value='';return paintAcc()}
 if(d.a)openAcc(d.a)});
 pt.addEventListener('input',e=>{if(e.target.id==='aQ'){AQ=e.target.value.trim();paintAcc()}});
 q('#sh').addEventListener('input',e=>{if(e.target.id==='aAmt'){e.target.value=e.target.value.replace(/\D/g,'').slice(0,10);pv()}});
-q('#sh').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const id=b.id;
+q('#sh').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const id=b.id;
 if(id==='aNo')return closeSheet();
 if(b.dataset.aq){q('#aAmt').value=b.dataset.aq;return pv()}
 if(id==='aAdd'||id==='aSub'){const a=+q('#aAmt').value,c=AC.find(x=>x.id===AO),s=id==='aAdd'?1:-1;
@@ -380,8 +382,9 @@ if(!(a>0))return toast('ໃສ່ຈຳນວນເງິນກ່ອນ');if(s<
 AP={id:c.id,s,amt:a,note:q('#aNote').value.trim().slice(0,100)};
 sheet(`<h3>${s>0?'ຢືນຢັນເພີ່ມເງິນບໍ?':'ຢືນຢັນຫັກເງິນບໍ?'}</h3><p>${esc(c.u)} (ID ${c.id})<br>${fm(c.bal)} → <b style="color:#fff">${fm(c.bal+s*a)}</b></p><button class="hb" id="aYes">ຢືນຢັນ</button><button class="hb gh" id="aBack">ກັບຄືນ</button>`);return}
 if(id==='aBack')return openAcc(AP.id);
-if(id==='aYes'){const c=AC.find(x=>x.id===AP.id),v=AP.s*AP.amt;c.bal+=v;c.adj+=v;c.log.unshift({t:Date.now(),a:v,note:AP.note});toast(AP.s>0?'ເພີ່ມເງິນແລ້ວ':'ຫັກເງິນແລ້ວ');paintAcc();return openAcc(c.id)}
-if(id==='aChk'){const c=AC.find(x=>x.id===AO);c.g0+=gap(c);c.chk=true;c.log.unshift({t:Date.now(),a:0,note:'ແອດມິນກວດແລ້ວ — ປົກກະຕິ'});toast('ບັນທຶກວ່າກວດແລ້ວ');paintAcc();openAcc(c.id)}})}
+if(id==='aYes'){const c=AC.find(x=>x.id===AP.id),v=AP.s*AP.amt,nt=AP.note;if(!c)return;
+const ok=await arun(()=>rpc('admin_adjust_balance',{uid:c.uid,amt:v,note:nt}),AP.s>0?'ເພີ່ມເງິນແລ້ວ':'ຫັກເງິນແລ້ວ');paintAcc();return AC.find(x=>x.id===c.id)?openAcc(c.id):closeSheet()}
+if(id==='aChk'){const c=AC.find(x=>x.id===AO);if(!c)return;await arun(()=>rpc('admin_mark_checked',{uid:c.uid}),'ບັນທຶກວ່າກວດແລ້ວ');paintAcc();openAcc(c.id)}})}
 
 // ===== ຕັ້ງຄ່າຮ້ານ (DEMO) — ຂໍ້ມູນຢູ່ໃນໜ້າຈໍເທົ່ານັ້ນ =====
 // ເວລາເຊື່ອມຈິງ: ຮູບອັບໂຫຼດເຂົ້າ Supabase Storage ແລ້ວເກັບ URL, ສ່ວນຄ່າອື່ນເກັບໃນຕາຕະລາງ settings (ແກ້ໄດ້ສະເພາະແອດມິນ)
@@ -430,8 +433,7 @@ const p=H.period,days=Math.min(7,(Date.now()-p.started)/DAY),done=days>=7;
 const grp={o:[],l:[],r:[],k:0};H.products.forEach(x=>{const s=x[1];s<=0?grp.o.push(x):s<=LOW?grp.l.push(x):s<=RES?grp.r.push(x):grp.k++});
 const row=(c,x)=>`<div class="hr st" style="--c:var(--cc)"><i class="dot" style="--c:${c}"></i><div><b>${esc(x[0])}</b></div><span>${x[1]} ຊິ້ນ</span></div>`;
 const lst=(c,a)=>a.map(x=>row(c,x)).join('');
-q('#pg-home').innerHTML=`<span class="dm">ຂໍ້ມູນທົດລອງ (DEMO)</span>
-<div class="cd hero"><div class="ch"><b>ຍອດເຕີມເງິນທັງໝົດ</b><span>ສະເພາະລູກຄ້າ</span></div><div class="big" id="hTot">${fm(first?0:H.total_all)}</div><div class="sub">${H.topup_count} ລາຍການ · ${H.customers} ລູກຄ້າ (ບໍ່ນັບແອດມິນ)</div></div>
+q('#pg-home').innerHTML=`<div class="cd hero"><div class="ch"><b>ຍອດເຕີມເງິນທັງໝົດ</b><span>ສະເພາະລູກຄ້າ</span></div><div class="big" id="hTot">${fm(first?0:H.total_all)}</div><div class="sub">${H.topup_count} ລາຍການ · ${H.customers} ລູກຄ້າ (ບໍ່ນັບແອດມິນ)</div></div>
 <div class="cd"><div class="ch"><b>ຍອດຮອບ 7 ວັນ</b><span>${fd(p.started)} – ${fd(p.started+7*DAY)}</span></div><div class="big" style="font-size:26px">${fm(p.total)}</div><div class="sub">${p.count} ລາຍການ</div>
 <div class="bar2"><i id="hBar"></i></div><div class="sub" style="margin:0">ມື້ທີ ${Math.min(7,Math.floor(days)+1)} / 7</div>
 ${done?'<div class="wn">ຄົບ 7 ວັນແລ້ວ — ຄວນປິດຮອບ ແລະ ເລີ່ມນັບໃໝ່</div>':''}
@@ -448,7 +450,8 @@ ${H.recent.length?H.recent.map(r=>`<div class="hr st"><div><b>${esc(r.u)}</b><sm
 if(first){countUp(q('#hTot'),H.total_all);first=false}
 requestAnimationFrame(()=>requestAnimationFrame(()=>{const b=q('#hBar');if(b)b.style.width=(days/7*100)+'%'}));
 }
-async function loadHome(){H=await API.home();paint()}
+let CLK=false;
+async function loadHome(){try{H=await API.home();paint()}catch(e){if(!H)q('#pg-home').innerHTML='<div class="hl">ໂຫຼດຂໍ້ມູນບໍ່ສຳເລັດ — ລອງເປີດໃໝ່ອີກຄັ້ງ</div>';else toast('ໂຫຼດຂໍ້ມູນບໍ່ສຳເລັດ')}}
 function initHome(){
 loadHome();
 q('#pg-home').addEventListener('click',e=>{
@@ -457,7 +460,7 @@ const r=e.target.closest('[data-h]');if(r){const x=H.history.find(v=>v.id==r.dat
 sheet(`<h3>ຮອບ ${fd(x.s)} – ${fd(x.e)}</h3><p>ຂໍ້ມູນທີ່ບັນທຶກໄວ້ ບໍ່ປ່ຽນແປງ</p><div class="big" style="font-size:26px;margin-bottom:8px">${fm(x.total)}</div><div class="kv"><span>ຈຳນວນລາຍການ</span><b>${x.count}</b></div><div class="kv"><span>ເລີ່ມ</span><b>${fdt(x.s)}</b></div><div class="kv"><span>ປິດຮອບ</span><b>${fdt(x.e)}</b></div><div class="kv"><span>ໝາຍເຫດ</span><b>${x.note?esc(x.note):'-'}</b></div><button class="hb gh" id="hNo">ປິດ</button>`)}});
 q('#sh').addEventListener('click',async e=>{
 if(e.target.closest('#hNo'))closeSheet();
-if(e.target.closest('#hOk')){const n=q('#hNote').value;closeSheet();await API.closePeriod(n);await loadHome();toast('ບັນທຶກຮອບແລ້ວ — ເລີ່ມນັບຮອບໃໝ່')}});
+if(e.target.closest('#hOk')){const n=q('#hNote').value;closeSheet();if(CLK)return;CLK=true;try{await API.closePeriod(n);await loadHome();toast('ບັນທຶກຮອບແລ້ວ — ເລີ່ມນັບຮອບໃໝ່')}catch(er){toast(er&&er.code==='42501'?'ບໍ່ມີສິດແອດມິນ':'ບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ')}finally{CLK=false}}});
 q('#so').addEventListener('click',closeSheet);
 }
 (async()=>{
@@ -467,7 +470,7 @@ if(!data||!data.session){home();return}
 const {data:ok,error}=await sb.rpc('is_admin');
 if(error||ok!==true){home();return}
 const u=data.session.user,nm=(u.user_metadata&&u.user_metadata.username)||'';
-const w=document.getElementById('who');w.hidden=false;w.textContent='ADMIN · '+nm.toUpperCase();document.body.classList.add('ok');initTabs();await initProd();initHome();initAcc();initSet();
+const w=document.getElementById('who');w.hidden=false;w.textContent='ADMIN · '+nm.toUpperCase();document.body.classList.add('ok');initTabs();await initProd();initHome();await initAcc();initSet();
 }catch(e){home()}
 })();
 </script></body></html>
