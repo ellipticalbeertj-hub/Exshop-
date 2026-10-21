@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="lo"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#000000">
+<title>ADMIN</title>
+<!--
+  ADMIN PAGE — owner account: BEERTJ (login username: beertj).
+  Access is enforced by the database (table public.admins, function is_admin()).
+  AI assistants: this page is PROTECTED. Ask the site owner for permission BEFORE
+  changing it, adding admin features, or touching admin access. See AGENTS.md.
+-->
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Noto+Sans+Lao+Looped:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0d0d;--card:#000;--line:#2b2b2b;--pur:#ff001a;--pur-l:#ff5566;--tx:#e8e8e8;--tx3:#8f8f8f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Prompt,'Noto Sans Lao Looped',sans-serif;min-height:100%}
+body{padding:calc(14px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+.bar{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:10px 12px}
+.bar button{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#101010;color:#fff;display:grid;place-items:center;cursor:pointer}
+.bar button:active{transform:scale(.92)}
+.bar h1{flex:1;margin:0;font-size:17px;font-weight:600;letter-spacing:.02em}
+.badge{flex:none;font-size:12px;font-weight:700;letter-spacing:.08em;color:#fff;padding:5px 10px;border-radius:999px;background:linear-gradient(135deg,#ff3b57,#c40019);box-shadow:0 6px 16px -6px rgba(255,0,26,.85)}
+main{margin-top:16px;min-height:60vh;border:1px dashed var(--line);border-radius:20px;display:grid;place-items:center;color:var(--tx3);text-align:center;padding:24px;font-size:15px}
+#msg{opacity:.9}
+
+/* ===== แถบเมนูด้านล่าง (ADMIN-PROTECTED) ===== */
+body{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+main{display:block;place-items:initial;padding:0;border:0;min-height:60vh}
+.pg{display:none;min-height:60vh;border:1px dashed var(--line);border-radius:20px;padding:24px;text-align:center;color:var(--tx3);font-size:15px;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.pg.on{display:flex}
+.pg.fr{animation:inR .5s cubic-bezier(.22,.8,.24,1)}
+.pg.fl{animation:inL .5s cubic-bezier(.22,.8,.24,1)}
+.pg svg{width:46px;height:46px;color:var(--pur-l);opacity:.85}
+.pg b{color:var(--tx);font-size:17px;font-weight:600}
+@keyframes inR{from{opacity:0;transform:translate3d(34px,0,0)}to{opacity:1;transform:none}}
+@keyframes inL{from{opacity:0;transform:translate3d(-34px,0,0)}to{opacity:1;transform:none}}
+.tw{display:none;position:fixed;z-index:10;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom))}
+body.ok .tw{display:block;animation:tup .7s cubic-bezier(.22,.8,.24,1) backwards}
+@keyframes tup{from{opacity:0;transform:translate3d(0,40px,0)}to{opacity:1;transform:none}}
+.tabs{position:relative;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;background:#050505;border:1px solid var(--line);border-radius:26px;box-shadow:0 16px 36px -12px rgba(0,0,0,.95),0 0 26px -10px rgba(255,0,26,.35)}
+.ind{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/4);transition:transform .55s cubic-bezier(.32,.72,0,1);will-change:transform;pointer-events:none}
+.ind i{display:block;width:100%;height:100%;border-radius:20px;background:linear-gradient(135deg,#ff3b57 0%,#e0001f 55%,#a80017 100%);box-shadow:0 8px 20px -6px rgba(255,0,26,.85),inset 0 1px 0 rgba(255,255,255,.3)}
+.ind.go i{animation:strc .55s cubic-bezier(.32,.72,0,1)}
+@keyframes strc{0%{transform:none}35%{transform:scale(1.2,.88)}100%{transform:none}}
+.tab{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 2px 9px;border:0;background:none;color:var(--tx3);font:600 11.5px Prompt,'Noto Sans Lao Looped',sans-serif;line-height:1.2;white-space:nowrap;cursor:pointer;transition:color .3s ease,transform .18s ease}
+.tab:active{transform:scale(.9)}
+.tab svg{width:23px;height:23px}
+.tab.on{color:#fff}
+.tab.on svg{animation:ico .6s cubic-bezier(.32,.72,0,1)}
+@keyframes ico{0%{transform:none}35%{transform:translateY(-5px) scale(1.22) rotate(-7deg)}70%{transform:translateY(1px) scale(.95)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.pg,.tw,.ind,.ind i,.tab svg{animation:none!important;transition-duration:.01s!important}}
+
+/* ===== หน้าหลักแอดมิน (DEMO) ===== */
+#pg-home{border:0;padding:0;align-items:stretch;justify-content:flex-start;text-align:left;gap:14px;min-height:0;color:var(--tx);font-size:14px}
+.hl{color:var(--tx3);text-align:center;padding:40px 0}
+.dm{align-self:flex-start;font-size:11.5px;font-weight:600;color:#ffb300;background:rgba(255,179,0,.1);border:1px solid rgba(255,179,0,.35);border-radius:999px;padding:4px 11px}
+.cd{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;animation:cdin .6s cubic-bezier(.22,.8,.24,1) backwards}
+.cd:nth-child(3){animation-delay:.06s}.cd:nth-child(4){animation-delay:.12s}.cd:nth-child(5){animation-delay:.18s}.cd:nth-child(6){animation-delay:.24s}
+@keyframes cdin{from{opacity:0;transform:translate3d(0,18px,0)}to{opacity:1;transform:none}}
+.ch{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;color:var(--tx3);font-size:13px}
+.ch b{color:var(--tx);font-size:15px;font-weight:600}
+.big{font-size:30px;font-weight:700;letter-spacing:.01em;color:#fff;text-shadow:0 0 22px rgba(255,0,26,.45);line-height:1.2}
+.sub{margin-top:6px;color:var(--tx3);font-size:13px}
+.cd.hero{background:linear-gradient(135deg,#1a0407,#000 70%);border-color:rgba(255,0,26,.35)}
+.bar2{height:8px;border-radius:99px;background:#1a1a1a;overflow:hidden;margin:12px 0 6px}
+.bar2 i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#ff3b57,#c40019);box-shadow:0 0 12px rgba(255,0,26,.6);transition:width 1s cubic-bezier(.22,.8,.24,1)}
+.wn{margin:10px 0 0;padding:9px 12px;border-radius:12px;background:rgba(255,179,0,.1);border:1px solid rgba(255,179,0,.35);color:#ffc233;font-size:13px}
+.hb{width:100%;height:46px;margin-top:12px;border:0;border-radius:999px;background:linear-gradient(135deg,#ff3b57,#c40019);color:#fff;font:600 15px Prompt,'Noto Sans Lao Looped',sans-serif;cursor:pointer;box-shadow:0 8px 18px -8px rgba(255,0,26,.85);transition:transform .18s ease}
+.hb:active{transform:scale(.96)}
+.hb.gh{background:#101010;border:1px solid var(--line);box-shadow:none;color:var(--tx)}
+.hr{width:100%;display:flex;align-items:center;gap:10px;padding:11px 4px;border:0;border-top:1px solid #1a1a1a;background:none;color:var(--tx);font:inherit;text-align:left;cursor:pointer;transition:background .2s}
+.hr:active{background:#111}
+.hr>div{flex:1;min-width:0}.hr b{display:block;font-weight:500}.hr small{color:var(--tx3);font-size:12px}
+.hr span{font-weight:600;color:#fff;white-space:nowrap}.hr svg{width:16px;height:16px;color:var(--tx3);flex:none}
+.hr.st{cursor:default}.hr.st:active{background:none}
+.em{color:var(--tx3);text-align:center;padding:12px 0 4px;font-size:13px}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
+.chip{border-radius:14px;padding:10px 6px;text-align:center;border:1px solid var(--c);background:var(--b)}
+.chip b{display:block;font-size:22px;line-height:1.1;color:var(--c)}.chip small{font-size:12px;color:var(--c)}
+.o{--c:#ff4560;--b:rgba(255,45,74,.12)}.l{--c:#ff9a3d;--b:rgba(255,140,40,.12)}.r{--c:#ffc233;--b:rgba(255,179,0,.1)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none;box-shadow:0 0 8px var(--c)}
+.lg2{margin-top:10px;color:var(--tx3);font-size:12px}
+/* sheet */
+.so{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.6);opacity:0;visibility:hidden;transition:opacity .35s ease,visibility .35s}
+.so.on{opacity:1;visibility:visible}
+.sh{position:fixed;z-index:31;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:#0b0b0b;border:1px solid var(--line);border-bottom:0;border-radius:26px 26px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom));transform:translate3d(0,105%,0);transition:transform .5s cubic-bezier(.32,.72,0,1);will-change:transform}
+.sh.on{transform:none}
+.sg{width:44px;height:5px;border-radius:9px;background:#333;margin:0 auto 14px}
+.sh h3{margin:0 0 6px;font-size:18px;font-weight:600}.sh p{margin:0 0 12px;color:var(--tx3);font-size:14px}
+.sh input{width:100%;height:48px;border-radius:14px;border:1px solid var(--line);background:#0f0f0f;color:var(--tx);padding:0 14px;font:500 15px Prompt,'Noto Sans Lao Looped',sans-serif;outline:0}
+.sh input:focus{border-color:var(--pur);box-shadow:0 0 0 4px rgba(255,0,26,.16)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid #1a1a1a}.kv span{color:var(--tx3)}
+.ts{position:fixed;z-index:40;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translate3d(-50%,-90px,0);background:#111;border:1px solid var(--line);color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;transition:transform .5s cubic-bezier(.32,.72,0,1);box-shadow:0 10px 30px -10px #000}
+.ts.on{transform:translate3d(-50%,0,0)}
+@media (prefers-reduced-motion:reduce){.cd,.sh,.so,.ts,.bar2 i{animation:none!important;transition-duration:.01s!important}}
+#pg-products{border:0;padding:0;align-items:stretch;justify-content:flex-start;text-align:left;gap:14px;min-height:0;color:var(--tx);font-size:14px}
+/* ===== แถบเมนูย่อยหน้าสินค้า (เหมือนแถบล่าง) ===== */
+#pv{display:flex;flex-direction:column;gap:14px}
+.stabs{position:relative;display:grid;grid-template-columns:repeat(var(--n,4),1fr);padding:5px;background:#050505;border:1px solid var(--line);border-radius:24px;box-shadow:0 12px 28px -14px rgba(0,0,0,.95),0 0 22px -12px rgba(255,0,26,.35)}
+.sind{position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px)/var(--n,4));transition:transform .5s cubic-bezier(.32,.72,0,1);will-change:transform;pointer-events:none}
+.sind i{display:block;width:100%;height:100%;border-radius:19px;background:linear-gradient(135deg,#ff3b57 0%,#e0001f 55%,#a80017 100%);box-shadow:0 8px 18px -6px rgba(255,0,26,.85),inset 0 1px 0 rgba(255,255,255,.3)}
+.sind.go i{animation:strc .5s cubic-bezier(.32,.72,0,1)}
+.stab{position:relative;z-index:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 1px 8px;border:0;background:none;color:var(--tx3);font:600 11px Prompt,'Noto Sans Lao Looped',sans-serif;line-height:1.2;white-space:nowrap;cursor:pointer;transition:color .3s ease,transform .18s ease}
+.stab:active{transform:scale(.92)}
+.stab svg{width:20px;height:20px;color:inherit;opacity:1}
+.stab.on{color:#fff}
+.stab.on svg{animation:ico .55s cubic-bezier(.32,.72,0,1)}
+@media (max-width:380px){.stab{font-size:10px}}
+@media (prefers-reduced-motion:reduce){.sind,.sind i,.stab svg{animation:none!important;transition-duration:.01s!important}}
+#pg-products input:not([type=checkbox]),#pg-products select,#pg-products textarea{width:100%;border-radius:14px;border:1px solid var(--line);background:#0f0f0f;color:var(--tx);padding:11px 14px;font:500 15px Prompt,'Noto Sans Lao Looped',sans-serif;outline:0;resize:vertical}
+#pg-products input:focus,#pg-products select:focus,#pg-products textarea:focus{border-color:var(--pur);box-shadow:0 0 0 4px rgba(255,0,26,.16)}
+.fi{display:block;margin-top:10px;color:var(--tx3);font-size:13px}.fi input,.fi textarea{margin-top:5px}
+.im{display:grid;place-items:center;width:120px;height:120px;border:1px dashed #444;border-radius:18px;overflow:hidden;color:var(--tx3);cursor:pointer;background:#0a0a0a}.im img{width:100%;height:100%;object-fit:cover}
+.or{display:grid;grid-template-columns:1fr 110px 40px;gap:8px;margin-bottom:8px}
+.or .x{border:1px solid var(--line);background:#101010;color:#ff5566;border-radius:12px;cursor:pointer}
+.qk{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.qk button,.pb button,.rb button{border:1px solid var(--line);background:#101010;color:var(--tx);border-radius:999px;padding:7px 12px;font:500 12.5px Prompt,'Noto Sans Lao Looped',sans-serif;cursor:pointer}
+.lk{border:0;background:none;color:var(--pur-l);font:inherit;cursor:pointer}
+.pc{display:flex;gap:12px;align-items:center}.th{flex:none;width:56px;height:56px;border-radius:14px;background:#161616;display:grid;place-items:center;font-size:22px;font-weight:700;color:var(--pur-l);overflow:hidden}.th img{width:100%;height:100%;object-fit:cover}
+.pi{flex:1;min-width:0}.pi b{display:block;font-weight:600}.pi small{display:block;color:var(--tx3);font-size:12px;margin-top:2px}
+.pb{display:flex;flex-direction:column;gap:6px}.pb .dl{color:#ff5566;border-color:rgba(255,0,26,.4)}
+.rb{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;align-items:center}.rb input{width:64px!important;padding:7px 10px!important}
+.cl{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:14px;padding:4px 10px}.cr{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid #1a1a1a}.cr:first-child{border-top:0}.cr code{font-size:13px;word-break:break-all}
+#pg-products textarea{margin-top:10px}#pg-products select{margin-top:8px}
+
+/* ===== ຈັດການບັນຊີ (DEMO) ===== */
+.sh{max-height:90vh;overflow-y:auto;overscroll-behavior:contain}
+.kv b{white-space:nowrap}
+#pg-accounts{border:0;padding:0;align-items:stretch;justify-content:flex-start;text-align:left;gap:14px;min-height:0;color:var(--tx);font-size:14px}
+#pg-accounts input{width:100%;height:48px;border-radius:14px;border:1px solid var(--line);background:#0f0f0f;color:var(--tx);padding:0 14px;font:500 15px Prompt,'Noto Sans Lao Looped',sans-serif;outline:0}
+#pg-accounts input:focus{border-color:var(--pur);box-shadow:0 0 0 4px rgba(255,0,26,.16)}
+.n{--c:#e8e8e8;--b:rgba(255,255,255,.05)}
+#pg-accounts button.chip{font:inherit;cursor:pointer;width:100%}
+#pg-accounts button.chip:active{transform:scale(.95)}
+.aq{position:relative;display:block}
+.aq svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--tx3);opacity:1}
+#pg-accounts .aq input{padding-left:42px}
+.stabs.dim .sind{opacity:.35}
+#aL{display:flex;flex-direction:column;gap:10px}
+.ah{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 4px 0;color:var(--tx3);font-size:12.5px}
+.ah span{display:flex;align-items:center;gap:8px}
+.ah b{font-size:15px;font-weight:600;color:#fff}
+.ar{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 14px;animation:none}
+.ar:active{background:#0a0a0a}
+.av{flex:none;width:44px;height:44px;border-radius:50%;background:#161616;display:grid;place-items:center;font-size:18px;font-weight:700;color:var(--pur-l)}
+.ai{flex:1;min-width:0}
+.ai b{display:block;font-size:15px;font-weight:600;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai small{display:block;color:var(--tx3);font-size:12px;margin-top:2px}
+.ai small.why{color:#ff7a8a}
+.idp{font-style:normal;font-size:12px;font-weight:600;color:var(--pur-l);margin-left:4px;letter-spacing:.04em}
+.am{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.am span{font-weight:700;color:#fff;white-space:nowrap}
+.am span.ng{color:#ff5566}
+.bd{font-style:normal;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;border:1px solid var(--c);color:var(--c);background:var(--b);white-space:nowrap}
+.bd.g{--c:#9a9a9a;--b:rgba(255,255,255,.05)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hb.dn{background:#101010;border:1px solid rgba(255,0,26,.5);color:#ff5566;box-shadow:none}
+
+/* ===== ຕັ້ງຄ່າຮ້ານ (DEMO) ===== */
+#pg-settings{border:0;padding:0;align-items:stretch;justify-content:flex-start;text-align:left;gap:14px;min-height:0;color:var(--tx);font-size:14px}
+#pg-settings input:not([type=checkbox]){width:100%;height:46px;border-radius:14px;border:1px solid var(--line);background:#0f0f0f;color:var(--tx);padding:0 14px;font:500 15px Prompt,'Noto Sans Lao Looped',sans-serif;outline:0}
+#pg-settings input:not([type=checkbox]):focus{border-color:var(--pur);box-shadow:0 0 0 4px rgba(255,0,26,.16)}
+#pg-settings input[type=checkbox]{width:20px;height:20px;accent-color:#ff001a;flex:none}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sbx{display:flex;flex-direction:column;gap:6px;min-width:0}
+.sbx .lk{align-self:flex-start;font-size:12.5px;color:#ff5566}
+.sim{display:grid;place-items:center;width:100%;border:1px dashed #444;border-radius:16px;overflow:hidden;background:#0a0a0a;color:var(--tx3);cursor:pointer;font-size:13px;text-align:center}
+.sim:active{transform:scale(.98)}
+.sim.sq{aspect-ratio:1}.sim.wd{aspect-ratio:16/9}
+.sim img{width:100%;height:100%;object-fit:cover}.sim.ct img{object-fit:contain}
+.sl{display:block;color:var(--tx3);font-size:13px;margin:12px 0 6px}
+.sl:first-child{margin-top:0}
+.lr{display:grid;grid-template-columns:104px 1fr;gap:8px;margin-bottom:8px}
+.tg{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--tx);font-size:14px;cursor:pointer}
+</style></head><body>
+<div class="bar">
+<button id="back" aria-label="back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+<h1>ຫ້ອງຄວບຄຸມແອດມິນ</h1>
+<span class="badge" id="who" hidden>ADMIN</span>
+</div>
+<main><section class="pg on" id="pg-home"><div class="hl">ກຳລັງໂຫຼດ…</div></section><section class="pg" id="pg-products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg><b>ຈັດການສິນຄ້າ</b><span>ໜ້ານີ້ຍັງວ່າງຢູ່ — ກຳລັງສ້າງ</span></section><section class="pg" id="pg-accounts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.3c2 .7 3.5 2.5 3.5 5.7"/></svg><b>ຈັດການບັນຊີ</b><span>ໜ້ານີ້ຍັງວ່າງຢູ່ — ກຳລັງສ້າງ</span></section><section class="pg" id="pg-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2.2"/><circle cx="8" cy="17" r="2.2"/></svg><b>ຕັ້ງຄ່າຮ້ານ</b><span>ໜ້ານີ້ຍັງວ່າງຢູ່ — ກຳລັງສ້າງ</span></section></main>
+<div class="so" id="so"></div><div class="sh" id="sh"><div class="sg"></div><div id="shb"></div></div><div class="ts" id="ts"></div>
+<nav class="tw" aria-label="admin menu"><div class="tabs" id="tabs"><div class="ind" id="ind"><i></i></div><button class="tab on" data-t="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>ໜ້າຫຼັກ</span></button><button class="tab" data-t="products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg><span>ຈັດການສິນຄ້າ</span></button><button class="tab" data-t="accounts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.3c2 .7 3.5 2.5 3.5 5.7"/></svg><span>ຈັດການບັນຊີ</span></button><button class="tab" data-t="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2.2"/><circle cx="8" cy="17" r="2.2"/></svg><span>ຕັ້ງຄ່າຮ້ານ</span></button></div></nav>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+// ADMIN-PROTECTED (see AGENTS.md). Same session storage rules as main.js ("remember account").
+const SB_URL='https://encbtgwbudldnpyipclq.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuY2J0Z3didWRsZG5weWlwY2xxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NzUxMjksImV4cCI6MjEwODE1MTEyOX0._s5_f_I9NrrWfWTOJSO2X0NtvYSHDscVstcaipJ2WIc',RK='dk_rem';
+const LS=()=>{try{return localStorage}catch(e){return null}},SS=()=>{try{return sessionStorage}catch(e){return null}};
+const store={
+getItem:k=>{const a=LS(),b=SS();try{return (a&&a.getItem(k))||(b&&b.getItem(k))||null}catch(e){return null}},
+setItem:(k,v)=>{const a=LS(),b=SS(),rem=a?a.getItem(RK)!=='0':false,keep=rem?a:(b||a),drop=rem?b:a;try{keep&&keep.setItem(k,v);drop&&drop.removeItem(k)}catch(e){}},
+removeItem:k=>{try{LS()&&LS().removeItem(k);SS()&&SS().removeItem(k)}catch(e){}}};
+const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{storage:store,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+const home=()=>{location.replace('index.html')};
+document.getElementById('back').onclick=()=>{location.href='index.html'};
+
+// ===== แถบเมนูด้านล่าง: เปลี่ยนหน้า + อนิเมชันแถบเลื่อน =====
+function initTabs(){
+const names=['home','products','accounts','settings'],ind=document.getElementById('ind'),btns=[...document.querySelectorAll('.tab')];
+let cur=-1;
+const show=(i,first)=>{if(i===cur||i<0)return;const dir=i>cur?'fr':'fl';
+btns.forEach((b,j)=>b.classList.toggle('on',j===i));
+ind.style.transform='translate3d('+(i*100)+'%,0,0)';
+if(!first){ind.classList.remove('go');void ind.offsetWidth;ind.classList.add('go')}
+names.forEach((n,j)=>{const p=document.getElementById('pg-'+n);p.classList.remove('on','fr','fl');if(j===i){void p.offsetWidth;p.classList.add('on');if(!first)p.classList.add(dir)}});
+cur=i;try{history.replaceState(null,'','#'+names[i])}catch(e){}};
+btns.forEach((b,i)=>b.onclick=()=>show(i,false));
+const h0=names.indexOf((location.hash||'').slice(1));
+ind.style.transition='none';show(h0>=0?h0:0,true);void ind.offsetWidth;ind.style.transition='';
+}
+
+// ===== หน้าหลักแอดมิน — โหมดทดลอง (DEMO) =====
+// ข้อมูลทั้งหมดด้านล่างเป็นข้อมูลจำลอง ยังไม่เชื่อม Supabase
+// เวลาเชื่อมจริง: แก้เฉพาะ API.home() และ API.closePeriod() ให้เรียก sb.rpc('admin_home') / sb.rpc('admin_close_period')
+// (ยอดเติมเงินต้องนับเฉพาะลูกค้า ไม่นับบัญชีแอดมิน)
+const DAY=864e5,CUR='₭',LOW=3,RES=10,NOW=Date.now();
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fm=n=>Math.round(n).toLocaleString('en-US')+' '+CUR,p2=n=>String(n).padStart(2,'0');
+const fd=t=>{const d=new Date(t);return p2(d.getDate())+'/'+p2(d.getMonth()+1)};
+const fdt=t=>{const d=new Date(t);return fd(t)+' '+p2(d.getHours())+':'+p2(d.getMinutes())};
+const ago=t=>{const m=Math.max(1,Math.round((Date.now()-t)/6e4));return m<60?m+' ນາທີກ່ອນ':m<1440?Math.round(m/60)+' ຊົ່ວໂມງກ່ອນ':Math.round(m/1440)+' ມື້ກ່ອນ'};
+const DB={nid:4,total_all:18450000,topup_count:132,customers:47,
+period:{started:NOW-3.4*DAY,total:2760000,count:19},
+history:[{id:3,s:NOW-10.4*DAY,e:NOW-3.4*DAY,total:5120000,count:38,note:'ອາທິດຂາຍດີ'},{id:2,s:NOW-17.4*DAY,e:NOW-10.4*DAY,total:3890000,count:29,note:''},{id:1,s:NOW-24.4*DAY,e:NOW-17.4*DAY,total:6680000,count:46,note:'ມີໂປຣໂມຊັນ'}],
+recent:[{u:'beer_01',a:150000,t:NOW-18*6e4},{u:'sky.ff',a:50000,t:NOW-47*6e4},{u:'nong99',a:300000,t:NOW-3.2*36e5},{u:'mx_ios',a:100000,t:NOW-7*36e5},{u:'ba_pro',a:200000,t:NOW-1.3*DAY}],
+products:[['SOPHIA IOS',0],['EXTERNAL IOS',2],['PROXY MEOWT',0],['FLUORITE FF',7],['CLOUD PUBG IOS',14],['ROV IOS',3],['BR MODS PC',9],['DOLLAR 8BP ( AD )',25],['RUIZEN PC 1 ມື້',1],['SILENT CHEATS',40]]};
+const API={
+home:async()=>{const d=JSON.parse(JSON.stringify(DB));if(PR&&PR.length)d.products=PR.map(p=>[p.name,stk(p)]);return d},
+closePeriod:async note=>{const p=DB.period;DB.history.unshift({id:DB.nid++,s:p.started,e:Date.now(),total:p.total,count:p.count,note:(note||'').trim().slice(0,200)});DB.period={started:Date.now(),total:0,count:0}}};
+const q=s=>document.querySelector(s);
+// ===== ຈັດການສິນຄ້າ (DEMO) — ຂໍ້ມູນຢູ່ໃນໜ້າຈໍເທົ່ານັ້ນ =====
+var PR=[];let PV='add',PS={p:'',o:'',f:'',t:''},PSEL=new Set(),PX=null,PID=100,OID=1000;
+const nd=()=>({id:0,name:'',desc:'',img:'',opts:[{id:++OID,label:'1 ມື້',price:''}]});let D=nd();
+function stk(p){return p.opts.reduce((n,o)=>n+o.codes.length,0)}
+const cp=()=>PR.find(p=>p.id==PS.p)||PR[0],co=p=>p&&(p.opts.find(o=>o.id==PS.o)||p.opts[0]);
+const uq=v=>[...new Set(v.split(/\r?\n/).map(s=>s.trim()).filter(Boolean))];
+const selP=()=>`<select data-s="p">${PR.map(p=>`<option value="${p.id}" ${p===cp()?'selected':''}>${esc(p.name)}</option>`).join('')}</select>`;
+const selO=()=>`<select data-s="o">${cp().opts.map(o=>`<option value="${o.id}" ${o===co(cp())?'selected':''}>${esc(o.label)} · ${o.codes.length} ຊິ້ນ</option>`).join('')}</select>`;
+const clh=()=>{const o=co(cp());if(!o)return'';const f=PS.f.toLowerCase(),L=o.codes.filter(c=>c.toLowerCase().includes(f));return L.length?L.map(c=>`<label class="cr"><input type="checkbox" data-c="${esc(c)}" ${PSEL.has(c)?'checked':''}><code>${esc(c)}</code></label>`).join(''):'<div class="em">ບໍ່ມີລະຫັດ</div>'};
+const updS=()=>{const e=q('#rS');if(e)e.textContent='ເລືອກແລ້ວ '+PSEL.size+' ອັນ'};
+const NO='<div class="cd"><div class="em">ຍັງບໍ່ມີສິນຄ້າ — ເພີ່ມສິນຄ້າກ່ອນ</div></div>';
+const VW={
+add:()=>`<div class="cd"><div class="ch"><b>${D.id?'ແກ້ໄຂສິນຄ້າ':'ເພີ່ມສິນຄ້າໃໝ່'}</b>${D.id?'<button class="lk" id="pCan">ຍົກເລີກ</button>':''}</div>
+<label class="im">${D.img?`<img src="${D.img}">`:'<span>+ ຮູບ</span>'}<input type="file" accept="image/*" id="pFile" hidden></label>
+<label class="fi">ຊື່ສິນຄ້າ<input id="pN" maxlength="60" value="${esc(D.name)}"></label>
+<label class="fi">ລາຍລະອຽດສິນຄ້າ<textarea id="pD" rows="3" maxlength="500">${esc(D.desc)}</textarea></label>
+<div class="ch" style="margin-top:14px"><b>ຕົວເລືອກ / ໄລຍະເວລາ + ລາຄາ</b></div>
+${D.opts.map((o,i)=>`<div class="or"><input data-o="${i}" data-k="label" placeholder="ເຊັ່ນ 1 ມື້" value="${esc(o.label)}"><input data-o="${i}" data-k="price" inputmode="numeric" placeholder="ລາຄາ" value="${esc(o.price)}"><button class="x" data-ox="${i}">✕</button></div>`).join('')}
+<div class="qk">${['1 ມື້','3 ມື້','7 ມື້','30 ມື້'].map(t=>`<button data-q="${t}">+ ${t}</button>`).join('')}<button data-q="">+ ກຳນົດເອງ</button></div>
+${D.id?'<div class="sub">ລຶບຕົວເລືອກ = ລະຫັດໃນຕົວເລືອກນັ້ນຫາຍໄປນຳ</div>':''}
+<button class="hb" id="pSave">${D.id?'ບັນທຶກການແກ້ໄຂ':'ເພີ່ມສິນຄ້າ'}</button></div>`,
+mng:()=>PR.length?PR.map(p=>`<div class="cd pc"><div class="th">${p.img?`<img src="${p.img}">`:esc(p.name[0]||'?')}</div><div class="pi"><b>${esc(p.name)}</b><small>${p.opts.map(o=>esc(o.label)+' '+fm(o.price)).join(' · ')}</small><small>ສະຕັອກ ${stk(p)} ຊິ້ນ</small></div><div class="pb"><button data-ed="${p.id}">ແກ້ໄຂ</button><button class="dl" data-dl="${p.id}">ລຶບ</button></div></div>`).join(''):NO,
+cin:()=>{if(!PR.length)return NO;const o=co(cp());return `<div class="cd"><div class="ch"><b>ເພີ່ມລະຫັດເຂົ້າສິນຄ້າ</b><span>ສະຕັອກ ${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<textarea id="cTx" rows="7" placeholder="ວາງລະຫັດ — 1 ບັນທັດ = 1 ລະຫັດ">${esc(PS.t)}</textarea><div class="sub" id="cCt">${uq(PS.t).length} ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)</div><button class="hb" id="cOk">ເພີ່ມເຂົ້າສະຕັອກ</button></div>`},
+cout:()=>{if(!PR.length)return NO;const o=co(cp());return `<div class="cd"><div class="ch"><b>ເອົາລະຫັດອອກຈາກສິນຄ້າ</b><span>${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<input id="rF" placeholder="ຄົ້ນຫາລະຫັດ" value="${esc(PS.f)}" style="margin-top:8px">
+<div class="rb"><button data-r="all">ເລືອກທັງໝົດທີ່ເຫັນ</button><button data-r="none">ຍົກເລີກເລືອກ</button><input id="rN" type="number" min="1" value="1"><button data-r="n">ເລືອກ N ອັນທຳອິດ</button></div>
+<div class="cl">${clh()}</div><div class="sub" id="rS">ເລືອກແລ້ວ ${PSEL.size} ອັນ</div>
+<button class="hb gh" data-r="cp">ຄັດລອກທີ່ເລືອກ</button><button class="hb" data-r="rm">ເອົາທີ່ເລືອກອອກ</button><button class="hb gh" data-r="clr">ລ້າງລະຫັດທັງໝົດຂອງຕົວເລືອກນີ້</button></div>`}};
+const SI=a=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+a+'</svg>';
+const ST=[['add','ເພີ່ມສິນຄ້າ',SI('<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>')],
+['mng','ຈັດການສິນຄ້າ',SI('<path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/>')],
+['cin','ເພີ່ມລະຫັດ',SI('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>')],
+['cout','ເອົາລະຫັດອອກ',SI('<path d="M12 15V4M7 9l5-5 5 5M5 20h14"/>')]];
+let SX=-1;
+function pr(){const pt=q('#pg-products');
+if(!q('#stabs')){pt.innerHTML=`<div class="stabs" id="stabs"><div class="sind" id="sind"><i></i></div>${ST.map(t=>`<button class="stab" data-v="${t[0]}">${t[2]}<span>${t[1]}</span></button>`).join('')}</div><div id="pv"></div>`;SX=-1}
+const i=ST.findIndex(t=>t[0]===PV),ind=q('#sind');
+document.querySelectorAll('#stabs .stab').forEach((b,j)=>b.classList.toggle('on',j===i));
+if(i!==SX){const f=SX<0;if(f)ind.style.transition='none';ind.style.transform='translate3d('+(i*100)+'%,0,0)';
+if(f){void ind.offsetWidth;ind.style.transition=''}else{ind.classList.remove('go');void ind.offsetWidth;ind.classList.add('go')}SX=i}
+q('#pv').innerHTML=VW[PV]()}
+const ask=(h,t,o)=>{PX=o;sheet(`<h3>${h}</h3><p>${t}</p><button class="hb" id="pYes">ຢືນຢັນ</button><button class="hb gh" id="pNo">ຍົກເລີກ</button>`)};
+function save(){const nm=D.name.trim(),os=D.opts;if(!nm)return toast('ໃສ່ຊື່ສິນຄ້າກ່ອນ');if(!os.length||os.some(o=>!o.label.trim()||!(+o.price>0)))return toast('ຕົວເລືອກຕ້ອງມີຊື່ ແລະ ລາຄາ');
+const old=D.id&&PR.find(p=>p.id==D.id),opts=os.map(o=>({id:o.id,label:o.label.trim(),price:+o.price,codes:(old&&old.opts.find(x=>x.id==o.id)||{codes:[]}).codes})),v={name:nm,desc:D.desc.trim(),img:D.img,opts};
+if(old)Object.assign(old,v);else PR.push({id:++PID,...v});D=nd();PV='mng';pr();toast(old?'ບັນທຶກການແກ້ໄຂແລ້ວ':'ເພີ່ມສິນຄ້າແລ້ວ')}
+function addCodes(){const o=co(cp()),L=uq(PS.t),ex=new Set(o.codes),N=L.filter(c=>!ex.has(c));if(!L.length)return toast('ວາງລະຫັດກ່ອນ');o.codes.push(...N);PS.t='';pr();toast('ເພີ່ມ '+N.length+' ລະຫັດ'+(L.length>N.length?' · ຂ້າມຊ້ຳ '+(L.length-N.length):''))}
+function rsel(k){const o=co(cp()),f=PS.f.toLowerCase(),L=o.codes.filter(c=>c.toLowerCase().includes(f));
+if(k==='clr')return ask('ລ້າງລະຫັດທັງໝົດບໍ?',o.codes.length+' ລະຫັດຂອງ "'+esc(o.label)+'" ຈະຖືກລຶບ',{k:'clr'});
+if(k==='all'||k==='none'||k==='n'){if(k!=='all')PSEL.clear();(k==='none'?[]:k==='n'?L.slice(0,Math.max(1,+q('#rN').value||1)):L).forEach(c=>PSEL.add(c));document.querySelectorAll('[data-c]').forEach(c=>c.checked=PSEL.has(c.dataset.c));return updS()}
+if(!PSEL.size)return toast('ຍັງບໍ່ໄດ້ເລືອກລະຫັດ');
+if(k==='cp'){const t=[...PSEL].join('\n');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('ຄັດລອກ '+PSEL.size+' ລະຫັດແລ້ວ'),()=>toast('ຄັດລອກບໍ່ໄດ້ໃນໂໝດນີ້'));return}
+ask('ເອົາລະຫັດອອກບໍ?',PSEL.size+' ລະຫັດ ຈະຖືກເອົາອອກຈາກສະຕັອກ',{k:'rm'})}
+function initProd(){
+PR=DB.products.map((x,i)=>{const n=x[1],a=Math.ceil(n/2),cd=(k,m)=>Array.from({length:m},(_,j)=>'KEY-'+(i+1)+k+'-'+p2(j+1)+'-'+(1000+i*37+j*91));return{id:i+1,name:x[0],desc:'',img:'',opts:[{id:i*2+1,label:'1 ມື້',price:20000+i*5000,codes:cd('A',a)},{id:i*2+2,label:'7 ມື້',price:100000+i*10000,codes:cd('B',n-a)}]}});
+pr();const pt=q('#pg-products');
+q('.tab[data-t=home]').addEventListener('click',()=>loadHome());
+pt.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset,id=b.id;
+if(d.v){PV=d.v;PSEL.clear();return pr()}
+if(id==='pCan'){D=nd();return pr()}
+if(d.q!==undefined){D.opts.push({id:++OID,label:d.q,price:''});return pr()}
+if(d.ox!==undefined){D.opts.splice(+d.ox,1);if(!D.opts.length)D.opts.push(nd().opts[0]);return pr()}
+if(id==='pSave')return save();
+if(d.ed){const p=PR.find(x=>x.id==d.ed);D={id:p.id,name:p.name,desc:p.desc,img:p.img,opts:p.opts.map(o=>({id:o.id,label:o.label,price:String(o.price)}))};PV='add';pr();return scrollTo(0,0)}
+if(d.dl){const p=PR.find(x=>x.id==d.dl);return ask('ລຶບສິນຄ້ານີ້ບໍ?','"'+esc(p.name)+'" ແລະ ລະຫັດທັງໝົດ ('+stk(p)+' ຊິ້ນ) ຈະຖືກລຶບ',{k:'dp',id:p.id})}
+if(id==='cOk')return addCodes();if(d.r)rsel(d.r)});
+pt.addEventListener('input',e=>{const t=e.target;
+if(t.id==='pN')D.name=t.value;else if(t.id==='pD')D.desc=t.value;
+else if(t.dataset.o!==undefined){const k=t.dataset.k;D.opts[+t.dataset.o][k]=k==='price'?(t.value=t.value.replace(/\D/g,'')):t.value}
+else if(t.id==='cTx'){PS.t=t.value;q('#cCt').textContent=uq(t.value).length+' ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)'}
+else if(t.id==='rF'){PS.f=t.value;q('.cl').innerHTML=clh()}});
+pt.addEventListener('change',e=>{const t=e.target;
+if(t.dataset.s){if(t.dataset.s==='p'){PS.p=t.value;PS.o=''}else PS.o=t.value;PSEL.clear();PS.f='';return pr()}
+if(t.dataset.c!==undefined){t.checked?PSEL.add(t.dataset.c):PSEL.delete(t.dataset.c);return updS()}
+if(t.id==='pFile'&&t.files[0]){const f=new FileReader();f.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);D.img=c.toDataURL('image/jpeg',.8);pr()};im.src=f.result};f.readAsDataURL(t.files[0])}});
+q('#sh').addEventListener('click',e=>{if(e.target.closest('#pNo'))closeSheet();if(e.target.closest('#pYes')){closeSheet();const x=PX,o=co(cp());
+if(x.k==='dp'){PR=PR.filter(p=>p.id!=x.id);toast('ລຶບສິນຄ້າແລ້ວ')}
+else if(x.k==='rm'){o.codes=o.codes.filter(c=>!PSEL.has(c));toast('ເອົາອອກ '+PSEL.size+' ລະຫັດແລ້ວ');PSEL.clear()}
+else{o.codes=[];PSEL.clear();toast('ລ້າງລະຫັດແລ້ວ')}pr()}})}
+
+// ===== ຈັດການບັນຊີ (DEMO) — ຂໍ້ມູນຈຳລອງ =====
+// ເວລາເຊື່ອມຈິງ: ID 4 ຫຼັກ ຕ້ອງສ້າງຝັ່ງ DB ຕອນສະໝັກ (ຄໍລຳ unique) ແລະ ການປັບຍອດຕ້ອງຜ່ານ RPC ທີ່ບັນທຶກ log
+const IDS=new Set(),rid=()=>{let n;do{n=1000+Math.floor(Math.random()*9000)}while(IDS.has(n));IDS.add(n);return String(n)};
+const mk=(u,top,cnt,spent,adj,bo,ld,jd)=>({id:rid(),u,top,cnt,spent,adj,bal:bo==null?top+adj-spent:bo,last:ld==null?null:NOW-ld*DAY,join:NOW-jd*DAY,g0:0,chk:false,log:adj?[{t:NOW-2*DAY,a:adj,note:'ໂປຣໂມຊັນ'}]:[]});
+const AC=[mk('kaew_ml',4100000,12,900000,0,null,.4,120),mk('beer_01',1850000,9,700000,0,null,.0125,95),mk('sky.ff',2400000,10,1600000,0,null,.03,80),mk('dragon8',500000,3,200000,0,1300000,2,40),mk('ice_br',900000,5,400000,0,null,1,60),mk('nong99',1200000,7,950000,0,null,.13,70),mk('jirasak',250000,2,100000,50000,null,5,30),mk('mx_ios',600000,4,480000,0,null,.3,50),mk('ba_pro',300000,3,270000,0,null,1.3,45),mk('rock_8bp',50000,1,20000,0,null,9,25),mk('meow_rov',80000,2,60000,0,null,12,22),mk('tonn.ff',150000,2,150000,0,null,14,35),mk('lek_pubg',100000,1,180000,0,null,20,28),mk('ghost_ios',0,0,0,0,350000,null,15),mk('pangpond',0,0,0,0,null,null,10),mk('zero_x',0,0,0,0,null,null,6),mk('newbie77',0,0,0,0,null,null,2),mk('ploy.cloud',0,0,0,0,null,null,1)];
+let AV='bal',AQ='',AP=null,AX=-1,AO=null;
+const AT=[['bal','ຍອດເງິນ',SI('<path d="M3 7h16a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M3 7V6a2 2 0 012-2h11M16 14h2"/>')],['nev','ບໍ່ເຄີຍເຕີມ',SI('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M17 11h5"/>')],['ab','ຜິດປົກກະຕິ',SI('<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>')]];
+const TI=[['ເງິນຫຼາຍ','≥ 1,000,000',b=>b>=1e6,'#ff4560'],['ປານກາງ','200,000 – 999,999',b=>b>=2e5&&b<1e6,'#ff9a3d'],['ເງິນນ້ອຍ','1 – 199,999',b=>b>0&&b<2e5,'#ffc233'],['ຍອດ 0 / ຕິດລົບ','≤ 0',b=>b<=0,'#8f8f8f']];
+const gap=c=>c.bal-(c.top+c.adj-c.spent)-c.g0;
+const sg=n=>(n>0?'+':n<0?'−':'')+fm(Math.abs(n));
+function why(c){const r=[],g=gap(c);if(c.bal<0)r.push('ຍອດຕິດລົບ');
+if(!c.chk&&c.bal>0&&!c.top&&c.adj<=0)r.push('ມີເງິນ ແຕ່ບໍ່ເຄີຍເຕີມ ແລະ ບໍ່ມີປະຫວັດປັບຍອດ');
+else if(g!==0)r.push('ຍອດບໍ່ກົງກັບປະຫວັດ ('+sg(g)+')');return r}
+const fixable=c=>why(c).length>(c.bal<0?1:0);
+const dj=c=>{const d=Math.floor((Date.now()-c.join)/DAY);return d<1?'ສະໝັກມື້ນີ້':'ສະໝັກມາ '+d+' ມື້'};
+const aRow=c=>{const w=why(c);return `<button class="cd ar" data-a="${c.id}"><div class="av">${esc(c.u[0].toUpperCase())}</div><div class="ai"><b>${esc(c.u)}<i class="idp">ID ${c.id}</i></b><small>${c.top?'ເຕີມລວມ '+fm(c.top)+' · ຫຼ້າສຸດ '+ago(c.last):'ບໍ່ເຄີຍເຕີມເງິນ · '+dj(c)}</small>${w.length?'<small class="why">'+w.join(' · ')+'</small>':''}</div><div class="am"><span class="${c.bal<0?'ng':''}">${fm(c.bal)}</span>${w.length?'<em class="bd o">ຜິດປົກກະຕິ</em>':!c.top?'<em class="bd g">ບໍ່ເຄີຍເຕີມ</em>':''}</div></button>`};
+function aList(){const S=[...AC].sort((a,b)=>b.bal-a.bal);let h='';
+const hd=(t,s,c)=>`<div class="ah"><span>${c?'<i class="dot" style="--c:'+c+'"></i>':''}<b>${t}</b></span><small>${s}</small></div>`;
+const em=t=>'<div class="cd"><div class="em">'+t+'</div></div>';
+if(AQ){const s=AQ.replace(/^#/,'').toLowerCase(),L=S.filter(c=>c.id.includes(s)||c.u.toLowerCase().includes(s)).sort((a,b)=>(b.id===s)-(a.id===s));
+h=hd('ຜົນຄົ້ນຫາ',L.length+' ບັນຊີ')+(L.length?L.map(aRow).join(''):em('ບໍ່ພົບບັນຊີ'))}
+else if(AV==='bal'){TI.forEach(t=>{const L=S.filter(c=>t[2](c.bal));if(L.length)h+=hd(t[0],t[1]+' · '+L.length+' ບັນຊີ',t[3])+L.map(aRow).join('')})}
+else if(AV==='nev'){const L=AC.filter(c=>!c.top).sort((a,b)=>a.join-b.join);h=hd('ບໍ່ເຄີຍເຕີມເງິນ',L.length+' ບັນຊີ · ເກົ່າສຸດກ່ອນ','#9a9a9a')+(L.length?L.map(aRow).join(''):em('ທຸກຄົນເຄີຍເຕີມເງິນແລ້ວ'))}
+else{const L=S.filter(c=>why(c).length);h=hd('ຍອດເງິນຜິດປົກກະຕິ',L.length+' ບັນຊີ','#ff4560')+(L.length?L.map(aRow).join(''):em('ບໍ່ພົບຄວາມຜິດປົກກະຕິ'))}
+q('#aL').innerHTML=h}
+function paintAcc(){
+q('#aTot').textContent=fm(AC.reduce((n,c)=>n+c.bal,0));
+q('#aN1').textContent=AC.length;q('#aN2').textContent=AC.filter(c=>!c.top).length;q('#aN3').textContent=AC.filter(c=>why(c).length).length;
+const i=AT.findIndex(t=>t[0]===AV),ind=q('#aind');
+document.querySelectorAll('#atabs .stab').forEach((b,j)=>b.classList.toggle('on',j===i));
+if(i!==AX){const f=AX<0;if(f)ind.style.transition='none';ind.style.transform='translate3d('+(i*100)+'%,0,0)';
+if(f){void ind.offsetWidth;ind.style.transition=''}else{ind.classList.remove('go');void ind.offsetWidth;ind.classList.add('go')}AX=i}
+q('#atabs').classList.toggle('dim',!!AQ);aList()}
+function openAcc(id){const c=AC.find(x=>x.id===id);if(!c)return;AO=id;const w=why(c);
+sheet(`<h3>${esc(c.u)}<i class="idp">ID ${c.id}</i></h3><p>${dj(c)}</p><div class="big" style="font-size:26px">${fm(c.bal)}</div>
+${w.length?'<div class="wn">'+w.join(' · ')+'</div>':''}${fixable(c)?'<button class="hb gh" id="aChk" style="height:40px;margin-top:8px">ກວດແລ້ວ — ຖືວ່າປົກກະຕິ</button>':''}
+<div style="margin-top:10px"><div class="kv"><span>ເຕີມທັງໝົດ</span><b>${c.top?fm(c.top)+' · '+c.cnt+' ຄັ້ງ':'ບໍ່ເຄີຍເຕີມ'}</b></div><div class="kv"><span>ໃຊ້ໄປແລ້ວ</span><b>${fm(c.spent)}</b></div><div class="kv"><span>ແອດມິນປັບຍອດ</span><b>${c.adj?sg(c.adj):'—'}</b></div><div class="kv"><span>ເຕີມຄັ້ງຫຼ້າສຸດ</span><b>${c.last?ago(c.last):'—'}</b></div></div>
+<input id="aAmt" inputmode="numeric" placeholder="ຈຳນວນເງິນ" style="margin-top:12px"><div class="qk">${[10000,50000,100000,500000].map(n=>'<button data-aq="'+n+'">'+n.toLocaleString('en-US')+'</button>').join('')}</div><div class="sub" id="aPrev" style="min-height:18px"></div>
+<input id="aNote" maxlength="100" placeholder="ໝາຍເຫດ (ບໍ່ບັງຄັບ)" style="margin-top:8px">
+<div class="two"><button class="hb" id="aAdd">ເພີ່ມເງິນ</button><button class="hb dn" id="aSub">ຫັກເງິນ</button></div>
+<div class="ch" style="margin:16px 0 2px"><b>ປະຫວັດການປັບຍອດ</b><span>${c.log.length} ລາຍການ</span></div>
+${c.log.length?c.log.slice(0,5).map(l=>'<div class="kv"><span>'+fdt(l.t)+(l.note?' · '+esc(l.note):'')+'</span><b>'+(l.a?sg(l.a):'—')+'</b></div>').join(''):'<div class="em">ຍັງບໍ່ມີປະຫວັດ</div>'}
+<div class="sub">ການປັບຍອດບໍ່ນັບເປັນຍອດເຕີມເງິນ</div><button class="hb gh" id="aNo">ປິດ</button>`)}
+function initAcc(){const pt=q('#pg-accounts');
+pt.innerHTML=`<span class="dm">ຂໍ້ມູນທົດລອງ (DEMO)</span>
+<div class="cd"><div class="ch"><b>ຍອດເງິນຄ້າງໃນລະບົບ</b><span>ທຸກບັນຊີລູກຄ້າ</span></div><div class="big" style="font-size:26px" id="aTot"></div>
+<div class="chips" style="margin:12px 0 0"><button class="chip n" data-go="bal"><b id="aN1"></b><small>ລູກຄ້າທັງໝົດ</small></button><button class="chip r" data-go="nev"><b id="aN2"></b><small>ບໍ່ເຄີຍເຕີມ</small></button><button class="chip o" data-go="ab"><b id="aN3"></b><small>ຜິດປົກກະຕິ</small></button></div></div>
+<label class="aq">${SI('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>')}<input id="aQ" maxlength="30" placeholder="ຄົ້ນຫາ ID 4 ຫຼັກ ຫຼື ຊື່ລູກຄ້າ" autocomplete="off"></label>
+<div class="stabs" id="atabs" style="--n:3"><div class="sind" id="aind"><i></i></div>${AT.map(t=>'<button class="stab" data-av="'+t[0]+'">'+t[2]+'<span>'+t[1]+'</span></button>').join('')}</div><div id="aL"></div>`;
+paintAcc();
+const pv=()=>{const a=+q('#aAmt').value||0,c=AC.find(x=>x.id===AO);q('#aPrev').textContent=a&&c?'ຫຼັງເພີ່ມ '+fm(c.bal+a)+' · ຫຼັງຫັກ '+fm(c.bal-a):''};
+pt.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+if(d.av||d.go){AV=d.av||d.go;AQ='';q('#aQ').value='';return paintAcc()}
+if(d.a)openAcc(d.a)});
+pt.addEventListener('input',e=>{if(e.target.id==='aQ'){AQ=e.target.value.trim();paintAcc()}});
+q('#sh').addEventListener('input',e=>{if(e.target.id==='aAmt'){e.target.value=e.target.value.replace(/\D/g,'').slice(0,10);pv()}});
+q('#sh').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const id=b.id;
+if(id==='aNo')return closeSheet();
+if(b.dataset.aq){q('#aAmt').value=b.dataset.aq;return pv()}
+if(id==='aAdd'||id==='aSub'){const a=+q('#aAmt').value,c=AC.find(x=>x.id===AO),s=id==='aAdd'?1:-1;
+if(!(a>0))return toast('ໃສ່ຈຳນວນເງິນກ່ອນ');if(s<0&&a>c.bal)return toast('ຫັກເກີນຍອດຄົງເຫຼືອບໍ່ໄດ້');
+AP={id:c.id,s,amt:a,note:q('#aNote').value.trim().slice(0,100)};
+sheet(`<h3>${s>0?'ຢືນຢັນເພີ່ມເງິນບໍ?':'ຢືນຢັນຫັກເງິນບໍ?'}</h3><p>${esc(c.u)} (ID ${c.id})<br>${fm(c.bal)} → <b style="color:#fff">${fm(c.bal+s*a)}</b></p><button class="hb" id="aYes">ຢືນຢັນ</button><button class="hb gh" id="aBack">ກັບຄືນ</button>`);return}
+if(id==='aBack')return openAcc(AP.id);
+if(id==='aYes'){const c=AC.find(x=>x.id===AP.id),v=AP.s*AP.amt;c.bal+=v;c.adj+=v;c.log.unshift({t:Date.now(),a:v,note:AP.note});toast(AP.s>0?'ເພີ່ມເງິນແລ້ວ':'ຫັກເງິນແລ້ວ');paintAcc();return openAcc(c.id)}
+if(id==='aChk'){const c=AC.find(x=>x.id===AO);c.g0+=gap(c);c.chk=true;c.log.unshift({t:Date.now(),a:0,note:'ແອດມິນກວດແລ້ວ — ປົກກະຕິ'});toast('ບັນທຶກວ່າກວດແລ້ວ');paintAcc();openAcc(c.id)}})}
+
+// ===== ຕັ້ງຄ່າຮ້ານ (DEMO) — ຂໍ້ມູນຢູ່ໃນໜ້າຈໍເທົ່ານັ້ນ =====
+// ເວລາເຊື່ອມຈິງ: ຮູບອັບໂຫຼດເຂົ້າ Supabase Storage ແລ້ວເກັບ URL, ສ່ວນຄ່າອື່ນເກັບໃນຕາຕະລາງ settings (ແກ້ໄດ້ສະເພາະແອດມິນ)
+const SET={name:'DEKMASH STORE',logo:'',front:'',qr:'',promo:'',promoOn:true,
+cats:[{img:'',name:'IOS'},{img:'',name:'ANDROID'},{img:'',name:'PC'},{img:'',name:'PROXY'}],
+links:[{l:'Facebook',u:''},{l:'LINE',u:''},{l:'WhatsApp',u:''},{l:'Telegram',u:''}],
+nTop:'',nReg:''};
+const gimg=k=>k[0]==='c'&&k.length===2?SET.cats[+k[1]].img:SET[k];
+const simg=(k,v)=>{if(k[0]==='c'&&k.length===2)SET.cats[+k[1]].img=v;else SET[k]=v};
+const ibox=(k,cls,txt)=>{const v=gimg(k);return `<div class="sbx"><label class="sim ${cls}">${v?`<img src="${v}">`:'<span>+ '+(txt||'ຮູບ')+'</span>'}<input type="file" accept="image/*" data-f="${k}" hidden></label>${v?`<button class="lk" data-rm="${k}">ລຶບຮູບ</button>`:''}</div>`};
+function paintSet(){q('#pg-settings').innerHTML=`<span class="dm">ຂໍ້ມູນທົດລອງ (DEMO)</span>
+<div class="cd"><div class="ch"><b>ຂໍ້ມູນຮ້ານ</b></div>
+<span class="sl">ຊື່ຮ້ານ</span><input data-k="name" maxlength="40" value="${esc(SET.name)}" placeholder="ຊື່ຮ້ານ">
+<span class="sl">ໂລໂກ້ຮ້ານ</span><div style="width:110px">${ibox('logo','sq ct','ໂລໂກ້')}</div>
+<span class="sl">ຮູບໜ້າຮ້ານ</span>${ibox('front','wd','ຮູບໜ້າຮ້ານ')}</div>
+<div class="cd"><div class="ch"><b>ໝວດໝູ່ສິນຄ້າ</b><span>4 ໝວດ</span></div><div class="cg">${SET.cats.map((c,i)=>`<div class="sbx">${ibox('c'+i,'sq','ຮູບໝວດ '+(i+1))}<input data-k="c${i}" maxlength="20" value="${esc(c.name)}" placeholder="ຊື່ໝວດໝູ່ ${i+1}"></div>`).join('')}</div></div>
+<div class="cd"><div class="ch"><b>ຊ່ອງທາງຕິດຕໍ່ລູກຄ້າ</b><span>4 ຊ່ອງ</span></div>${SET.links.map((x,i)=>`<div class="lr"><input data-k="l${i}l" maxlength="20" value="${esc(x.l)}" placeholder="ຊື່ຊ່ອງທາງ"><input data-k="l${i}u" inputmode="url" value="${esc(x.u)}" placeholder="https://…"></div>`).join('')}<div class="sub">ເວັ້ນວ່າງໄວ້ = ບໍ່ສະແດງຊ່ອງນັ້ນ</div></div>
+<div class="cd"><div class="ch"><b>QR ຮັບໂອນເງິນ</b></div><div style="max-width:220px">${ibox('qr','sq ct','ໃສ່ QR')}</div></div>
+<div class="cd"><div class="ch"><b>ຮູບໂປຣໂມຊັນຕອນເຂົ້າເວັບ</b></div>${ibox('promo','wd','ຮູບໂປຣໂມຊັນ')}<label class="tg"><input type="checkbox" data-k="promoOn" ${SET.promoOn?'checked':''}>ສະແດງປ໊ອບອັບນີ້ຕອນລູກຄ້າເຂົ້າເວັບ</label></div>
+<div class="cd"><div class="ch"><b>ລິ້ງແຈ້ງເຕືອນແອດມິນ</b></div>
+<span class="sl">ເມື່ອມີຄົນເຕີມເງິນ</span><input data-k="nTop" inputmode="url" value="${esc(SET.nTop)}" placeholder="https://…">
+<span class="sl">ເມື່ອມີຄົນສະໝັກໃໝ່</span><input data-k="nReg" inputmode="url" value="${esc(SET.nReg)}" placeholder="https://…">
+<div class="sub">ໃສ່ລິ້ງ Webhook (ເຊັ່ນ Discord / Telegram) ເພື່ອໃຫ້ລະບົບສົ່ງແຈ້ງເຕືອນ</div></div>
+<button class="hb" id="sSave">ບັນທຶກການຕັ້ງຄ່າ</button>`}
+function initSet(){paintSet();const pt=q('#pg-settings'),U=/^https?:\/\/\S+$/i;
+const setK=(k,v)=>{if(k==='name'||k==='nTop'||k==='nReg')SET[k]=v;else if(k==='promoOn')SET.promoOn=v;else if(/^c\d$/.test(k))SET.cats[+k[1]].name=v;else{const m=k.match(/^l(\d)([lu])$/);if(m)SET.links[+m[1]][m[2]]=v}};
+pt.addEventListener('input',e=>{const k=e.target.dataset.k;if(k&&e.target.type!=='checkbox')setK(k,e.target.value)});
+pt.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+if(b.dataset.rm){simg(b.dataset.rm,'');const y=scrollY;paintSet();scrollTo(0,y);return}
+if(b.id==='sSave'){if(!SET.name.trim())return toast('ໃສ່ຊື່ຮ້ານກ່ອນ');
+const bad=[...SET.links.map(x=>x.u),SET.nTop,SET.nReg].map(v=>v.trim()).find(v=>v&&!U.test(v));
+if(bad)return toast('ລິ້ງຕ້ອງຂຶ້ນຕົ້ນດ້ວຍ http:// ຫຼື https://');
+toast('ບັນທຶກແລ້ວ (ໂໝດທົດລອງ — ຍັງບໍ່ເກັບຖາວອນ)')}});
+pt.addEventListener('change',e=>{const t=e.target;
+if(t.dataset.k==='promoOn')return setK('promoOn',t.checked);
+const k=t.dataset.f;if(!k||!t.files[0])return;
+const f=new FileReader();f.onload=()=>{const im=new Image();im.onload=()=>{const keep=k==='logo'||k==='qr',mx=k==='logo'?256:k==='qr'?640:900,sc=Math.min(1,mx/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*sc;c.height=im.height*sc;const g=c.getContext('2d');if(!keep){g.fillStyle='#000';g.fillRect(0,0,c.width,c.height)}g.drawImage(im,0,0,c.width,c.height);simg(k,keep?c.toDataURL('image/png'):c.toDataURL('image/jpeg',.82));const y=scrollY;paintSet();scrollTo(0,y)};im.onerror=()=>toast('ໄຟລ໌ຮູບນີ້ເປີດບໍ່ໄດ້');im.src=f.result};f.readAsDataURL(t.files[0])})}
+const CH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>';
+let H=null,first=true;
+const toast=x=>{const e=q('#ts');e.textContent=x;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2400)};
+const sheet=(html,onOpen)=>{q("#shb").innerHTML=html;q('#so').classList.add('on');q('#sh').classList.add('on');onOpen&&onOpen()};
+const closeSheet=()=>{q('#so').classList.remove('on');q('#sh').classList.remove('on')};
+function countUp(el,to){const t0=performance.now(),D=1100;const f=t=>{const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);el.textContent=fm(to*e);if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
+function paint(){
+const p=H.period,days=Math.min(7,(Date.now()-p.started)/DAY),done=days>=7;
+const grp={o:[],l:[],r:[],k:0};H.products.forEach(x=>{const s=x[1];s<=0?grp.o.push(x):s<=LOW?grp.l.push(x):s<=RES?grp.r.push(x):grp.k++});
+const row=(c,x)=>`<div class="hr st" style="--c:var(--cc)"><i class="dot" style="--c:${c}"></i><div><b>${esc(x[0])}</b></div><span>${x[1]} ຊິ້ນ</span></div>`;
+const lst=(c,a)=>a.map(x=>row(c,x)).join('');
+q('#pg-home').innerHTML=`<span class="dm">ຂໍ້ມູນທົດລອງ (DEMO)</span>
+<div class="cd hero"><div class="ch"><b>ຍອດເຕີມເງິນທັງໝົດ</b><span>ສະເພາະລູກຄ້າ</span></div><div class="big" id="hTot">${fm(first?0:H.total_all)}</div><div class="sub">${H.topup_count} ລາຍການ · ${H.customers} ລູກຄ້າ (ບໍ່ນັບແອດມິນ)</div></div>
+<div class="cd"><div class="ch"><b>ຍອດຮອບ 7 ວັນ</b><span>${fd(p.started)} – ${fd(p.started+7*DAY)}</span></div><div class="big" style="font-size:26px">${fm(p.total)}</div><div class="sub">${p.count} ລາຍການ</div>
+<div class="bar2"><i id="hBar"></i></div><div class="sub" style="margin:0">ມື້ທີ ${Math.min(7,Math.floor(days)+1)} / 7</div>
+${done?'<div class="wn">ຄົບ 7 ວັນແລ້ວ — ຄວນປິດຮອບ ແລະ ເລີ່ມນັບໃໝ່</div>':''}
+<button class="hb" id="hClose">ປິດຮອບ ແລະ ເລີ່ມນັບໃໝ່</button>
+<div class="ch" style="margin:16px 0 2px"><b>ຮອບກ່ອນໜ້າ</b><span>${H.history.length} ຮອບ</span></div>
+${H.history.length?H.history.map(r=>`<button class="hr" data-h="${r.id}"><div><b>${fd(r.s)} – ${fd(r.e)}</b><small>${r.count} ລາຍການ${r.note?' · '+esc(r.note):''}</small></div><span>${fm(r.total)}</span>${CH}</button>`).join(''):'<div class="em">ຍັງບໍ່ມີຮອບທີ່ບັນທຶກ</div>'}</div>
+<div class="cd"><div class="ch"><b>ແຈ້ງເຕືອນສະຕັອກ</b><span>${H.products.length} ສິນຄ້າ</span></div>
+<div class="chips"><div class="chip o"><b>${grp.o.length}</b><small>ໝົດແລ້ວ</small></div><div class="chip l"><b>${grp.l.length}</b><small>ໃກ້ໝົດ</small></div><div class="chip r"><b>${grp.r.length}</b><small>ຄວນເຕີມ</small></div></div>
+${lst('#ff4560',grp.o)}${lst('#ff9a3d',grp.l)}${lst('#ffc233',grp.r)}
+${grp.o.length+grp.l.length+grp.r.length?'':'<div class="em">ສະຕັອກປົກກະຕິທຸກລາຍການ 🎉</div>'}
+<div class="lg2">ໃກ້ໝົດ ≤ ${LOW} ຊິ້ນ · ຄວນເຕີມ ≤ ${RES} ຊິ້ນ · ສະຕັອກປົກກະຕິ ${grp.k} ລາຍການ</div></div>
+<div class="cd"><div class="ch"><b>ເຕີມເງິນຫຼ້າສຸດ</b><span>ລູກຄ້າ</span></div>
+${H.recent.length?H.recent.map(r=>`<div class="hr st"><div><b>${esc(r.u)}</b><small>${ago(r.t)}</small></div><span>+${fm(r.a)}</span></div>`).join(''):'<div class="em">ຍັງບໍ່ມີການເຕີມເງິນ</div>'}</div>`;
+if(first){countUp(q('#hTot'),H.total_all);first=false}
+requestAnimationFrame(()=>requestAnimationFrame(()=>{const b=q('#hBar');if(b)b.style.width=(days/7*100)+'%'}));
+}
+async function loadHome(){H=await API.home();paint()}
+function initHome(){
+loadHome();
+q('#pg-home').addEventListener('click',e=>{
+if(e.target.closest('#hClose')){const p=H.period;sheet(`<h3>ປິດຮອບນີ້ບໍ?</h3><p>ຍອດ ${fm(p.total)} (${p.count} ລາຍການ) ຈະຖືກບັນທຶກໄວ້ ແລ້ວເລີ່ມນັບຮອບໃໝ່ຈາກ 0 · ກັບມາເບິ່ງຮອບເກົ່າໄດ້</p><input id="hNote" maxlength="200" placeholder="ໝາຍເຫດ (ບໍ່ບັງຄັບ)"><button class="hb" id="hOk">ຢືນຢັນປິດຮອບ</button><button class="hb gh" id="hNo">ຍົກເລີກ</button>`);return}
+const r=e.target.closest('[data-h]');if(r){const x=H.history.find(v=>v.id==r.dataset.h);if(!x)return;
+sheet(`<h3>ຮອບ ${fd(x.s)} – ${fd(x.e)}</h3><p>ຂໍ້ມູນທີ່ບັນທຶກໄວ້ ບໍ່ປ່ຽນແປງ</p><div class="big" style="font-size:26px;margin-bottom:8px">${fm(x.total)}</div><div class="kv"><span>ຈຳນວນລາຍການ</span><b>${x.count}</b></div><div class="kv"><span>ເລີ່ມ</span><b>${fdt(x.s)}</b></div><div class="kv"><span>ປິດຮອບ</span><b>${fdt(x.e)}</b></div><div class="kv"><span>ໝາຍເຫດ</span><b>${x.note?esc(x.note):'-'}</b></div><button class="hb gh" id="hNo">ປິດ</button>`)}});
+q('#sh').addEventListener('click',async e=>{
+if(e.target.closest('#hNo'))closeSheet();
+if(e.target.closest('#hOk')){const n=q('#hNote').value;closeSheet();await API.closePeriod(n);await loadHome();toast('ບັນທຶກຮອບແລ້ວ — ເລີ່ມນັບຮອບໃໝ່')}});
+q('#so').addEventListener('click',closeSheet);
+}
+(async()=>{
+try{
+const {data}=await sb.auth.getSession();
+if(!data||!data.session){home();return}
+const {data:ok,error}=await sb.rpc('is_admin');
+if(error||ok!==true){home();return}
+const u=data.session.user,nm=(u.user_metadata&&u.user_metadata.username)||'';
+const w=document.getElementById('who');w.hidden=false;w.textContent='ADMIN · '+nm.toUpperCase();document.body.classList.add('ok');initTabs();initProd();initHome();initAcc();initSet();
+}catch(e){home()}
+})();
+</script></body></html>
