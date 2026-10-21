@@ -25,6 +25,10 @@ Object.assign(L.th,{"aRem":"จำบัญชีไว้ (ไม่ต้อ�
 Object.assign(L.lo,{"aRem":"ຈື່ບັນຊີໄວ້ (ບໍ່ຕ້ອງເຂົ້າສູ່ລະບົບໃໝ່)","aE4":"ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ","aE5":"ຊື່ຜູ້ໃຊ້ນີ້ຖືກໃຊ້ແລ້ວ","aE6":"ຊື່ຜູ້ໃຊ້ໃຊ້ໄດ້ສະເພາະ a-z 0-9 _ . ຍາວ 3–20 ຕົວ","aE7":"ເຊື່ອມຕໍ່ບໍ່ໄດ້ ລອງໃໝ່ອີກຄັ້ງ","aWel":"ຍິນດີຕ້ອນຮັບ","aOut":"ອອກຈາກລະບົບ","aAcc":"ບັນຊີຂອງຂ້ອຍ","aBye":"ອອກຈາກລະບົບແລ້ວ","aAdm":"ຫ້ອງຄວບຄຸມແອດມິນ"});Object.assign(L.lo,{"aShow": "ສະແດງ", "aHide": "ເຊື່ອງ"});
 Object.assign(L.th,{cur:"กีบ"});Object.assign(L.lo,{cur:"ກີບ"});
 
+// ข้อความการ์ดยืนยันการสั่งซื้อ
+Object.assign(L.th,{cfT:"ยืนยันการสั่งซื้อ",cfS:"ตรวจสอบรายการก่อนยืนยัน",cfTot:"ยอดรวม",cfNo:"ยกเลิก",cfOk:"ยืนยันสั่งซื้อ",cfDet:"รายละเอียดสินค้า",cfDone:"สั่งซื้อสำเร็จ",cfThx:"ขอบคุณที่อุดหนุนนะครับ",cfClose:"ปิด",cfErr_m:"สั่งซื้อไม่สำเร็จ ลองใหม่อีกครั้ง"});
+Object.assign(L.lo,{cfT:"ຢືນຢັນການສັ່ງຊື້",cfS:"ກວດສອບລາຍການກ່ອນຢືນຢັນ",cfTot:"ຍອດລວມ",cfNo:"ຍົກເລີກ",cfOk:"ຢືນຢັນສັ່ງຊື້",cfDet:"ລາຍລະອຽດສິນຄ້າ",cfDone:"ສັ່ງຊື້ສຳເລັດ",cfThx:"ຂອບໃຈທີ່ອຸດໜູນ",cfClose:"ປິດ",cfErr_m:"ສັ່ງຊື້ບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ"});
+
 // ข้อมูลสินค้า / รายการสั่งซื้อ / หมวดหมู่ / รูป
 const O=[["Ba***_O","SOPHIA IOS — 1 @day","",51],["Ba***","SOPHIA IOS — 1 @day","",52],["M***un","AIMHACK IOS / ANDROID","",53],["C***","Ultima Mod IOS","",54]];
 const W=[["SOPHIA IOS","0","",0,1],["EXTERNAL IOS","0","",0,1]];
@@ -33,11 +37,12 @@ const C=[["PRO FREE FIRE ( IOS )","",0,"0"],["PRO FREE FIRE ( Android )","",0,"0
 const IMG={banner:"",logo:"",avatar:""}; // ใส่ลิงก์รูป เช่น banner:"https://.../banner.jpg" | ຮູບສິນຄ້າ/ລາຍການ/ໝວດໝູ່ ໃສ່ໃນຊ່ອງທີ 3 ຂອງແຕ່ລະແຖວໃນ O, W, F ແລະ ຊ່ອງທີ 2 ຂອງ C
 
 // วาดการ์ดสินค้า รายการสั่งซื้อ และหมวดหมู่
-function render(){
+const PR=[];window._PR=PR;
+function render(){PR.length=0;
 const _ordHTML=O.map(o=>`<div class="ord">${slot(o[2],"th")}<div><b>${o[0]}</b><span>${o[1].replace('@day',t('day'))}</span><em><svg class="ic c-blue ico-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path class="hand" d="M12 12V7"/><path d="M12 12l3.500 2"/></svg>${o[3]} ${t('ago')}</em></div></div>`).join('');
 $('#orders').innerHTML='<div class="mq">'+_ordHTML+'</div>';
 requestAnimationFrame(()=>{const r=$('#orders'),q=r.firstChild;if(!q)return;const w=q.scrollWidth;if(!w)return;const k=Math.max(1,Math.ceil(r.clientWidth/w));q.innerHTML=_ordHTML.repeat(k*2);q.style.setProperty('--d',(w*k/38)+'s')});
-const card=(p,i)=>!p?`<div class="pc ph"><div class="im"></div><i style="width:70%"></i><i style="width:40%"></i></div>`:`<div class="pc">${p[4]?'<span class="hot">HOT</span>':''}${slot(p[2],"im",p[0])}<h3>${p[0].replace('@day',t('day'))}</h3><div class="pr"><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="8" cy="9" r="1.500" fill="currentColor"/></svg>${p[1].replace('@cur',t('cur'))}</div>${p[3]!=null?`<div class="stk ${(+p[3])>=30?'hi':(+p[3])>=10?'mid':'low'}"><span class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span>${p[3]} ${t('pcs')}</div>`:''}<button class="buy" data-msg="login">${t('buy')} ${cart}</button>${p[3]!=null?`<div class="st">${box}${t('sold')} ${p[5]!==undefined?p[5]:p[3]}</div>`:''}</div>`;
+const card=(p,i)=>!p?`<div class="pc ph"><div class="im"></div><i style="width:70%"></i><i style="width:40%"></i></div>`:`<div class="pc">${p[4]?'<span class="hot">HOT</span>':''}${slot(p[2],"im",p[0])}<h3>${p[0].replace('@day',t('day'))}</h3><div class="pr"><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="8" cy="9" r="1.500" fill="currentColor"/></svg>${p[1].replace('@cur',t('cur'))}</div>${p[3]!=null?`<div class="stk ${(+p[3])>=30?'hi':(+p[3])>=10?'mid':'low'}"><span class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span>${p[3]} ${t('pcs')}</div>`:''}<button class="buy" data-msg="login" data-pi="${PR.push(p)-1}">${t('buy')} ${cart}</button>${p[3]!=null?`<div class="st">${box}${t('sold')} ${p[5]!==undefined?p[5]:p[3]}</div>`:''}</div>`;
 {const _w=W.map(card).join('');$('#weekRail').innerHTML='<div class="wt">'+_w+'</div>';$('#weekRail').dataset.n=W.length;window._wkSrc=_w;requestAnimationFrame(()=>window._wkSetup&&window._wkSetup())}$('#featGrid').innerHTML=F.map(card).join('');
 $('#catList').innerHTML=C.map(c=>`<div class="cat${c[4]?' hv':''}" data-msg="soon"><div class="bn">${slot(c[1],"",c[0])}<button><svg class="ic  " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>${t('detail')}</button></div><h3>${c[0]}</h3>${c[2]!==undefined?`<div class="mt"><span><s><svg class="ic c-vio " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a2 2 0 012-2h4l2 3h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>0 ${t('cats')}</s><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>${c[2]} ${t('items')}</span><u><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.800 9.500c-.5-1.100-1.500-1.600-2.800-1.600-1.500 0-2.700.8-2.700 2 0 2.900 5.500 1.400 5.500 4.300 0 1.200-1.200 2-2.800 2-1.200 0-2.300-.6-2.800-1.700M12 6v1.900M12 16.100V18"/></svg>${c[3]}</u></div>`:''}</div>`).join('');
 $$('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));$$('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));fill($('#bannerSlot'),IMG.banner);fill($('#logoSlot'),IMG.logo);}
@@ -49,7 +54,7 @@ const dr=o=>{$('#dr').classList.toggle('on',o);$('#ov').classList.toggle('on',o)
 $('#mb').onclick=()=>dr(1);$('#cl').onclick=()=>dr(0);$('#ov').onclick=()=>dr(0);
 $('#sb').onclick=e=>{e.stopPropagation();$('#pop').classList.toggle('on')};
 document.addEventListener('click',e=>{if(!e.target.closest('#pop'))$('#pop').classList.remove('on');
-const m=e.target.closest('[data-msg]');if(m){e.preventDefault();if(m.dataset.msg=='admin'){dr(0);location.href='admin.html'}else if(m.dataset.msg=='logout'){dr(0);window.doLogout&&window.doLogout()}else if(m.dataset.msg=='login'){if(window._user){dr(0);tip('soon')}else window.openAuth('login',m)}else{dr(0);tip(m.dataset.msg)}}
+const m=e.target.closest('[data-msg]');if(m){e.preventDefault();if(m.dataset.msg=='admin'){dr(0);location.href='admin.html'}else if(m.dataset.msg=='logout'){dr(0);window.doLogout&&window.doLogout()}else if(m.dataset.msg=='login'){if(window._user){dr(0);if(m.dataset.pi!=null&&window.openBuy)window.openBuy(m);else tip('soon')}else window.openAuth('login',m)}else{dr(0);tip(m.dataset.msg)}}
 const g=e.target.closest('[data-go]');if(g){dr(0);const x=g.dataset.go;(x=='top'?window.scrollTo({top:0}):document.getElementById(x).scrollIntoView())}});
 $('#lg').onclick=e=>{const b=e.target.closest('button');if(!b)return;lang=b.dataset.l;document.documentElement.lang=lang;$$('#lg button').forEach(x=>x.classList.toggle('on',x==b));render();window._authUI&&window._authUI()};
 $('#th').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.documentElement.dataset.theme=b.dataset.t;$$('#th button').forEach(x=>x.classList.toggle('on',x==b))};
@@ -160,4 +165,153 @@ gr.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;A.style.transition=
 gr.addEventListener('touchmove',e=>{if(y0==null)return;A.style.transform='translate3d(0,'+Math.max(0,e.touches[0].clientY-y0)+'px,0)'},{passive:true});
 gr.addEventListener('touchend',e=>{A.style.transition='';const d=e.changedTouches[0].clientY-y0;y0=null;if(d>90)close();else A.style.transform=''});
 set('login');
+})();
+
+/* =====================================================================
+   การ์ดยืนยันการสั่งซื้อ  (กดปุ่ม "ซื้อ" ตอนล็อกอินแล้ว)
+   - แก้ข้อมูลแพ็กเกจที่ PKG / รายละเอียดสินค้าที่ DET (ใช้ชื่อสินค้าเป็นคีย์)
+   - สินค้าที่ไม่ได้ใส่ใน PKG จะได้การ์ดใบเดียวจากราคา/สต็อกของสินค้านั้น
+   - ต่อระบบสั่งซื้อจริงที่ window.placeOrder (ดูท้ายบล็อก)
+   ===================================================================== */
+(()=>{
+const ov=$('#cfo'),cf=$('#cf');if(!ov||!cf)return;
+const wrap=$('#cfW'),mv=$('#cfM'),cd=$('#cfC'),gl=$('#cfGl'),inn=$('#cfIn'),bg=$('#cfBg'),th=$('#cfTh'),dk=$('#dk'),
+ minus=$('#cfMinus'),plus=$('#cfPlus'),qEl=$('#cfQ'),tn=$('#cfTn'),okb=$('#cfOk');
+const kids=[...inn.querySelectorAll('.cf-st')];
+
+// ---- ข้อมูล: [ชื่อ(@day = มื้อ/วัน), ราคา, คงเหลือ, ขายแล้ว] ----
+const PKG={
+ 'SOPHIA IOS':[['1 @day',50000,12,38],['3 @day',120000,35,65],['7 @day',250000,6,94],['15 @day',450000,20,30],['30 @day',800000,60,15]]
+};
+const DET={
+ 'SOPHIA IOS':{
+  th:'ใช้งานได้นับจากเวลาเปิดใช้ครั้งแรก\nรองรับ iOS 15 ขึ้นไป\nส่งคีย์ให้ทางแชทหลังชำระเงินภายใน 5 นาที',
+  lo:'ໃຊ້ງານໄດ້ນັບຈາກເວລາເປີດໃຊ້ຄັ້ງທຳອິດ\nຮອງຮັບ iOS 15 ຂຶ້ນໄປ\nສົ່ງຄີໃຫ້ທາງແຊັດຫຼັງຊຳລະເງິນພາຍໃນ 5 ນາທີ'}
+};
+// สีการ์ดแพ็กเกจ (โทนแดงเดียวกับกระเบื้องหน้าแรกและปุ่มซื้อ)
+const PAL=['#f0647b,#d93653 55%,#b81d3d','#ff3b57,#e0001f 55%,#a80017','#d93653,#8f0f2b','#e0001f,#7a0014','#b81d3d,#4a0816'];
+
+const BXI='<svg class="cf-bx" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>';
+const CK='<span class="dk-k"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="10"/><path d="M5.8 10.4l2.9 2.9 5.5-5.9" pathLength="24"/></svg></span>';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf=n=>(+n).toLocaleString('en-US',{maximumFractionDigits:2});
+const dayName=n=>String(n).replace('@day',t('day'));
+
+const R=26,EO='cubic-bezier(.22,1,.36,1)',EC='cubic-bezier(.65,0,.35,1)';
+const reduce=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
+let st=0,src=null,qty=1,max=99,unit=0,anims=[],raf=0,shown=0,prod=null,pk=[],sel=null,curEl=null,lx=0,ly=0;
+const A=(el,kf,o)=>{const a=el.animate(kf,Object.assign({fill:'both'},o));anims.push(a);return a};
+const stop=c=>{anims.forEach(a=>{if(c){try{a.commitStyles()}catch(e){}}a.cancel()});anims=[]};
+const wipe=()=>[mv,cd,bg,gl,inn,...kids].forEach(e=>e.removeAttribute('style'));
+const rectOf=b=>{const r=b&&b.isConnected?b.getBoundingClientRect():null;
+ if(r&&r.width&&r.bottom>0&&r.top<innerHeight&&r.right>0&&r.left<innerWidth)return r;
+ return{left:innerWidth/2-60,top:innerHeight/2-20,width:120,height:40}};
+const geo=(B,C)=>{const ix=Math.max(0,(C.width-B.width)/2),iy=Math.max(0,(C.height-B.height)/2);
+ return{t:'translate3d('+(B.left+B.width/2-C.left-C.width/2)+'px,'+(B.top+B.height/2-C.top-C.height/2)+'px,0)',c:'inset('+iy+'px '+ix+'px '+iy+'px '+ix+'px round '+B.height/2+'px)'}};
+const FULL='inset(0px 0px 0px 0px round '+R+'px)';
+const setTot=(to,now)=>{cancelAnimationFrame(raf);if(now){shown=to;tn.textContent=nf(to);return}
+ const from=shown,s0=performance.now();
+ const f=t0=>{const p=Math.min(1,(t0-s0)/420);shown=from+(to-from)*(1-Math.pow(1-p,3));tn.textContent=nf(Math.round(shown));if(p<1)raf=requestAnimationFrame(f);else{shown=to;tn.textContent=nf(to)}};
+ raf=requestAnimationFrame(f)};
+const upd=(bump,anim)=>{qEl.textContent=qty;if(bump){qEl.classList.remove('bump');void qEl.offsetWidth;qEl.classList.add('bump')}minus.disabled=qty<=1;plus.disabled=qty>=max;setTot(unit*qty,!anim)};
+const fin=()=>{stop();wipe();cf.classList.remove('on','dn');document.body.classList.remove('cf-open');const s=src;src=null;st=0;if(s){s.classList.remove('cf-src');try{s.focus({preventScroll:true})}catch(e){}}};
+
+// ---- ข้อมูลแพ็กเกจของสินค้า ----
+const pkgsOf=p=>{
+ const l=PKG[p[0]];
+ if(l)return l.map(([n,pr,left,sold])=>({n,pr:+pr||0,left:+left||0,sold:+sold||0}));
+ const num=parseFloat(String(p[1]).replace(/[^\d.]/g,''))||0;
+ return[{n:p[0],pr:num,left:+p[3]||0,sold:+(p[5]!==undefined?p[5]:p[3])||0}];
+};
+const buildList=()=>{
+ dk.innerHTML=pk.map((x,i)=>{const tot=x.left+x.sold,pct=tot?Math.round(x.sold/tot*100):0;
+  return '<div class="dk-c" role="radio" aria-checked="false" tabindex="0" data-k="'+i+'" style="--g:'+PAL[i%PAL.length]+'">'
+   +'<div class="dk-r"><span class="dk-n">'+CK+esc(dayName(x.n))+'</span><span class="dk-p">'+nf(x.pr)+'<i>'+esc(t('cur'))+'</i></span></div>'
+   +'<div class="dk-r dk-m"><span>'+esc(t('left'))+' <b>'+nf(x.left)+'</b></span><span>'+esc(t('sold'))+' <b>'+nf(x.sold)+'</b></span></div>'
+   +'<div class="dk-bar"><i style="width:'+pct+'%"></i></div></div>'}).join('');
+ dk.classList.remove('has');curEl=null;
+};
+// เลือกแพ็กเกจ → อัปเดตราคา/จำนวนสูงสุด/ยอดรวม
+const apply=(i,anim)=>{
+ sel=pk[i];unit=sel.pr;max=sel.left>0?sel.left:99;const q0=qty;if(qty>max)qty=max;
+ $('#cfUn').textContent=nf(unit)+' '+t('cur');upd(q0!==qty,anim);
+};
+const ripple=(c,x,y)=>{
+ const r=c.getBoundingClientRect(),px=x-r.left,py=y-r.top,s=Math.hypot(Math.max(px,r.width-px),Math.max(py,r.height-py))*2;
+ const e=document.createElement('span');e.className='dk-rp';
+ e.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(px-s/2)+'px;top:'+(py-s/2)+'px';c.appendChild(e);
+ e.animate([{transform:'scale(0)',opacity:1},{transform:'scale(1)',opacity:0}],{duration:750,easing:EO}).onfinish=()=>e.remove();
+};
+const pick=(c,x,y,silent)=>{
+ if(c!==curEl){
+  if(curEl){curEl.classList.remove('on');curEl.setAttribute('aria-checked','false')}
+  c.classList.add('on');c.setAttribute('aria-checked','true');dk.classList.add('has');curEl=c;apply(+c.dataset.k,!silent);
+ }
+ if(silent||reduce())return;
+ ripple(c,x,y);c.classList.remove('go');void c.offsetWidth;c.classList.add('go');
+ c.animate([{transform:'scale(1)'},{transform:'scale(1.035)',offset:.4},{transform:'scale(1)'}],{duration:600,easing:EO});
+};
+const rel=()=>dk.querySelectorAll('.pr').forEach(c=>c.classList.remove('pr'));
+dk.addEventListener('pointerdown',e=>{const c=e.target.closest('.dk-c');if(!c)return;c.classList.add('pr');lx=e.clientX;ly=e.clientY});
+['pointerup','pointercancel','pointerleave'].forEach(n=>dk.addEventListener(n,rel));
+dk.addEventListener('click',e=>{const c=e.target.closest('.dk-c');if(!c)return;
+ if(e.detail){pick(c,lx,ly)}else{const r=c.getBoundingClientRect();pick(c,r.left+r.width/2,r.top+r.height/2)}});
+dk.addEventListener('keydown',e=>{const c=e.target.closest('.dk-c');if(!c||(e.key!='Enter'&&e.key!=' '))return;
+ e.preventDefault();const r=c.getBoundingClientRect();pick(c,r.left+r.width/2,r.top+r.height/2)});
+
+// ---- เปิด / ปิด ----
+window.openBuy=function(btn){
+ if(st)return;const p=window._PR&&window._PR[+btn.dataset.pi];if(!p)return;
+ prod=p;qty=1;pk=pkgsOf(p);buildList();
+ $('#cfNm').textContent=String(p[0]).replace('@day',t('day'));
+ $('#cfCur').textContent=t('cur');
+ const d=DET[p[0]],txt=d?(d[lang]||d.th||''):'';$('#cfDt').textContent=txt;$('#cfDs').hidden=!txt;cd.scrollTop=0;
+ th.innerHTML=p[2]?'<img src="'+esc(p[2])+'" alt="">':'<svg class="cf-pt" width="100%" height="100%" aria-hidden="true"><use href="#tbg" width="100%" height="100%"/></svg>'+BXI;
+ bg.innerHTML=btn.innerHTML;okb.classList.remove('ld');cf.classList.remove('dn');shown=0;
+ pick(dk.firstChild,0,0,true);          // เลือกใบแรกให้ก่อน (ไม่มีอนิเมชั่น)
+ st=1;src=btn;document.body.classList.add('cf-open');
+ const B=btn.getBoundingClientRect();cf.classList.add('on');ov.classList.add('on');
+ const C=wrap.getBoundingClientRect(),g=geo(B,C);btn.classList.add('cf-src');stop();
+ if(reduce()){A(mv,[{opacity:0},{opacity:1}],{duration:160})}
+ else{
+  const a=A(mv,[{transform:g.t},{transform:'translate3d(0,0,0)'}],{duration:760,easing:EO});
+  A(cd,[{clipPath:g.c},{clipPath:FULL}],{duration:760,easing:EO});
+  A(bg,[{opacity:1},{opacity:0}],{duration:380,delay:110,easing:'ease-out'});
+  A(gl,[{opacity:0},{opacity:1}],{duration:420,delay:320,easing:'ease-out'});
+  kids.forEach((k,i)=>A(k,[{opacity:0,transform:'translate3d(0,16px,0)'},{opacity:1,transform:'none'}],{duration:560,delay:250+i*65,easing:EO}));
+  a.onfinish=()=>{if(st==1){stop();wipe()}};
+ }
+ setTimeout(()=>{if(st==1)try{cd.focus({preventScroll:true})}catch(e){}},60);
+};
+function close(){
+ if(st!=1)return;st=2;stop(true);
+ const B=rectOf(src),C=wrap.getBoundingClientRect(),g=geo(B,C);ov.classList.remove('on');
+ if(reduce()){const a=A(mv,[{opacity:0}],{duration:140});a.onfinish=fin;return}
+ A(inn,[{opacity:0}],{duration:170,easing:'ease-out'});
+ A(gl,[{opacity:0}],{duration:200,easing:'ease-out'});
+ A(bg,[{opacity:1}],{duration:260,delay:190,easing:'ease-in'});
+ const a=A(mv,[{transform:g.t}],{duration:560,easing:EC});
+ A(cd,[{clipPath:g.c}],{duration:560,easing:EC});
+ a.onfinish=fin;
+}
+$('#cfNo').onclick=close;$('#cfFin').onclick=close;ov.onclick=close;
+ov.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+addEventListener('keydown',e=>{if(e.key=='Escape'&&st==1)close()});
+minus.onclick=()=>{if(qty>1){qty--;upd(true,true)}};
+plus.onclick=()=>{if(qty<max){qty++;upd(true,true)}};
+
+/* ยืนยันสั่งซื้อ
+   ตอนนี้ยังไม่มีระบบสั่งซื้อจริง → รอ 0.7 วินาทีแล้วโชว์หน้า "สำเร็จ" เฉยๆ (ยังไม่ได้สร้างออเดอร์)
+   เมื่อทำระบบจริง ให้กำหนด window.placeOrder = async o => {...} (throw ถ้าล้มเหลว)
+   o = {product, package, qty, unit, total} */
+okb.onclick=async()=>{
+ if(st!=1||okb.classList.contains('ld'))return;okb.classList.add('ld');
+ let ok=true;
+ try{
+  const o={product:prod[0],package:sel.n,qty:qty,unit:unit,total:unit*qty};
+  if(typeof window.placeOrder==='function')await window.placeOrder(o);else await new Promise(r=>setTimeout(r,700));
+ }catch(e){ok=false}
+ if(st==1){if(ok){cd.scrollTop=0;cf.classList.add('dn')}else tip('cfErr')}
+ okb.classList.remove('ld');
+};
 })();
