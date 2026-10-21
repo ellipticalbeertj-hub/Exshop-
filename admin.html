@@ -225,12 +225,20 @@ history:[{id:3,s:NOW-10.4*DAY,e:NOW-3.4*DAY,total:5120000,count:38,note:'ອາ�
 recent:[{u:'beer_01',a:150000,t:NOW-18*6e4},{u:'sky.ff',a:50000,t:NOW-47*6e4},{u:'nong99',a:300000,t:NOW-3.2*36e5},{u:'mx_ios',a:100000,t:NOW-7*36e5},{u:'ba_pro',a:200000,t:NOW-1.3*DAY}],
 products:[['SOPHIA IOS',0],['EXTERNAL IOS',2],['PROXY MEOWT',0],['FLUORITE FF',7],['CLOUD PUBG IOS',14],['ROV IOS',3],['BR MODS PC',9],['DOLLAR 8BP ( AD )',25],['RUIZEN PC 1 ມື້',1],['SILENT CHEATS',40]]};
 const API={
-home:async()=>{const d=JSON.parse(JSON.stringify(DB));if(PR&&PR.length)d.products=PR.map(p=>[p.name,stk(p)]);return d},
+home:async()=>{const d=JSON.parse(JSON.stringify(DB));d.products=PR.map(p=>[p.name,stk(p)]);return d},
 closePeriod:async note=>{const p=DB.period;DB.history.unshift({id:DB.nid++,s:p.started,e:Date.now(),total:p.total,count:p.count,note:(note||'').trim().slice(0,200)});DB.period={started:Date.now(),total:0,count:0}}};
 const q=s=>document.querySelector(s);
-// ===== ຈັດການສິນຄ້າ (DEMO) — ຂໍ້ມູນຢູ່ໃນໜ້າຈໍເທົ່ານັ້ນ =====
-var PR=[];let PV='add',PS={p:'',o:'',f:'',t:''},PSEL=new Set(),PX=null,PID=100,OID=1000;
-const nd=()=>({id:0,name:'',desc:'',img:'',opts:[{id:++OID,label:'1 ມື້',price:''}]});let D=nd();
+// ===== ຈັດການສິນຄ້າ (ຂໍ້ມູນຈິງ) — ເຊື່ອມ Supabase ຜ່ານ rpc admin_* (ກວດສິດແອດມິນຝັ່ງຖານຂໍ້ມູນ) =====
+var PR=[];let PV='add',PS={p:'',o:'',f:'',t:''},PSEL=new Set(),PX=null,OID=0,BUSY=false;
+const nd=()=>({id:0,name:'',desc:'',img:'',opts:[{id:--OID,label:'1 ມື້',price:''}]});let D=nd();
+// ເອີ້ນ rpc ແລ້ວໂຍນ error ຖ້າລົ້ມເຫຼວ
+const rpc=async(fn,args)=>{const {data,error}=await sb.rpc(fn,args||{});if(error)throw error;return data};
+const loadCat=async()=>{const d=await rpc('admin_catalog');PR=Array.isArray(d)?d.map(p=>({id:p.id,name:p.name,desc:p.desc||'',img:p.img||'',opts:(p.opts||[]).map(o=>({id:o.id,label:o.label,price:+o.price,codes:o.codes||[]}))})):[]};
+// ເຮັດວຽກກັບຖານຂໍ້ມູນ: ກັນກົດຊ້ຳ, ໂຫຼດຂໍ້ມູນໃໝ່ຫຼັງສຳເລັດ, ແຈ້ງຂໍ້ຜິດພາດ
+const run=async(fn,okMsg)=>{if(BUSY)return false;BUSY=true;document.body.style.cursor='progress';
+try{const m=await fn();await loadCat();pr();toast(typeof m==='string'&&m?m:okMsg);return true}
+catch(e){toast(e&&e.code==='42501'?'ບໍ່ມີສິດແອດມິນ':'ບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ');return false}
+finally{BUSY=false;document.body.style.cursor=''}};
 function stk(p){return p.opts.reduce((n,o)=>n+o.codes.length,0)}
 const cp=()=>PR.find(p=>p.id==PS.p)||PR[0],co=p=>p&&(p.opts.find(o=>o.id==PS.o)||p.opts[0]);
 const uq=v=>[...new Set(v.split(/\r?\n/).map(s=>s.trim()).filter(Boolean))];
@@ -245,13 +253,13 @@ add:()=>`<div class="cd"><div class="ch"><b>${D.id?'ແກ້ໄຂສິນຄ�
 <label class="fi">ຊື່ສິນຄ້າ<input id="pN" maxlength="60" value="${esc(D.name)}"></label>
 <label class="fi">ລາຍລະອຽດສິນຄ້າ<textarea id="pD" rows="3" maxlength="500">${esc(D.desc)}</textarea></label>
 <div class="ch" style="margin-top:14px"><b>ຕົວເລືອກ / ໄລຍະເວລາ + ລາຄາ</b></div>
-${D.opts.map((o,i)=>`<div class="or"><input data-o="${i}" data-k="label" placeholder="ເຊັ່ນ 1 ມື້" value="${esc(o.label)}"><input data-o="${i}" data-k="price" inputmode="numeric" placeholder="ລາຄາ" value="${esc(o.price)}"><button class="x" data-ox="${i}">✕</button></div>`).join('')}
+${D.opts.map((o,i)=>`<div class="or"><input data-o="${i}" data-k="label" maxlength="40" placeholder="ເຊັ່ນ 1 ມື້" value="${esc(o.label)}"><input data-o="${i}" data-k="price" inputmode="numeric" placeholder="ລາຄາ" value="${esc(o.price)}"><button class="x" data-ox="${i}">✕</button></div>`).join('')}
 <div class="qk">${['1 ມື້','3 ມື້','7 ມື້','30 ມື້'].map(t=>`<button data-q="${t}">+ ${t}</button>`).join('')}<button data-q="">+ ກຳນົດເອງ</button></div>
 ${D.id?'<div class="sub">ລຶບຕົວເລືອກ = ລະຫັດໃນຕົວເລືອກນັ້ນຫາຍໄປນຳ</div>':''}
 <button class="hb" id="pSave">${D.id?'ບັນທຶກການແກ້ໄຂ':'ເພີ່ມສິນຄ້າ'}</button></div>`,
 mng:()=>PR.length?PR.map(p=>`<div class="cd pc"><div class="th">${p.img?`<img src="${p.img}">`:esc(p.name[0]||'?')}</div><div class="pi"><b>${esc(p.name)}</b><small>${p.opts.map(o=>esc(o.label)+' '+fm(o.price)).join(' · ')}</small><small>ສະຕັອກ ${stk(p)} ຊິ້ນ</small></div><div class="pb"><button data-ed="${p.id}">ແກ້ໄຂ</button><button class="dl" data-dl="${p.id}">ລຶບ</button></div></div>`).join(''):NO,
-cin:()=>{if(!PR.length)return NO;const o=co(cp());return `<div class="cd"><div class="ch"><b>ເພີ່ມລະຫັດເຂົ້າສິນຄ້າ</b><span>ສະຕັອກ ${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<textarea id="cTx" rows="7" placeholder="ວາງລະຫັດ — 1 ບັນທັດ = 1 ລະຫັດ">${esc(PS.t)}</textarea><div class="sub" id="cCt">${uq(PS.t).length} ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)</div><button class="hb" id="cOk">ເພີ່ມເຂົ້າສະຕັອກ</button></div>`},
-cout:()=>{if(!PR.length)return NO;const o=co(cp());return `<div class="cd"><div class="ch"><b>ເອົາລະຫັດອອກຈາກສິນຄ້າ</b><span>${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<input id="rF" placeholder="ຄົ້ນຫາລະຫັດ" value="${esc(PS.f)}" style="margin-top:8px">
+cin:()=>{if(!PR.length)return NO;const o=co(cp());if(!o)return NO;return `<div class="cd"><div class="ch"><b>ເພີ່ມລະຫັດເຂົ້າສິນຄ້າ</b><span>ສະຕັອກ ${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<textarea id="cTx" rows="7" placeholder="ວາງລະຫັດ — 1 ບັນທັດ = 1 ລະຫັດ">${esc(PS.t)}</textarea><div class="sub" id="cCt">${uq(PS.t).length} ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)</div><button class="hb" id="cOk">ເພີ່ມເຂົ້າສະຕັອກ</button></div>`},
+cout:()=>{if(!PR.length)return NO;const o=co(cp());if(!o)return NO;return `<div class="cd"><div class="ch"><b>ເອົາລະຫັດອອກຈາກສິນຄ້າ</b><span>${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<input id="rF" placeholder="ຄົ້ນຫາລະຫັດ" value="${esc(PS.f)}" style="margin-top:8px">
 <div class="rb"><button data-r="all">ເລືອກທັງໝົດທີ່ເຫັນ</button><button data-r="none">ຍົກເລີກເລືອກ</button><input id="rN" type="number" min="1" value="1"><button data-r="n">ເລືອກ N ອັນທຳອິດ</button></div>
 <div class="cl">${clh()}</div><div class="sub" id="rS">ເລືອກແລ້ວ ${PSEL.size} ອັນ</div>
 <button class="hb gh" data-r="cp">ຄັດລອກທີ່ເລືອກ</button><button class="hb" data-r="rm">ເອົາທີ່ເລືອກອອກ</button><button class="hb gh" data-r="clr">ລ້າງລະຫັດທັງໝົດຂອງຕົວເລືອກນີ້</button></div>`}};
@@ -269,24 +277,26 @@ if(i!==SX){const f=SX<0;if(f)ind.style.transition='none';ind.style.transform='tr
 if(f){void ind.offsetWidth;ind.style.transition=''}else{ind.classList.remove('go');void ind.offsetWidth;ind.classList.add('go')}SX=i}
 q('#pv').innerHTML=VW[PV]()}
 const ask=(h,t,o)=>{PX=o;sheet(`<h3>${h}</h3><p>${t}</p><button class="hb" id="pYes">ຢືນຢັນ</button><button class="hb gh" id="pNo">ຍົກເລີກ</button>`)};
-function save(){const nm=D.name.trim(),os=D.opts;if(!nm)return toast('ໃສ່ຊື່ສິນຄ້າກ່ອນ');if(!os.length||os.some(o=>!o.label.trim()||!(+o.price>0)))return toast('ຕົວເລືອກຕ້ອງມີຊື່ ແລະ ລາຄາ');
-const old=D.id&&PR.find(p=>p.id==D.id),opts=os.map(o=>({id:o.id,label:o.label.trim(),price:+o.price,codes:(old&&old.opts.find(x=>x.id==o.id)||{codes:[]}).codes})),v={name:nm,desc:D.desc.trim(),img:D.img,opts};
-if(old)Object.assign(old,v);else PR.push({id:++PID,...v});D=nd();PV='mng';pr();toast(old?'ບັນທຶກການແກ້ໄຂແລ້ວ':'ເພີ່ມສິນຄ້າແລ້ວ')}
-function addCodes(){const o=co(cp()),L=uq(PS.t),ex=new Set(o.codes),N=L.filter(c=>!ex.has(c));if(!L.length)return toast('ວາງລະຫັດກ່ອນ');o.codes.push(...N);PS.t='';pr();toast('ເພີ່ມ '+N.length+' ລະຫັດ'+(L.length>N.length?' · ຂ້າມຊ້ຳ '+(L.length-N.length):''))}
+async function save(){const nm=D.name.trim(),os=D.opts;if(!nm)return toast('ໃສ່ຊື່ສິນຄ້າກ່ອນ');if(!os.length||os.some(o=>!o.label.trim()||!(+o.price>0)))return toast('ຕົວເລືອກຕ້ອງມີຊື່ ແລະ ລາຄາ');
+const edit=!!D.id,payload={id:D.id>0?D.id:null,name:nm,desc:D.desc.trim(),img:D.img||'',opts:os.map(o=>({id:o.id>0?o.id:null,label:o.label.trim(),price:Math.round(+o.price)}))};
+const ok=await run(()=>rpc('admin_save_product',{p:payload}),edit?'ບັນທຶກການແກ້ໄຂແລ້ວ':'ເພີ່ມສິນຄ້າແລ້ວ');
+if(ok){D=nd();PV='mng';pr()}}
+async function addCodes(){const o=co(cp()),L=uq(PS.t);if(!L.length)return toast('ວາງລະຫັດກ່ອນ');
+const ok=await run(async()=>{let n=0;for(let i=0;i<L.length;i+=1000)n+=+(await rpc('admin_add_codes',{oid:o.id,codes:L.slice(i,i+1000)}))||0;PS.t='';return 'ເພີ່ມ '+n+' ລະຫັດ'+(L.length>n?' · ຂ້າມຊ້ຳ '+(L.length-n):'')})}
 function rsel(k){const o=co(cp()),f=PS.f.toLowerCase(),L=o.codes.filter(c=>c.toLowerCase().includes(f));
 if(k==='clr')return ask('ລ້າງລະຫັດທັງໝົດບໍ?',o.codes.length+' ລະຫັດຂອງ "'+esc(o.label)+'" ຈະຖືກລຶບ',{k:'clr'});
 if(k==='all'||k==='none'||k==='n'){if(k!=='all')PSEL.clear();(k==='none'?[]:k==='n'?L.slice(0,Math.max(1,+q('#rN').value||1)):L).forEach(c=>PSEL.add(c));document.querySelectorAll('[data-c]').forEach(c=>c.checked=PSEL.has(c.dataset.c));return updS()}
 if(!PSEL.size)return toast('ຍັງບໍ່ໄດ້ເລືອກລະຫັດ');
 if(k==='cp'){const t=[...PSEL].join('\n');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('ຄັດລອກ '+PSEL.size+' ລະຫັດແລ້ວ'),()=>toast('ຄັດລອກບໍ່ໄດ້ໃນໂໝດນີ້'));return}
 ask('ເອົາລະຫັດອອກບໍ?',PSEL.size+' ລະຫັດ ຈະຖືກເອົາອອກຈາກສະຕັອກ',{k:'rm'})}
-function initProd(){
-PR=DB.products.map((x,i)=>{const n=x[1],a=Math.ceil(n/2),cd=(k,m)=>Array.from({length:m},(_,j)=>'KEY-'+(i+1)+k+'-'+p2(j+1)+'-'+(1000+i*37+j*91));return{id:i+1,name:x[0],desc:'',img:'',opts:[{id:i*2+1,label:'1 ມື້',price:20000+i*5000,codes:cd('A',a)},{id:i*2+2,label:'7 ມື້',price:100000+i*10000,codes:cd('B',n-a)}]}});
+async function initProd(){
+try{await loadCat()}catch(e){PR=[];toast('ໂຫຼດສິນຄ້າບໍ່ສຳເລັດ')}
 pr();const pt=q('#pg-products');
 q('.tab[data-t=home]').addEventListener('click',()=>loadHome());
 pt.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset,id=b.id;
 if(d.v){PV=d.v;PSEL.clear();return pr()}
 if(id==='pCan'){D=nd();return pr()}
-if(d.q!==undefined){D.opts.push({id:++OID,label:d.q,price:''});return pr()}
+if(d.q!==undefined){D.opts.push({id:--OID,label:d.q,price:''});return pr()}
 if(d.ox!==undefined){D.opts.splice(+d.ox,1);if(!D.opts.length)D.opts.push(nd().opts[0]);return pr()}
 if(id==='pSave')return save();
 if(d.ed){const p=PR.find(x=>x.id==d.ed);D={id:p.id,name:p.name,desc:p.desc,img:p.img,opts:p.opts.map(o=>({id:o.id,label:o.label,price:String(o.price)}))};PV='add';pr();return scrollTo(0,0)}
@@ -301,10 +311,10 @@ pt.addEventListener('change',e=>{const t=e.target;
 if(t.dataset.s){if(t.dataset.s==='p'){PS.p=t.value;PS.o=''}else PS.o=t.value;PSEL.clear();PS.f='';return pr()}
 if(t.dataset.c!==undefined){t.checked?PSEL.add(t.dataset.c):PSEL.delete(t.dataset.c);return updS()}
 if(t.id==='pFile'&&t.files[0]){const f=new FileReader();f.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);D.img=c.toDataURL('image/jpeg',.8);pr()};im.src=f.result};f.readAsDataURL(t.files[0])}});
-q('#sh').addEventListener('click',e=>{if(e.target.closest('#pNo'))closeSheet();if(e.target.closest('#pYes')){closeSheet();const x=PX,o=co(cp());
-if(x.k==='dp'){PR=PR.filter(p=>p.id!=x.id);toast('ລຶບສິນຄ້າແລ້ວ')}
-else if(x.k==='rm'){o.codes=o.codes.filter(c=>!PSEL.has(c));toast('ເອົາອອກ '+PSEL.size+' ລະຫັດແລ້ວ');PSEL.clear()}
-else{o.codes=[];PSEL.clear();toast('ລ້າງລະຫັດແລ້ວ')}pr()}})}
+q('#sh').addEventListener('click',async e=>{if(e.target.closest('#pNo'))closeSheet();if(e.target.closest('#pYes')){closeSheet();const x=PX,o=co(cp());if(!x)return;
+if(x.k==='dp')await run(()=>rpc('admin_delete_product',{pid:x.id}),'ລຶບສິນຄ້າແລ້ວ');
+else if(x.k==='rm'){const L=[...PSEL];if(!o||!L.length)return;if(await run(async()=>{const n=await rpc('admin_remove_codes',{oid:o.id,codes:L});return 'ເອົາອອກ '+n+' ລະຫັດແລ້ວ'}))PSEL.clear()}
+else if(o){if(await run(()=>rpc('admin_clear_codes',{oid:o.id}),'ລ້າງລະຫັດແລ້ວ'))PSEL.clear()}}})}
 
 // ===== ຈັດການບັນຊີ (DEMO) — ຂໍ້ມູນຈຳລອງ =====
 // ເວລາເຊື່ອມຈິງ: ID 4 ຫຼັກ ຕ້ອງສ້າງຝັ່ງ DB ຕອນສະໝັກ (ຄໍລຳ unique) ແລະ ການປັບຍອດຕ້ອງຜ່ານ RPC ທີ່ບັນທຶກ log
@@ -457,7 +467,7 @@ if(!data||!data.session){home();return}
 const {data:ok,error}=await sb.rpc('is_admin');
 if(error||ok!==true){home();return}
 const u=data.session.user,nm=(u.user_metadata&&u.user_metadata.username)||'';
-const w=document.getElementById('who');w.hidden=false;w.textContent='ADMIN · '+nm.toUpperCase();document.body.classList.add('ok');initTabs();initProd();initHome();initAcc();initSet();
+const w=document.getElementById('who');w.hidden=false;w.textContent='ADMIN · '+nm.toUpperCase();document.body.classList.add('ok');initTabs();await initProd();initHome();initAcc();initSet();
 }catch(e){home()}
 })();
 </script></body></html>

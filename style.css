@@ -480,3 +480,8 @@ body.cf-open .toast{z-index:90}
 @keyframes cfbump{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
 @keyframes cfring{from{opacity:.9;transform:scale(1)}to{opacity:0;transform:scale(1.7)}}
 @media (prefers-reduced-motion:reduce){.cf-ok::after,.dk-c.go::after{animation:none}}
+
+/* real catalog states */
+.emp{grid-column:1/-1;text-align:center;padding:42px 12px;color:var(--tx3);font-size:16px}
+.dk-c.off{opacity:.38;pointer-events:none;filter:grayscale(.6)}
+.pc .buy.out{background:var(--line)!important;color:var(--tx3)!important;box-shadow:none!important;cursor:not-allowed}.pc .buy.out::after{display:none}
