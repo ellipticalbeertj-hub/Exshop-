@@ -184,7 +184,7 @@ body.ok .tw{display:block;animation:tup .7s cubic-bezier(.22,.8,.24,1) backwards
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 // ADMIN-PROTECTED (see AGENTS.md). Same session storage rules as main.js ("remember account").
-const SB_URL='https://encbtgwbudldnpyipclq.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuY2J0Z3didWRsZG5weWlwY2xxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NzUxMjksImV4cCI6MjEwODE1MTEyOX0._s5_f_I9NrrWfWTOJSO2X0NtvYSHDscVstcaipJ2WIc',RK='dk_rem';
+const SB_URL='https://dmnppzrjkskrkusbdzce.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtbnBwenJqa3Nrcmt1c2JkemNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2MDQ2MjYsImV4cCI6MjEwODE4MDYyNn0.ClK3xGDdESVo9YPO4PHvdQZY0JwO1AOWS1QiwmX0k5Y',RK='dk_rem';
 const LS=()=>{try{return localStorage}catch(e){return null}},SS=()=>{try{return sessionStorage}catch(e){return null}};
 const store={
 getItem:k=>{const a=LS(),b=SS();try{return (a&&a.getItem(k))||(b&&b.getItem(k))||null}catch(e){return null}},

@@ -117,7 +117,7 @@ addEventListener('keydown',e=>{if(e.key=='Escape')close();if(e.key=='Enter'&&A.c
 A.addEventListener('input',clr);
 A.querySelectorAll('.eye2').forEach(b=>b.onclick=()=>{const i=b.parentElement.querySelector('input');const show=i.type=='password';i.type=show?'text':'password';b.dataset.i=show?'aHide':'aShow';b.textContent=t(b.dataset.i)});
 // ===== ระบบสมาชิก (Supabase: ชื่อผู้ใช้ + รหัสผ่าน ไม่ใช้อีเมล) =====
-const SB_URL='https://encbtgwbudldnpyipclq.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVuY2J0Z3didWRsZG5weWlwY2xxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1NzUxMjksImV4cCI6MjEwODE1MTEyOX0._s5_f_I9NrrWfWTOJSO2X0NtvYSHDscVstcaipJ2WIc',DOM='@dekmashshop.app',RK='dk_rem',UK='dk_user';
+const SB_URL='https://dmnppzrjkskrkusbdzce.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtbnBwenJqa3Nrcmt1c2JkemNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2MDQ2MjYsImV4cCI6MjEwODE4MDYyNn0.ClK3xGDdESVo9YPO4PHvdQZY0JwO1AOWS1QiwmX0k5Y',DOM='@dekmashshop.app',RK='dk_rem',UK='dk_user';
 const LS=()=>{try{return localStorage}catch(e){return null}},SS=()=>{try{return sessionStorage}catch(e){return null}};
 // จำบัญชี = เก็บเซสชันใน localStorage (อยู่ยาว) / ไม่จำ = sessionStorage (หายเมื่อปิดแท็บ)
 const store={
