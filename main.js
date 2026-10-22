@@ -634,3 +634,39 @@ document.addEventListener('click',e=>{
  addEventListener('focus',()=>{window._user&&refresh()});
  if(window._user)window._authUI();
 })();
+
+/* ---- ป๊อปอัปโปรโมชันตอนเข้าเว็บ: รูป + ปุ่ม "ปิดทิ้ง" + สวิตช์ "หยุด 1 ชม." ----
+   ข้อมูลมาจากห้องแอดมิน > ตั้งค่า (site_settings: promo = รูป, promoOn = สวิตช์เปิด/ปิด) ผ่าน rpc get_site_settings */
+(()=>{
+ Object.assign(L.th,{pmClose:'ปิดทิ้ง',pmSnz:'หยุด 1 ชม.',pmDone:'จะไม่แสดงอีก 1 ชั่วโมง',pmAlt:'โปรโมชัน'});
+ Object.assign(L.lo,{pmClose:'ປິດຖິ້ມ',pmSnz:'ຢຸດ 1 ຊມ.',pmDone:'ຈະບໍ່ສະແດງອີກ 1 ຊົ່ວໂມງ',pmAlt:'ໂປຣໂມຊັນ'});
+ const KEY='dk_promo_snooze',HOUR=36e5;
+ const getS=()=>{try{return +localStorage.getItem(KEY)||0}catch(e){return 0}};
+ const setS=v=>{try{localStorage.setItem(KEY,String(v))}catch(e){}};
+ const sbx=window._sb;if(!sbx||getS()>Date.now())return;
+ const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+ let el=null,prevOv='',tmr=0;
+ const toast=x=>{const e=document.getElementById('toast');if(!e)return;e.innerHTML='<span></span>';e.lastChild.textContent=x;e.classList.add('on');clearTimeout(window._at);window._at=setTimeout(()=>e.classList.remove('on'),2600)};
+ const onKey=e=>{if(!el)return;const a=el.querySelector('.pmo-x'),b=el.querySelector('.pmo-s');
+  if(e.key==='Escape'){e.preventDefault();hide()}
+  else if(e.key==='Tab'){if(e.shiftKey&&document.activeElement===a){e.preventDefault();b.focus()}else if(!e.shiftKey&&document.activeElement===b){e.preventDefault();a.focus()}}};
+ const hide=cb=>{if(!el)return;clearTimeout(tmr);const n=el;el.classList.add('out');document.removeEventListener('keydown',onKey);
+  setTimeout(()=>{n.remove();if(el===n)el=null;document.body.style.overflow=prevOv;cb&&cb()},RM?0:230)};
+ const show=u=>{if(el||getS()>Date.now())return;
+  el=document.createElement('div');el.className='pmo';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');
+  el.innerHTML='<div class="pmo-c"><img class="pmo-img" alt=""><div class="pmo-bt"><button type="button" class="pmo-x" data-i="pmClose"></button><button type="button" class="pmo-s" role="switch" aria-checked="false"><span data-i="pmSnz"></span><span class="pmo-sw"><i></i></span></button></div></div>';
+  const im=el.querySelector('img');im.alt=t('pmAlt');im.src=u;
+  el.querySelectorAll('[data-i]').forEach(n=>n.textContent=t(n.dataset.i));
+  el.addEventListener('click',e=>{if(e.target===el)hide()});
+  el.querySelector('.pmo-x').onclick=()=>hide();
+  const sw=el.querySelector('.pmo-s');
+  sw.onclick=()=>{if(sw.getAttribute('aria-checked')==='true')return;sw.setAttribute('aria-checked','true');setS(Date.now()+HOUR);
+   tmr=setTimeout(()=>hide(()=>toast(t('pmDone'))),RM?150:700)};
+  document.body.appendChild(el);prevOv=document.body.style.overflow;document.body.style.overflow='hidden';
+  document.addEventListener('keydown',onKey);
+  requestAnimationFrame(()=>{el&&el.classList.add('on');sw.focus({preventScroll:true})})};
+ sbx.rpc('get_site_settings').then(({data,error})=>{
+  if(error||!data||data.promoOn===false)return;
+  const u=data.promo;if(typeof u!=='string'||!/^https:\/\/\S+$/i.test(u))return;
+  const pre=new Image();pre.onload=()=>setTimeout(()=>show(u),500);pre.src=u}).catch(()=>{});
+})();

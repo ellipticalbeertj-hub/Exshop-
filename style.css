@@ -671,3 +671,29 @@ input,textarea,select{font-size:16px!important}
 
 /* QR รับโอนที่แอดมินอัปโหลด: ไม่ยืดรูป */
 .tp-qrf .q img{object-fit:contain}
+
+/* ===== ป๊อปอัปโปรโมชันตอนเข้าเว็บ ===== */
+.pmo{position:fixed;inset:0;z-index:95;display:none;align-items:center;justify-content:center;padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom));background:rgba(0,0,0,.66);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.pmo.on{display:flex;animation:pmoFade .35s ease-out both}
+.pmo.out{display:flex;animation:pmoFadeOut .22s ease-in both}
+.pmo-c{width:min(100%,380px);max-height:100%;display:flex;flex-direction:column;gap:12px;animation:pmoPop .5s cubic-bezier(.2,1.15,.4,1) both}
+.pmo.out .pmo-c{animation:pmoPopOut .22s ease-in both}
+.pmo-img{display:block;width:100%;max-height:68vh;object-fit:contain;border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:0 24px 60px -18px rgba(0,0,0,.6)}
+.pmo-bt{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pmo-bt button{height:34px;padding:0 15px;border-radius:99px;font:500 13px Prompt,'Noto Sans Lao Looped','Noto Sans Lao','Noto Sans Thai',sans-serif;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--tx);transition:transform .15s,border-color .35s}
+.pmo-bt button:active{transform:scale(.97)}
+.pmo-bt button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.pmo-bt .pmo-s{display:inline-flex;align-items:center;gap:9px;padding:0 5px 0 13px}
+.pmo-sw{position:relative;flex:none;width:36px;height:22px;border-radius:99px;background:rgba(128,128,128,.45);transition:background .35s}
+.pmo-sw i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:99px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.45);transition:left .45s cubic-bezier(.3,1.6,.5,1),width .18s}
+.pmo-s:active .pmo-sw i{width:21px}
+.pmo-s[aria-checked=true]{border-color:var(--pur)}
+.pmo-s[aria-checked=true] .pmo-sw{background:var(--pur);animation:pmoGlow .7s ease-out}
+.pmo-s[aria-checked=true] .pmo-sw i{left:17px}
+.pmo-s[aria-checked=true]:active .pmo-sw i{left:12px}
+@keyframes pmoFade{from{opacity:0}to{opacity:1}}
+@keyframes pmoFadeOut{to{opacity:0}}
+@keyframes pmoPop{from{opacity:0;transform:translateY(24px) scale(.92)}to{opacity:1;transform:none}}
+@keyframes pmoPopOut{to{opacity:0;transform:scale(.94)}}
+@keyframes pmoGlow{0%{box-shadow:0 0 0 0 rgba(255,0,26,.6)}100%{box-shadow:0 0 0 11px rgba(255,0,26,0)}}
+@media (prefers-reduced-motion:reduce){.pmo.on,.pmo.out,.pmo-c,.pmo.out .pmo-c,.pmo-s[aria-checked=true] .pmo-sw{animation:none!important}.pmo-sw,.pmo-sw i{transition:none}}

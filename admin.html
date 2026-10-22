@@ -172,6 +172,17 @@ body.ok .tw{display:block;animation:tup .7s cubic-bezier(.22,.8,.24,1) backwards
 .sl:first-child{margin-top:0}
 .lr{display:grid;grid-template-columns:104px 1fr;gap:8px;margin-bottom:8px}
 .tg{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--tx);font-size:14px;cursor:pointer}
+#pg-settings .tg input[type=checkbox]{-webkit-appearance:none;appearance:none;order:3;margin:0 0 0 auto;position:relative;width:50px;height:30px;border-radius:99px;background:#2d2d2d;border:1px solid var(--line);transition:background .35s,border-color .35s;cursor:pointer;flex:none}
+#pg-settings .tg input[type=checkbox]::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.45);transition:left .45s cubic-bezier(.3,1.6,.5,1),width .18s}
+#pg-settings .tg input[type=checkbox]:active::after{width:28px}
+#pg-settings .tg input[type=checkbox]:checked{background:#ff001a;border-color:#ff001a;animation:tgGlow .7s ease-out}
+#pg-settings .tg input[type=checkbox]:checked::after{left:23px}
+#pg-settings .tg input[type=checkbox]:checked:active::after{left:17px}
+#pg-settings .tg input[type=checkbox]:disabled{opacity:.6}
+#pg-settings .tg input[type=checkbox]:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.tg span{order:1}.tgs{order:2;font-weight:600;color:#9a9a9a}.tgs.on{color:#22c55e}
+@keyframes tgGlow{0%{box-shadow:0 0 0 0 rgba(255,0,26,.55)}100%{box-shadow:0 0 0 11px rgba(255,0,26,0)}}
+@media (prefers-reduced-motion:reduce){#pg-settings .tg input[type=checkbox],#pg-settings .tg input[type=checkbox]::after{transition:none;animation:none}}
 html{-webkit-text-size-adjust:100%}input,textarea,select{font-size:16px!important}</style></head><body>
 <div class="bar">
 <button id="back" aria-label="back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
@@ -403,7 +414,7 @@ function paintSet(){q('#pg-settings').innerHTML=`
 <div class="cd"><div class="ch"><b>ໝວດໝູ່ສິນຄ້າ</b><span>4 ໝວດ</span></div><div class="cg">${SET.cats.map((c,i)=>`<div class="sbx">${ibox('c'+i,'sq','ຮູບໝວດ '+(i+1))}<input data-k="c${i}" maxlength="20" value="${esc(c.name)}" placeholder="ຊື່ໝວດໝູ່ ${i+1}"></div>`).join('')}</div></div>
 <div class="cd"><div class="ch"><b>ຊ່ອງທາງຕິດຕໍ່ລູກຄ້າ</b><span>4 ຊ່ອງ</span></div>${SET.links.map((x,i)=>`<div class="lr"><input data-k="l${i}l" maxlength="20" value="${esc(x.l)}" placeholder="ຊື່ຊ່ອງທາງ"><input data-k="l${i}u" inputmode="url" value="${esc(x.u)}" placeholder="https://…"></div>`).join('')}<div class="sub">ເວັ້ນວ່າງໄວ້ = ບໍ່ສະແດງຊ່ອງນັ້ນ</div></div>
 <div class="cd"><div class="ch"><b>QR ຮັບໂອນເງິນ</b></div><div style="max-width:220px">${ibox('qr','sq ct','ໃສ່ QR')}</div></div>
-<div class="cd"><div class="ch"><b>ຮູບໂປຣໂມຊັນຕອນເຂົ້າເວັບ</b></div>${ibox('promo','wd','ຮູບໂປຣໂມຊັນ')}<label class="tg"><input type="checkbox" data-k="promoOn" ${SET.promoOn?'checked':''}>ສະແດງປ໊ອບອັບນີ້ຕອນລູກຄ້າເຂົ້າເວັບ</label></div>
+<div class="cd"><div class="ch"><b>ຮູບໂປຣໂມຊັນຕອນເຂົ້າເວັບ</b></div>${ibox('promo','wd','ຮູບໂປຣໂມຊັນ')}<label class="tg"><input type="checkbox" data-k="promoOn" ${SET.promoOn?'checked':''}><span>ສະແດງປ໊ອບອັບນີ້ຕອນລູກຄ້າເຂົ້າເວັບ</span><b class="tgs ${SET.promoOn?'on':''}">${SET.promoOn?'ເປີດ':'ປິດ'}</b></label><div class="sub">ສະວິດນີ້ບັນທຶກທັນທີ · ປິດ = ລູກຄ້າຈະບໍ່ເຫັນປ໊ອບອັບ</div></div>
 <div class="cd"><div class="ch"><b>ລິ້ງແຈ້ງເຕືອນແອດມິນ</b></div>
 <span class="sl">ເມື່ອມີຄົນເຕີມເງິນ</span><input data-k="nTop" inputmode="url" value="${esc(SET.nTop)}" placeholder="https://…">
 <span class="sl">ເມື່ອມີຄົນສະໝັກໃໝ່</span><input data-k="nReg" inputmode="url" value="${esc(SET.nReg)}" placeholder="https://…">
@@ -421,16 +432,24 @@ const d2b=u=>{const i=u.indexOf(','),m=/^data:([^;,]+)/.exec(u.slice(0,i)),s=ato
 const upImg=async(k,v)=>{if(!v||v.slice(0,5)!=='data:')return v||'';const b=d2b(v),ext=b.type==='image/png'?'png':'jpg',path=k+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
 const {error}=await sb.storage.from('site-assets').upload(path,b,{contentType:b.type,cacheControl:'31536000'});if(error)throw error;
 return sb.storage.from('site-assets').getPublicUrl(path).data.publicUrl};
-const saveSet=async()=>{if(!SL)return toast('ການຕັ້ງຄ່າຍັງໂຫຼດບໍ່ສຳເລັດ — ບໍ່ບັນທຶກເພື່ອກັນຂໍ້ມູນເກົ່າຖືກທັບ');if(SV)return;SV=true;
+const saveSet=async np=>{if(!SL)return toast('ການຕັ້ງຄ່າຍັງໂຫຼດບໍ່ສຳເລັດ — ບໍ່ບັນທຶກເພື່ອກັນຂໍ້ມູນເກົ່າຖືກທັບ');if(SV)return;SV=true;
 const btn=q('#sSave');btn&&(btn.disabled=true);
 try{const out={name:SET.name.trim(),promoOn:!!SET.promoOn,nTop:SET.nTop.trim(),nReg:SET.nReg.trim()};
 for(const k of ['logo','front','qr','promo']){SET[k]=await upImg(k,SET[k]);out[k]=SET[k]}
 out.cats=[];for(let i=0;i<4;i++){SET.cats[i].img=await upImg('cat'+i,SET.cats[i].img);out.cats.push({img:SET.cats[i].img,name:SET.cats[i].name.trim()})}
 out.links=SET.links.map(x=>({l:x.l.trim(),u:x.u.trim()}));
 await rpc('admin_save_settings',{p:out});
-const y=scrollY;paintSet();scrollTo(0,y);toast('ບັນທຶກການຕັ້ງຄ່າແລ້ວ')}
-catch(er){toast(er&&er.code==='42501'?'ບໍ່ມີສິດແອດມິນ':'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ')}
+if(!np){const y=scrollY;paintSet();scrollTo(0,y);toast('ບັນທຶກການຕັ້ງຄ່າແລ້ວ')}return true}
+catch(er){toast(er&&er.code==='42501'?'ບໍ່ມີສິດແອດມິນ':'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ');return false}
 finally{SV=false;const b2=q('#sSave');b2&&(b2.disabled=false)}};
+const togglePromo=async t=>{const on=t.checked,prev=!on;SET.promoOn=on;
+const paintT=v=>{const l=q('#pg-settings .tgs');if(l){l.textContent=v?'ເປີດ':'ປິດ';l.classList.toggle('on',v)}};paintT(on);
+const revert=()=>{SET.promoOn=prev;t.checked=prev;paintT(prev)};
+const U=/^https?:\/\/\S+$/i,bad=[...SET.links.map(x=>x.u),SET.nTop,SET.nReg].map(v=>v.trim()).find(v=>v&&!U.test(v));
+if(!SET.name.trim()){toast('ໃສ່ຊື່ຮ້ານກ່ອນ');revert();return}
+if(bad){toast('ລິ້ງຕ້ອງຂຶ້ນຕົ້ນດ້ວຍ http:// ຫຼື https://');revert();return}
+t.disabled=true;const ok=await saveSet(true);t.disabled=false;
+if(ok)toast(on?'ເປີດໂປຣໂມຊັນແລ້ວ':'ປິດໂປຣໂມຊັນແລ້ວ');else revert()};
 function initSet(){paintSet();loadSet();const pt=q('#pg-settings'),U=/^https?:\/\/\S+$/i;
 const setK=(k,v)=>{if(k==='name'||k==='nTop'||k==='nReg')SET[k]=v;else if(k==='promoOn')SET.promoOn=v;else if(/^c\d$/.test(k))SET.cats[+k[1]].name=v;else{const m=k.match(/^l(\d)([lu])$/);if(m)SET.links[+m[1]][m[2]]=v}};
 pt.addEventListener('input',e=>{const k=e.target.dataset.k;if(k&&e.target.type!=='checkbox')setK(k,e.target.value)});
@@ -441,7 +460,7 @@ const bad=[...SET.links.map(x=>x.u),SET.nTop,SET.nReg].map(v=>v.trim()).find(v=>
 if(bad)return toast('ລິ້ງຕ້ອງຂຶ້ນຕົ້ນດ້ວຍ http:// ຫຼື https://');
 saveSet()}});
 pt.addEventListener('change',e=>{const t=e.target;
-if(t.dataset.k==='promoOn')return setK('promoOn',t.checked);
+if(t.dataset.k==='promoOn')return togglePromo(t);
 const k=t.dataset.f;if(!k||!t.files[0])return;
 const f=new FileReader();f.onload=()=>{const im=new Image();im.onload=()=>{const keep=k==='logo'||k==='qr',mx=k==='logo'?256:k==='qr'?640:900,sc=Math.min(1,mx/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*sc;c.height=im.height*sc;const g=c.getContext('2d');if(!keep){g.fillStyle='#000';g.fillRect(0,0,c.width,c.height)}g.drawImage(im,0,0,c.width,c.height);simg(k,keep?c.toDataURL('image/png'):c.toDataURL('image/jpeg',.82));const y=scrollY;paintSet();scrollTo(0,y)};im.onerror=()=>toast('ໄຟລ໌ຮູບນີ້ເປີດບໍ່ໄດ້');im.src=f.result};f.readAsDataURL(t.files[0])})}
 const CH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>';
