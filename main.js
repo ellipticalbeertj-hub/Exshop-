@@ -78,7 +78,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('#pop'))$('#pop').cla
 const m=e.target.closest('[data-msg]');if(m){e.preventDefault();if(m.dataset.msg=='admin'){dr(0);location.href='admin.html'}else if(m.dataset.msg=='logout'){dr(0);window.doLogout&&window.doLogout()}else if(m.dataset.msg=='login'){if(window._user){dr(0);if(m.dataset.pi!=null&&window.openBuy)window.openBuy(m);else tip('soon')}else if(m.closest('#dr'))window.openAuth('login',m);else window.needLogin()}else{dr(0);tip(m.dataset.msg)}}
 const g=e.target.closest('[data-go]');if(g){dr(0);const x=g.dataset.go;(x=='top'?window.scrollTo({top:0}):document.getElementById(x).scrollIntoView())}});
 $('#lg').onclick=e=>{const b=e.target.closest('button');if(!b)return;lang=b.dataset.l;document.documentElement.lang=lang;$$('#lg button').forEach(x=>x.classList.toggle('on',x==b));render();window._authUI&&window._authUI()};
-$('#th').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.documentElement.dataset.theme=b.dataset.t;$$('#th button').forEach(x=>x.classList.toggle('on',x==b))};
+$('#th').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.documentElement.dataset.theme=b.dataset.t;{const tc=document.querySelector('meta[name="theme-color"]');tc&&tc.setAttribute('content',b.dataset.t=='dark'?'#000000':'#ffffff')}$$('#th button').forEach(x=>x.classList.toggle('on',x==b))};
 const up=$('#up');up.onclick=()=>scrollTo({top:0});addEventListener('scroll',()=>up.classList.toggle('on',scrollY>300),{passive:true});
 (()=>{$$('.dr a').forEach((a,i)=>a.style.setProperty('--k',i));
 if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;

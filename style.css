@@ -647,3 +647,10 @@ input,textarea,select{font-size:16px!important}
 /* remember-me tick: keep the red box + white tick visible in the light theme too */
 :root:not([data-theme=dark]) .as .rm input:checked+i,:root[data-theme=dark] .as .rm input:checked+i{background:linear-gradient(135deg,#ff3b57,#c40019);border-color:transparent;box-shadow:0 4px 12px -4px rgba(255,0,26,.8)}
 .as .rm input:focus-visible+i{outline:2px solid #ff3b57;outline-offset:2px}
+/* iPhone/Safari fix: the sign-in panel went blank (white pane, no form) because of blur/clip-path/backdrop-filter/transform
+   transitions on .as. Keep it simple and reliable: fade only, no blur, no clip-path, no backdrop-filter. */
+.as,.as.on,.as.pane,.as.pane.on{-webkit-clip-path:none!important;clip-path:none!important;-webkit-filter:none!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;-webkit-transform:none!important;transform:none!important;will-change:auto!important}
+.as{transition:opacity .3s ease,visibility 0s linear .3s!important}
+.as.on{transition:opacity .3s ease,visibility 0s!important}
+.as.on .st,.as.pane.on .st{animation:asIn .45s ease backwards!important;animation-delay:calc(var(--i,0)*.05s + .05s)!important}
+@keyframes asIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
