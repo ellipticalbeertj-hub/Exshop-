@@ -670,3 +670,20 @@ document.addEventListener('click',e=>{
   const u=data.promo;if(typeof u!=='string'||!/^https:\/\/\S+$/i.test(u))return;
   const pre=new Image();pre.onload=()=>setTimeout(()=>show(u),500);pre.src=u}).catch(()=>{});
 })();
+
+/* ---- ใช้ค่าจากห้องแอดมิน > ตั้งค่าร้าน (site_settings ผ่าน rpc get_site_settings): ชื่อร้าน, โลโก้, รูปหน้าร้าน, หมวดหมู่ ---- */
+(()=>{
+ const sbx=window._sb;if(!sbx)return;
+ const apply=d=>{if(!d||typeof d!=='object')return;
+  const nm=typeof d.name==='string'?d.name.trim().slice(0,40):'';
+  if(nm){document.title=nm;
+   const a=document.querySelector('#dr .t>div');if(a&&a.lastChild&&a.lastChild.nodeType===3)a.lastChild.nodeValue=nm;
+   const b=document.querySelector('.hd2 b');if(b)b.textContent=nm}
+  IMG.logo=okImg(d.logo);IMG.banner=okImg(d.front);
+  C.length=0;
+  (Array.isArray(d.cats)?d.cats:[]).forEach(c=>{const n=c&&typeof c.name==='string'?c.name.trim():'';if(n)C.push([n,okImg(c.img)])});
+  render()};
+ const load=()=>sbx.rpc('get_site_settings').then(({data,error})=>{if(!error)apply(data)}).catch(()=>{});
+ load();
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+})();

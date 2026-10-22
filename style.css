@@ -5,6 +5,7 @@ button,h4{font-family:Prompt,'Noto Sans Lao Looped','Noto Sans Lao','Noto Sans T
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:Prompt,'Noto Sans Lao Looped','Noto Sans Lao','Noto Sans Thai',sans-serif;overflow-x:hidden}
 .hd{position:fixed;z-index:20;top:max(8px,env(safe-area-inset-top));left:9px;right:-10px;height:56px;background:var(--card);border:1px solid var(--line);border-radius:18px;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 20px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+body::before{content:"";position:fixed;z-index:19;top:0;left:0;right:0;height:calc(max(8px,env(safe-area-inset-top)) + 8px);background:var(--bg);pointer-events:none}
 .hd button{background:none;border:0;padding:6px;color:#7a7a7a;cursor:pointer;display:grid;place-items:center}
 main{padding:calc(max(8px,env(safe-area-inset-top)) + 90px) 6px 90px 16px;max-width:520px;margin:0 auto}
 .banner{display:block;width:100%;height:auto;border-radius:12px}
