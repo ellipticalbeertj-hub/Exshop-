@@ -321,3 +321,281 @@ okb.onclick=async()=>{
  okb.classList.remove('ld');
 };
 })();
+
+
+/* ===== Tile -> card morph (CONTACT and TOPUP tiles) =====
+   Edit CM_CH to put the shop's real contact links.
+   Top-up payment hooks (optional, set these from your own code when the QR provider is connected):
+     window.createTopupQR(amount) -> Promise<{qr:string, ref:string}>   (qr = text to draw as the QR code)
+     window.submitSlip({ref,amount,file}) -> Promise   (upload the slip image `file` + save a pending top-up for the admin to verify)
+     window.watchTopup(ref, cb) -> unsubscribe fn      (call cb({status:'pending'|'approved'|'rejected', reason}) whenever the admin decides; e.g. Supabase realtime)
+   Without the hooks the top-up card runs as a demo (sample QR, slip is not sent anywhere). */
+(function(){
+const CM_CH=[
+ {n:'Facebook',s:'Facebook Page',u:'https://facebook.com/',c:'#1877f2',l:'f'},
+ {n:'WhatsApp',s:'WhatsApp',u:'https://wa.me/',c:'#12a150',l:'W'},
+ {n:'Telegram',s:'Telegram',u:'https://t.me/',c:'#229ed9',l:'T'}
+];
+const TP={
+ lo:{title:"ເຕີມເງິນ",pick:"ເລືອກຈຳນວນເງິນ",own:"ຫຼືພິມຈຳນວນທີ່ຕ້ອງການ",method:"ຊ່ອງທາງຊຳລະ",qrOnly:"ຊຳລະດ້ວຍ QR",qrSub:"ສະແກນຈ່າຍຜ່ານແອັບທະນາຄານ",make:"ສ້າງ QR",scan:"ສະແກນເພື່ອຊຳລະ",exp:"QR ໝົດອາຍຸໃນ",dead:"QR ໝົດອາຍຸ",check:"ກວດສອບການຊຳລະ",demo:"ໂຫມດຕົວຢ່າງ: ກົດກວດສອບເພື່ອຈຳລອງວ່າຊຳລະແລ້ວ",done:"ເຕີມເງິນສຳເລັດ",added:"ເພີ່ມເຂົ້າບັນຊີແລ້ວ",close:"ປິດ",min:"ຂັ້ນຕ່ຳ",max:"ສູງສຸດ",ok:"ຈຳນວນນີ້ໃຊ້ໄດ້",again:"ສ້າງ QR ໃໝ່",wait:"ຍັງບໍ່ພົບການຊຳລະ ລອງໃໝ່ອີກຄັ້ງ"},
+ th:{title:"เติมเงิน",pick:"เลือกจำนวนเงิน",own:"หรือพิมพ์จำนวนที่ต้องการ",method:"ช่องทางชำระเงิน",qrOnly:"ชำระด้วย QR",qrSub:"สแกนจ่ายผ่านแอปธนาคาร",make:"สร้าง QR",scan:"สแกนเพื่อชำระ",exp:"QR หมดอายุใน",dead:"QR หมดอายุ",check:"ตรวจสอบการชำระเงิน",demo:"โหมดตัวอย่าง: กดตรวจสอบเพื่อจำลองว่าชำระแล้ว",done:"เติมเงินสำเร็จ",added:"เพิ่มเข้าบัญชีแล้ว",close:"ปิด",min:"ขั้นต่ำ",max:"สูงสุด",ok:"จำนวนนี้ใช้ได้",again:"สร้าง QR ใหม่",wait:"ยังไม่พบการชำระเงิน ลองใหม่อีกครั้ง"}};
+Object.assign(TP.lo,{slip:"ສົ່ງສະລິບ",slipOk:"ຢືນຢັນສົ່ງສະລິບ",chg:"ປ່ຽນຮູບ",sending:"ກຳລັງສົ່ງ…",fail:"ສົ່ງບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ",done:"ສົ່ງສະລິບແລ້ວ",added:"ລໍຖ້າກວດສອບ ເງິນຈະເຂົ້າບັນຊີຫຼັງຢືນຢັນ",demo:"ໂຫມດຕົວຢ່າງ: ສະລິບຈະຍັງບໍ່ຖືກສົ່ງໄປລະບົບຈິງ"});
+Object.assign(TP.lo,{wTitle:"ລໍຖ້າແອດມິນຢືນຢັນ",wSub:"ປິດໜ້ານີ້ໄດ້ເລີຍ ລະບົບຈະອັບເດດໃຫ້ເມື່ອກວດສອບແລ້ວ",tl1:"ສົ່ງສະລິບແລ້ວ",tl2:"ແອດມິນກຳລັງກວດສອບ",tl3:"ເງິນເຂົ້າບັນຊີ",refl:"ເລກອ້າງອີງ",typ:"ປົກກະຕິໃຊ້ເວລາບໍ່ເທົ່າໃດນາທີ",ok4:"ເຕີມເງິນສຳເລັດ",ok4s:"ເງິນເຂົ້າບັນຊີແລ້ວ",no5:"ສະລິບບໍ່ຜ່ານ",whyDef:"ກະລຸນາກວດຍອດເງິນ ແລ້ວສົ່ງສະລິບໃໝ່",retry:"ສົ່ງສະລິບໃໝ່",simOk:"ຈຳລອງ: ອະນຸມັດ",simNo:"ຈຳລອງ: ປະຕິເສດ",bPend:"ລໍຖ້າກວດສອບ",bOk:"ສຳເລັດ",bNo:"ບໍ່ຜ່ານ"});
+Object.assign(TP.th,{wTitle:"รอแอดมินยืนยัน",wSub:"ปิดหน้านี้ได้เลย ระบบจะอัปเดตให้เมื่อตรวจสอบแล้ว",tl1:"ส่งสลิปแล้ว",tl2:"แอดมินกำลังตรวจสอบ",tl3:"เงินเข้าบัญชี",refl:"เลขอ้างอิง",typ:"ปกติใช้เวลาไม่กี่นาที",ok4:"เติมเงินสำเร็จ",ok4s:"เงินเข้าบัญชีแล้ว",no5:"สลิปไม่ผ่าน",whyDef:"กรุณาตรวจยอดเงินแล้วส่งสลิปใหม่",retry:"ส่งสลิปใหม่",simOk:"จำลอง: อนุมัติ",simNo:"จำลอง: ปฏิเสธ",bPend:"รอตรวจสอบ",bOk:"สำเร็จ",bNo:"ไม่ผ่าน"});
+Object.assign(TP.th,{slip:"ส่งสลิป",slipOk:"ยืนยันส่งสลิป",chg:"เปลี่ยนรูป",sending:"กำลังส่ง…",fail:"ส่งไม่สำเร็จ ลองใหม่อีกครั้ง",done:"ส่งสลิปแล้ว",added:"รอตรวจสอบ เงินจะเข้าบัญชีหลังยืนยัน",demo:"โหมดตัวอย่าง: สลิปยังไม่ถูกส่งไปที่ระบบจริง"});
+Object.assign(TP.th,{pillTap:"แตะเพื่อดูสถานะ",testLbl:"ทดสอบ · จำลองแอดมิน"});
+Object.assign(TP.lo,{pillTap:"ແຕະເພື່ອເບິ່ງສະຖານະ",testLbl:"ທົດສອບ · ຈຳລອງແອດມິນ"});
+const tp=k=>(TP[lang]||TP.lo)[k];
+const PRESETS=[10000,20000,50000,100000,200000,500000],MIN=10000,MAX=5000000,SECS=600;
+const fmt=n=>n.toLocaleString('en-US');
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches,D=x=>RM?1:x;
+const EASE='cubic-bezier(.22,1,.36,1)',EASE_IO='cubic-bezier(.65,0,.35,1)';
+const XI='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+let ov,card,body,tile,ghost,busy=false,openF=false,prevFocus,cleanup=null;
+let pend=null,liveShow=null; // pend = {ref,amount,thumb,status:'pending'|'approved'|'rejected',reason,unsub}
+const hd=title=>'<div class="cm-hd cm-it"><h2>'+title+'</h2></div>';
+const mk=()=>{
+ ov=document.createElement('div');ov.className='cm-ov';
+ card=document.createElement('div');card.className='cm-card';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
+ card.innerHTML='<svg class="bg" aria-hidden="true"><use href="#tbg"/></svg><div class="cm-body"></div>';
+ body=card.querySelector('.cm-body');
+ document.body.append(ov,card);card.style.display='none';
+ ov.onclick=close;
+ card.addEventListener('click',e=>{if(e.target.closest('.cm-x'))close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openF)close()});
+};
+/* ---- contact ---- */
+function buildContact(){
+ return hd(t('contact'))+'<div class="cm-list">'+CM_CH.map(c=>'<a class="cm-row cm-it" href="'+c.u+'" target="_blank" rel="noopener"><span class="ci" style="background:'+c.c+'">'+c.l+'</span><span>'+c.n+'<small>'+c.s+'</small></span><svg class="go" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></a>').join('')+'</div>';
+}
+/* ---- pending top-up: badge on the home tile + status updates ---- */
+const setBadge=()=>{const t=document.querySelector('[data-cm="topup"]');if(!t)return;let b=t.querySelector('.tp-badge');
+ if(!pend){b&&b.remove();return}
+ if(!b){b=document.createElement('span');b.className='tp-badge';t.appendChild(b)}
+ b.dataset.st=pend.status;b.textContent=tp(pend.status==='pending'?'bPend':pend.status==='approved'?'bOk':'bNo')};
+const detach=()=>{if(pend){pend.unsub&&pend.unsub();pend.thumb&&URL.revokeObjectURL(pend.thumb);pend=null}setBadge();pill()};
+const clearPend=()=>{store2(null);detach()};
+const onStatus=(st,fromStore)=>{if(!pend)return;const was=pend.status;pend.status=st.status;pend.reason=st.reason||'';
+ if(!fromStore)save();setBadge();pill();liveShow&&liveShow();if(was==='pending'&&st.status!=='pending')alertDone()};
+/* ---- top-up ---- */
+function buildTopup(){
+ return hd(tp('title'))+'<div class="tp-sheet cm-it" data-s="1">'
+ +'<div class="tp-s tp-s1"><div class="tp-lbl">'+tp('pick')+'</div><div class="tp-chips">'+PRESETS.map(v=>'<button class="tp-chip" data-v="'+v+'" aria-pressed="false">'+fmt(v)+'</button>').join('')+'</div>'
+ +'<div class="tp-lbl">'+tp('own')+'</div><label class="tp-amt"><input inputmode="numeric" autocomplete="off" placeholder="0"><span>₭</span></label><div class="tp-hint" aria-live="polite"></div>'
+ +'<div class="tp-lbl">'+tp('method')+'</div><div class="tp-pay"><span class="qi"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v1M14 20h1M18 20h3v-2"/></svg></span><span><b>'+tp('qrOnly')+'</b><small>'+tp('qrSub')+'</small></span><svg class="ck" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></div>'
+ +'<button class="tp-cta tp-go" disabled></button></div>'
+ +'<div class="tp-s tp-s2"><button class="tp-bk" aria-label="back">‹</button><div class="tp-qrbox"><div class="tp-qrf"><div class="q"></div><div class="dd">'+tp('dead')+'</div></div><div class="tp-big"></div><div class="tp-tm">'+tp('exp')+' <b class="tm">10:00</b></div></div><div class="tp-slip" hidden><img alt=""><span class="sn"></span><button class="tp-chg" type="button">'+tp('chg')+'</button></div><input class="tp-file" type="file" accept="image/*" hidden><button class="tp-cta tp-chk">'+tp('slip')+'</button><div class="tp-demo"></div></div>'
+ +'<div class="tp-s tp-s3"><div class="tp-wait"><div class="tp-orb"><i></i><i></i><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3>'+tp('wTitle')+'</h3><div class="tp-big w-amt"></div><p>'+tp('wSub')+'</p></div>'
+ +'<ol class="tp-tl"><li class="done"><i></i><span>'+tp('tl1')+'</span></li><li class="act"><i></i><span>'+tp('tl2')+'<small>'+tp('typ')+'</small></span></li><li><i></i><span>'+tp('tl3')+'</span></li></ol>'
+ +'<div class="tp-slip tp-ref"><img alt=""><span class="sn"><small>'+tp('refl')+'</small><b class="w-ref"></b></span></div>'
+ +'<button class="tp-cta tp-close">'+tp('close')+'</button><div class="tp-sim"></div></div>'
+ +'<div class="tp-s tp-s4"><div class="tp-ok"><div class="c"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></div><h3>'+tp('ok4')+'</h3><div class="tp-big r-amt"></div><p>'+tp('ok4s')+'</p></div><button class="tp-cta tp-close">'+tp('close')+'</button></div>'
+ +'<div class="tp-s tp-s5"><div class="tp-ok bad"><div class="c"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div><h3>'+tp('no5')+'</h3><p class="r-why"></p></div><button class="tp-cta tp-retry">'+tp('retry')+'</button><button class="tp-cta ghost tp-close">'+tp('close')+'</button></div>'
+ +'</div>';
+}
+function initTopup(){
+ const q=s=>body.querySelector(s),sh=q('.tp-sheet'),inp=q('.tp-amt input'),go=q('.tp-go'),hint=q('.tp-hint'),chk=q('.tp-chk');
+ let amount=0,ref='',timer=0,left=0,slipF=null,slipURL='';
+ const ok=n=>n>=MIN&&n<=MAX;
+ const setGo=()=>{go.textContent=amount?tp('make')+' · '+fmt(amount)+' ₭':tp('make')};
+ const setHint=()=>{hint.classList.remove('err');
+  if(!inp.value){hint.textContent=tp('min')+' '+fmt(MIN)+' ₭ · '+tp('max')+' '+fmt(MAX)+' ₭';return}
+  if(amount<MIN){hint.textContent=tp('min')+' '+fmt(MIN)+' ₭';hint.classList.add('err')}
+  else if(amount>MAX){hint.textContent=tp('max')+' '+fmt(MAX)+' ₭';hint.classList.add('err')}
+  else hint.textContent=tp('ok')};
+ const setAmount=(n,chip)=>{amount=n;if(chip)inp.value=n?fmt(n):'';
+  body.querySelectorAll('.tp-chip').forEach(c=>c.setAttribute('aria-pressed',+c.dataset.v===n));
+  go.disabled=!ok(n);setGo();setHint()};
+ let stepping=false;
+ const reflow=fn=>{ // run fn (which changes the content) and animate the card to its new height
+  const h0=card.offsetHeight,t0=card.getBoundingClientRect().top;
+  fn();
+  const h1=card.offsetHeight,t1=Math.max(12,Math.min(t0,innerHeight-h1-12));
+  card.style.top=t1+'px';
+  if(h0!==h1||t0!==t1)card.animate([{height:h0+'px',top:t0+'px'},{height:h1+'px',top:t1+'px'}],{duration:D(380),easing:EASE});
+ };
+ const step=async s=>{ // old content blurs out, card resizes, new content blurs in
+  if(stepping)return;stepping=true;
+  const out=sh.animate([{opacity:1,filter:'blur(0px)',transform:'none'},{opacity:0,filter:'blur(10px)',transform:'scale(.97)'}],{duration:D(170),easing:'ease-in',fill:'forwards'});
+  try{await out.finished}catch(e){}
+  reflow(()=>{sh.dataset.s=s});
+  out.cancel();
+  sh.animate([{opacity:0,filter:'blur(12px)',transform:'scale(.97)'},{opacity:1,filter:'blur(0px)',transform:'none'}],{duration:D(420),easing:EASE,fill:'backwards'});
+  stepping=false;
+ };
+ const tick=()=>{const m=String(Math.floor(left/60)).padStart(2,'0'),s=String(left%60).padStart(2,'0');q('.tm').textContent=m+':'+s;
+  if(left<=0){clearInterval(timer);q('.tp-qrf').classList.add('dead');chk.textContent=tp('again');chk.classList.add('ghost');chk.dataset.again=1}left--};
+ const draw=txt=>{const b=q('.q');b.innerHTML='';try{new QRCode(b,{text:txt,width:200,height:200,colorDark:'#1d1013',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}catch(e){b.textContent=ref}};
+ const makeQR=async()=>{
+  step(2);q('.tp-qrf').classList.remove('dead');chk.dataset.again='';chk.classList.remove('ghost');chk.textContent=tp('slip');chk.disabled=false;slipF=null;q('.tp-slip').hidden=true;
+  q('.tp-big').textContent=fmt(amount)+' ₭';q('.tp-demo').textContent=window.submitSlip?'':tp('demo');
+  ref='TP'+Date.now().toString(36).toUpperCase();let txt='EXAMPLE-TOPUP|'+ref+'|'+amount;
+  if(window.createTopupQR){try{const r=await window.createTopupQR(amount);txt=r.qr;ref=r.ref}catch(e){}}
+  draw(txt);clearInterval(timer);left=SECS;tick();timer=setInterval(tick,1000);
+ };
+ cleanup=()=>{clearInterval(timer);liveShow=null;if(pend&&pend.status!=='pending')clearPend();else if(slipURL&&!(pend&&pend.thumb===slipURL))URL.revokeObjectURL(slipURL)};
+ q('.tp-chips').addEventListener('click',e=>{const c=e.target.closest('.tp-chip');if(c)setAmount(+c.dataset.v,true)});
+ inp.addEventListener('input',()=>{const d=inp.value.replace(/\D/g,'').slice(0,8),n=d?+d:0;inp.value=d?fmt(n):'';setAmount(n,false)});
+ inp.addEventListener('focus',()=>{ // keep the card above the on-screen keyboard
+  const t0=card.getBoundingClientRect().top,t1=12;if(t0>t1){card.style.top=t1+'px';card.animate([{top:t0+'px'},{top:t1+'px'}],{duration:D(280),easing:EASE})}});
+ go.onclick=()=>ok(amount)&&makeQR();
+ q('.tp-bk').onclick=()=>{clearInterval(timer);step(1)};
+ const file=q('.tp-file');
+ file.onchange=()=>{const f=file.files&&file.files[0];if(!f)return;
+  slipF=f;slipURL&&URL.revokeObjectURL(slipURL);slipURL=URL.createObjectURL(f);
+  reflow(()=>{const s=q('.tp-slip');s.hidden=false;s.querySelector('img').src=slipURL;s.querySelector('.sn').textContent=f.name;chk.textContent=tp('slipOk')});
+  file.value='';};
+ q('.tp-chg').onclick=()=>file.click();
+ chk.onclick=async()=>{
+  if(chk.dataset.again){makeQR();return}
+  if(!slipF){file.click();return}   // first tap: choose the slip image
+  chk.disabled=true;chk.classList.add('busy');chk.textContent=tp('sending');
+  try{if(window.submitSlip)await window.submitSlip({ref,amount,file:slipF});else await new Promise(r=>setTimeout(r,900))}
+  catch(e){chk.disabled=false;chk.classList.remove('busy');chk.textContent=tp('slipOk');q('.tp-demo').textContent=tp('fail');return}
+  clearInterval(timer);
+  pend={ref,amount,thumb:slipURL,status:'pending',reason:'',t:Date.now()};
+  try{window.Notification&&Notification.permission==='default'&&Notification.requestPermission()}catch(e){}
+  save();mini(slipURL).then(m=>{if(pend&&pend.ref===ref){pend.mini=m;save()}});
+  if(window.watchTopup)pend.unsub=window.watchTopup(ref,onStatus);
+  setBadge();fill();step(3);
+ };
+ body.querySelectorAll('.tp-close').forEach(b=>b.onclick=()=>close());
+ q('.tp-retry').onclick=()=>{const n=pend?pend.amount:amount;clearPend();amount=n;slipURL='';makeQR()};
+ const fill=()=>{if(!pend)return;
+  q('.w-amt').textContent=fmt(pend.amount)+' ₭';q('.w-ref').textContent=pend.ref;{const im=q('.tp-ref img');if(pend.thumb)im.src=pend.thumb;else im.removeAttribute('src')}
+  q('.r-amt').textContent='+'+fmt(pend.amount)+' ₭';q('.r-why').textContent=pend.reason||tp('whyDef')};
+ const sNow=()=>!pend||pend.status==='pending'?3:pend.status==='approved'?4:5;
+ liveShow=()=>{fill();step(sNow())};
+ const sim=q('.tp-sim');
+ if(!window.watchTopup){ // demo only: lets you preview what the admin decision looks like
+  sim.innerHTML='<button type="button" data-d="approved">'+tp('simOk')+'</button><button type="button" data-d="rejected">'+tp('simNo')+'</button>';
+  sim.onclick=e=>{const d=e.target.dataset.d;if(d)onStatus({status:d,reason:d==='rejected'?'':''})}}
+ setAmount(0,true);
+ if(pend){amount=pend.amount;fill();sh.dataset.s=sNow()} // reopened while a top-up is waiting / decided
+}
+
+/* ===== Pending top-up that survives closing the card / reloading, with a status pill + notification =====
+   - saved in localStorage per member (key dk_topup_<userId>) -> still there after closing the card or the page
+   - floating pill shows "waiting / approved / rejected"; tap it to reopen the top-up card
+   - when the admin decides: pill pings, phone vibrates, browser notification + tab title (if the tab is in background)
+   - works across tabs (storage event), so you can test with 2 tabs
+   - no window.watchTopup (no backend yet) => a dashed TEST panel appears under the pill to play the admin
+   - with a real backend: window.watchTopup(ref, cb) should call cb right away with the CURRENT status, then on every change */
+const PK=()=>window._user?'dk_topup_'+window._user.id:null;
+const store2=v=>{const k=PK();if(!k)return;try{v?localStorage.setItem(k,JSON.stringify(v)):localStorage.removeItem(k)}catch(e){}};
+const save=()=>{if(pend)store2({ref:pend.ref,amount:pend.amount,status:pend.status,reason:pend.reason||'',thumb:pend.mini||'',t:pend.t||Date.now()})};
+const mini=url=>new Promise(r=>{const i=new Image();i.onload=()=>{try{const s=Math.min(1,160/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=Math.max(1,i.width*s|0);c.height=Math.max(1,i.height*s|0);c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.6))}catch(e){r('')}};i.onerror=()=>r('');i.src=url});
+let pl=null,sm=null,title0='',popT=0,shownSt='',px=0,py=0;
+const BS=54,POSK='dk_topup_pos';
+const place=(x,y,keep)=>{const w=innerWidth,h=innerHeight;px=Math.max(8,Math.min(x,w-BS-8));py=Math.max(8,Math.min(y,h-BS-8));
+ pl.style.left=px+'px';pl.style.top=py+'px';pl.classList.toggle('l',px+BS/2>w/2);
+ if(keep)try{localStorage.setItem(POSK,JSON.stringify({x:px/w,y:py/h}))}catch(e){}};
+const popLabel=()=>{pl.classList.remove('open');void pl.offsetWidth;pl.classList.add('open');clearTimeout(popT);popT=setTimeout(()=>pl.classList.remove('open'),6000)};
+const reopen=()=>{const el=document.querySelector('[data-cm="topup"]');if(!el||busy||openF)return;el.scrollIntoView({block:'center',behavior:'instant'});setTimeout(()=>open(el,'topup'),30)};
+const ensurePill=()=>{if(pl)return;
+ pl=document.createElement('div');pl.id='tpPill';pl.hidden=true;
+ pl.innerHTML='<button class="tpp-b" type="button" aria-label="top-up status"><i class="tpp-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path class="ok" d="M5 12.5l4.5 4.5L19 7" pathLength="24"/><path class="no" d="M7 7l10 10M17 7L7 17" pathLength="24"/></svg></i></button><span class="tpp-amt"></span>';
+ document.body.appendChild(pl);
+ sm=document.createElement('div');sm.id='tpSim';sm.hidden=true;
+ sm.innerHTML='<small></small><button type="button" data-d="approved"></button><button type="button" data-d="rejected"></button>';
+ document.body.appendChild(sm);
+ sm.onclick=e=>{const d=e.target.dataset&&e.target.dataset.d;if(d)onStatus({status:d,reason:''})};
+ let pos=null;try{pos=JSON.parse(localStorage.getItem(POSK)||'null')}catch(e){}
+ if(pos&&isFinite(pos.x)&&isFinite(pos.y))place(pos.x*innerWidth,pos.y*innerHeight);else place(innerWidth-BS-12,innerHeight-170);
+ const b=pl.querySelector('.tpp-b');let d=null;
+ b.addEventListener('pointerdown',e=>{d={id:e.pointerId,sx:e.clientX,sy:e.clientY,ox:px,oy:py,m:false};try{b.setPointerCapture(e.pointerId)}catch(x){}});
+ b.addEventListener('pointermove',e=>{if(!d||e.pointerId!==d.id)return;const dx=e.clientX-d.sx,dy=e.clientY-d.sy;
+  if(!d.m&&Math.hypot(dx,dy)<6)return;d.m=true;pl.classList.add('drag');place(d.ox+dx,d.oy+dy)});
+ const end=e=>{if(!d||e.pointerId!==d.id)return;const m=d.m;d=null;pl.classList.remove('drag');
+  if(m)place(px,py,true);else if(e.type==='pointerup')reopen()};
+ b.addEventListener('pointerup',end);b.addEventListener('pointercancel',end);
+ b.addEventListener('click',e=>{if(e.detail===0)reopen()}); // keyboard
+ addEventListener('resize',()=>place(px,py))};
+const pill=()=>{if(!pend&&!pl)return;ensurePill();const on=!!pend&&!busy&&!openF;pl.hidden=!on;
+ if(!pend){shownSt='';sm.hidden=true;return}
+ const p=pend.status;pl.dataset.st=p;
+ pl.querySelector('.tpp-amt').textContent=p==='approved'?'+'+fmt(pend.amount)+' ₭':p==='rejected'?tp('no5'):'';
+ sm.hidden=!(on&&p==='pending'&&!window.watchTopup);
+ sm.querySelector('small').textContent=tp('testLbl');const bs=sm.querySelectorAll('button');bs[0].textContent=tp('simOk');bs[1].textContent=tp('simNo');
+ if(!on)return;
+ if(shownSt!==p){shownSt=p;if(p==='pending')pl.classList.remove('open');else popLabel()}};
+const alertDone=()=>{
+ try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}
+ const ok=pend.status==='approved',ti=tp(ok?'ok4':'no5'),bd=ok?'+'+fmt(pend.amount)+' ₭':(pend.reason||tp('whyDef'));
+ if(document.hidden){
+  try{window.Notification&&Notification.permission==='granted'&&new Notification(ti,{body:bd})}catch(e){}
+  if(!title0)title0=document.title;document.title=(ok?'✅ ':'❌ ')+ti}};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&title0){document.title=title0;title0=''}});
+let uid=null;
+const load=()=>{const k=PK();if(!k)return;let s=null;try{s=JSON.parse(localStorage.getItem(k)||'null')}catch(e){}
+ if(!s||!s.ref)return;
+ pend={ref:s.ref,amount:+s.amount||0,thumb:s.thumb||'',mini:s.thumb||'',status:s.status||'pending',reason:s.reason||'',t:s.t};
+ if(window.watchTopup&&pend.status==='pending')pend.unsub=window.watchTopup(pend.ref,onStatus);
+ setBadge();pill()};
+const sync=()=>{const id=window._user?window._user.id:null;if(id===uid)return;uid=id;detach();if(id)load()};
+addEventListener('storage',e=>{if(!e.key||e.key!==PK())return;
+ if(!e.newValue){detach();return}
+ let s;try{s=JSON.parse(e.newValue)}catch(x){return}if(!s||!s.ref)return;
+ if(!pend||pend.ref!==s.ref){detach();load();return}
+ if(s.status!==pend.status)onStatus({status:s.status,reason:s.reason},true)});
+{const o=window._authUI;window._authUI=function(){const r=o&&o.apply(this,arguments);sync();setBadge();pill();return r};sync()}
+const KINDS={contact:{build:buildContact},topup:{build:buildTopup,init:initTopup}};
+const clip=(r,c,rad)=>'inset('+(r.top-c.top)+'px '+(c.right-r.right)+'px '+(c.bottom-r.bottom)+'px '+(r.left-c.left)+'px round '+rad+'px)';
+const FULL='inset(0px 0px 0px 0px round 26px)';
+function open(el,kind){
+ if(busy||openF)return;busy=true;tile=el;pill();
+ if(!ov)mk();
+ const K=KINDS[kind];body.innerHTML=K.build();if(K.init)K.init();
+ const r=el.getBoundingClientRect();
+ ov.classList.add('on');card.style.display='';
+ // card sits on top of the tile: same top, centred on the tile, kept inside the viewport
+ const vw=innerWidth,vh=innerHeight,cw=card.offsetWidth,ch=card.offsetHeight;
+ const L=Math.max(12,Math.min(r.left+r.width/2-cw/2,vw-cw-12)),T=Math.max(12,Math.min(r.top,vh-ch-12));
+ card.style.left=L+'px';card.style.top=T+'px';
+ const c=card.getBoundingClientRect(),from=clip(r,c,20);
+ ghost=document.createElement('div');ghost.className='tl cm-ghost';
+ ghost.style.cssText='left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;--k:'+(el.style.getPropertyValue('--k')||10.5);
+ el.querySelectorAll('.tx,.ico').forEach(n=>ghost.appendChild(n.cloneNode(true)));
+ document.body.appendChild(ghost);
+ document.body.style.overflow='hidden';prevFocus=document.activeElement;
+ const items=[...body.querySelectorAll('.cm-it')];
+ items.forEach(i=>i.style.opacity=0);
+ const swap=card.animate([{opacity:0,filter:'blur(12px)'},{opacity:1,filter:'blur(0px)'}],{duration:D(420),easing:'ease-out',fill:'backwards'});
+ const A=[swap,
+  ov.animate([{opacity:0},{opacity:1}],{duration:D(500),easing:'ease-out',fill:'both'}),
+  card.animate([{clipPath:from},{clipPath:FULL}],{duration:D(950),easing:EASE,fill:'both'}),
+  ghost.animate([{opacity:1,filter:'blur(0px)',transform:'scale(1)'},{opacity:0,filter:'blur(8px)',transform:'scale(.94)'}],{duration:D(380),easing:'ease-out',fill:'both'})
+ ];
+ swap.finished.then(()=>{el.style.visibility='hidden'}).catch(()=>{});
+ items.forEach((i,k)=>A.push(i.animate([{opacity:0,transform:'translateY(14px) scale(.88)'},{opacity:1,transform:'none'}],{duration:D(600),delay:RM?0:420+k*90,easing:'cubic-bezier(.2,1.15,.4,1)',fill:'both'})));
+ Promise.all(A.map(a=>a.finished)).then(()=>{
+  items.forEach(i=>{i.getAnimations().forEach(a=>a.cancel());i.style.opacity=''});
+  ghost.remove();ghost=null;busy=false;openF=true;
+  const x=card.querySelector('.cm-x');x&&x.focus({preventScroll:true});
+ }).catch(()=>{busy=false;openF=true});
+}
+function close(){
+ if(busy||!openF)return;busy=true;openF=false;
+ if(cleanup){cleanup();cleanup=null}
+ const r=tile.getBoundingClientRect(),c=card.getBoundingClientRect(),to=clip(r,c,20);
+ const items=[...body.querySelectorAll('.cm-it')];
+ tile.style.visibility=''; // real tile returns underneath while the card blurs out on top
+ const A=[
+  ...items.map(i=>i.animate([{opacity:1,transform:'none'},{opacity:0,transform:'scale(.92)'}],{duration:D(220),easing:'ease-in',fill:'both'})),
+  card.animate([{clipPath:FULL},{clipPath:to}],{duration:D(850),delay:D(120),easing:EASE_IO,fill:'both'}),
+  card.animate([{opacity:1,filter:'blur(0px)'},{opacity:0,filter:'blur(12px)'}],{duration:D(380),delay:D(600),easing:'ease-in-out',fill:'both'}),
+  tile.animate([{opacity:0,filter:'blur(10px)'},{opacity:1,filter:'blur(0px)'}],{duration:D(450),delay:D(560),easing:'ease-out',fill:'backwards'}),
+  ov.animate([{opacity:1},{opacity:0}],{duration:D(650),delay:D(260),easing:'ease-in-out',fill:'both'})
+ ];
+ Promise.all(A.map(a=>a.finished)).catch(()=>{}).then(()=>{
+  A.forEach(a=>a.cancel());card.style.display='none';ov.classList.remove('on');body.innerHTML='';
+  document.body.style.overflow='';busy=false;pill();prevFocus&&prevFocus.focus&&prevFocus.focus({preventScroll:true});
+ });
+}
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-cm]');if(!el)return;
+ e.preventDefault();const k=el.dataset.cm;
+ if(k==='topup'&&!window._user){window.openAuth&&window.openAuth('login',el);return} // top-up needs a signed-in member
+ open(el,k);
+});
+})();
