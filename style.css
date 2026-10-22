@@ -654,3 +654,17 @@ input,textarea,select{font-size:16px!important}
 .as.on{transition:opacity .3s ease,visibility 0s!important}
 .as.on .st,.as.pane.on .st{animation:asIn .45s ease backwards!important;animation-delay:calc(var(--i,0)*.05s + .05s)!important}
 @keyframes asIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ===== ป้ายยอดเงินข้างปุ่มเมนู (จุด + จำนวนเงิน) ===== */
+.hd .bal{margin:0 auto 0 4px;display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px 0 10px;border-radius:99px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);color:#22c55e;font:600 13px/1 Prompt,'Noto Sans Lao',sans-serif;white-space:nowrap;pointer-events:none;animation:balIn .45s cubic-bezier(.2,1.15,.4,1) both}
+.hd .bal[hidden]{display:none}
+.hd .bal i{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 0 rgba(34,197,94,.55);animation:balDot 2s ease-out infinite}
+.hd .bal b{font-weight:600;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.hd .bal em{font-style:normal;font-weight:500;font-size:11.5px;opacity:.8}
+.hd .bal.up{animation:balUp .7s ease-out}
+:root:not([data-theme=dark]) .hd .bal{color:#12a150;background:rgba(18,161,80,.1);border-color:rgba(18,161,80,.35)}
+@keyframes balDot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%,100%{box-shadow:0 0 0 7px rgba(34,197,94,0)}}
+@keyframes balIn{from{opacity:0;transform:translateX(-6px) scale(.92)}to{opacity:1;transform:none}}
+@keyframes balUp{0%{transform:scale(1)}35%{transform:scale(1.12);filter:brightness(1.3)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.hd .bal,.hd .bal i,.hd .bal.up{animation:none}}
+@media (max-width:360px){.hd .bal{padding:0 9px 0 8px;font-size:12px;gap:5px}}

@@ -151,6 +151,7 @@ getItem:k=>{const a=LS(),b=SS();try{return (a&&a.getItem(k))||(b&&b.getItem(k))|
 setItem:(k,v)=>{const a=LS(),b=SS(),rem=a?a.getItem(RK)!=='0':false,keep=rem?a:(b||a),drop=rem?b:a;try{keep&&keep.setItem(k,v);drop&&drop.removeItem(k)}catch(e){}},
 removeItem:k=>{try{LS()&&LS().removeItem(k);SS()&&SS().removeItem(k)}catch(e){}}};
 const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY,{auth:{storage:store,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}):null;
+window._sb=sb; // ใช้ร่วมกับป้ายยอดเงิน (อ่านอย่างเดียว)
 const say=x=>{const e=$('#toast');e.innerHTML='<span></span>';e.lastChild.textContent=x;e.classList.add('on');clearTimeout(window._at);window._at=setTimeout(()=>e.classList.remove('on'),2600)};
 const okU=u=>/^[a-z0-9_.]{3,20}$/.test(u);
 window._authUI=()=>{const u=window._user,nm=u?(u.user_metadata&&u.user_metadata.username)||(u.email||'').split('@')[0]:'';
@@ -600,4 +601,31 @@ document.addEventListener('click',e=>{
  if(k==='topup'&&!window._user){window.needLogin&&window.needLogin();return} // top-up needs a signed-in member
  open(el,k);
 });
+})();
+
+/* ---- ป้ายยอดเงินข้างปุ่มเมนู: อ่านจาก rpc my_balance() (ของตัวเองเท่านั้น) ---- */
+(()=>{
+ const el=document.getElementById('bal'),n=document.getElementById('balN');
+ if(!el||!n)return;
+ let last=null,tm=null,seq=0;
+ const fmtB=v=>v>=1e7?(Math.round(v/1e5)/10).toLocaleString('en-US')+'M':v.toLocaleString('en-US');
+ const show=v=>{const ch=last!==null&&v!==last;last=v;n.textContent=fmtB(v);el.title=v.toLocaleString('en-US')+' ₭';el.hidden=false;
+  if(ch){el.classList.remove('up');void el.offsetWidth;el.classList.add('up')}};
+ const hide=()=>{last=null;el.hidden=true};
+ const refresh=async()=>{
+  const u=window._user,s=window._sb||null,my=++seq;
+  if(!u||!s){hide();return}
+  try{const {data,error}=await s.rpc('my_balance');
+   if(my!==seq||!window._user)return;
+   if(error||data===null||data===undefined){hide();return}
+   show(Number(data)||0)}catch(e){if(my===seq)hide()}};
+ window.refreshBalance=refresh;
+ const o=window._authUI;
+ window._authUI=function(){const r=o&&o.apply(this,arguments);
+  const id=window._user?window._user.id:null;
+  if(id!==window._balUid){window._balUid=id;clearInterval(tm);tm=null;if(id){refresh();tm=setInterval(()=>{if(!document.hidden)refresh()},30000)}else hide()}
+  return r};
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&window._user)refresh()});
+ addEventListener('focus',()=>{window._user&&refresh()});
+ if(window._user)window._authUI();
 })();
