@@ -687,3 +687,26 @@ document.addEventListener('click',e=>{
  load();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
 })();
+
+/* ---- เติมเงินจริง: อัปโหลดสลิป -> รออนุมัติในห้องแอดมิน -> เงินเข้ายอดอัตโนมัติ (ตาราง topup_requests) ---- */
+(()=>{
+ const sbx=window._sb;if(!sbx)return;
+ const shrink=f=>new Promise((res,rej)=>{const u=URL.createObjectURL(f),im=new Image();
+  im.onload=()=>{const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');
+   c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+   URL.revokeObjectURL(u);c.toBlob(b=>b?res(b):rej(new Error('blob')),'image/jpeg',.82)};
+  im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('img'))};im.src=u});
+ window.submitSlip=async({ref,amount,file})=>{
+  const uid=window._user&&window._user.id;if(!uid)throw new Error('login');
+  const blob=await shrink(file),path=uid+'/'+ref+'.jpg';
+  const up=await sbx.storage.from('slips').upload(path,blob,{contentType:'image/jpeg',upsert:false});
+  if(up.error&&!/exists|duplicate/i.test(up.error.message||''))throw up.error;
+  const r=await sbx.rpc('submit_topup',{p_ref:ref,p_amount:Math.round(+amount),p_path:path});
+  if(r.error)throw r.error};
+ window.watchTopup=(ref,cb)=>{let stop=false,tm=0;
+  const poll=async()=>{if(stop)return;
+   try{const {data,error}=await sbx.rpc('my_topup',{p_ref:ref});
+    if(!error&&data&&data.status){cb({status:data.status,reason:data.reason||''});if(data.status!=='pending')return}}catch(e){}
+   if(!stop)tm=setTimeout(poll,4000)};
+  poll();return()=>{stop=true;clearTimeout(tm)}};
+})();
