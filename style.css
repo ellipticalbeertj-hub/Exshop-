@@ -644,3 +644,6 @@ input,textarea,select{font-size:16px!important}
 @keyframes tppPop{0%{transform:scale(.6)}55%{transform:scale(1.25)}100%{transform:scale(1)}}
 @keyframes tppDraw{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
 @media (prefers-reduced-motion:reduce){#tpPill,.tpp-ic,.tpp-b,#tpPill .ok,#tpPill .no{animation:none!important}.tpp-amt{transition:none}}
+/* remember-me tick: keep the red box + white tick visible in the light theme too */
+:root:not([data-theme=dark]) .as .rm input:checked+i,:root[data-theme=dark] .as .rm input:checked+i{background:linear-gradient(135deg,#ff3b57,#c40019);border-color:transparent;box-shadow:0 4px 12px -4px rgba(255,0,26,.8)}
+.as .rm input:focus-visible+i{outline:2px solid #ff3b57;outline-offset:2px}
