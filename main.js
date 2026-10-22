@@ -428,13 +428,18 @@ function initTopup(){
  };
  const tick=()=>{const m=String(Math.floor(left/60)).padStart(2,'0'),s=String(left%60).padStart(2,'0');q('.tm').textContent=m+':'+s;
   if(left<=0){clearInterval(timer);q('.tp-qrf').classList.add('dead');chk.textContent=tp('again');chk.classList.add('ghost');chk.dataset.again=1}left--};
- const draw=txt=>{const b=q('.q');b.innerHTML='';try{new QRCode(b,{text:txt,width:200,height:200,colorDark:'#1d1013',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}catch(e){b.textContent=ref}};
+ const drawGen=txt=>{const b=q('.q');b.innerHTML='';try{new QRCode(b,{text:txt,width:200,height:200,colorDark:'#1d1013',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M})}catch(e){b.textContent=ref}};
+ // QR รับโอนเงินที่แอดมินอัปโหลดไว้ในห้องแอดมิน > ตั้งค่า (site_settings.qr) — ถ้าไม่มีให้ใช้ QR ตัวอย่างเดิม
+ const getQRImg=()=>new Promise(res=>{const s=window._sb;if(!s){res('');return}const tm=setTimeout(()=>res(''),2500);
+  s.rpc('get_site_settings').then(({data})=>{clearTimeout(tm);const u=data&&typeof data.qr==='string'?data.qr:'';res(/^https:\/\/\S+$/i.test(u)?u:'')}).catch(()=>{clearTimeout(tm);res('')})});
+ const draw=(txt,img)=>{if(!img){drawGen(txt);return}
+  const b=q('.q');b.innerHTML='';const im=new Image();im.alt='QR';im.onerror=()=>drawGen(txt);im.src=img;b.appendChild(im)};
  const makeQR=async()=>{
   step(2);q('.tp-qrf').classList.remove('dead');chk.dataset.again='';chk.classList.remove('ghost');chk.textContent=tp('slip');chk.disabled=false;slipF=null;q('.tp-slip').hidden=true;
   q('.tp-big').textContent=fmt(amount)+' ₭';q('.tp-demo').textContent=window.submitSlip?'':tp('demo');
   ref='TP'+Date.now().toString(36).toUpperCase();let txt='EXAMPLE-TOPUP|'+ref+'|'+amount;
   if(window.createTopupQR){try{const r=await window.createTopupQR(amount);txt=r.qr;ref=r.ref}catch(e){}}
-  draw(txt);clearInterval(timer);left=SECS;tick();timer=setInterval(tick,1000);
+  let qimg='';if(!window.createTopupQR)qimg=await getQRImg();draw(txt,qimg);clearInterval(timer);left=SECS;tick();timer=setInterval(tick,1000);
  };
  cleanup=()=>{clearInterval(timer);liveShow=null;if(pend&&pend.status!=='pending')clearPend();else if(slipURL&&!(pend&&pend.thumb===slipURL))URL.revokeObjectURL(slipURL)};
  q('.tp-chips').addEventListener('click',e=>{const c=e.target.closest('.tp-chip');if(c)setAmount(+c.dataset.v,true)});

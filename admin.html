@@ -386,7 +386,7 @@ if(id==='aYes'){const c=AC.find(x=>x.id===AP.id),v=AP.s*AP.amt,nt=AP.note;if(!c)
 const ok=await arun(()=>rpc('admin_adjust_balance',{uid:c.uid,amt:v,note:nt}),AP.s>0?'ເພີ່ມເງິນແລ້ວ':'ຫັກເງິນແລ້ວ');paintAcc();return AC.find(x=>x.id===c.id)?openAcc(c.id):closeSheet()}
 if(id==='aChk'){const c=AC.find(x=>x.id===AO);if(!c)return;await arun(()=>rpc('admin_mark_checked',{uid:c.uid}),'ບັນທຶກວ່າກວດແລ້ວ');paintAcc();openAcc(c.id)}})}
 
-// ===== ຕັ້ງຄ່າຮ້ານ (DEMO) — ຂໍ້ມູນຢູ່ໃນໜ້າຈໍເທົ່ານັ້ນ =====
+// ===== ຕັ້ງຄ່າຮ້ານ — ເຊື່ອມຖານຂໍ້ມູນຈິງ (site_settings + Storage bucket site-assets) =====
 // ເວລາເຊື່ອມຈິງ: ຮູບອັບໂຫຼດເຂົ້າ Supabase Storage ແລ້ວເກັບ URL, ສ່ວນຄ່າອື່ນເກັບໃນຕາຕະລາງ settings (ແກ້ໄດ້ສະເພາະແອດມິນ)
 const SET={name:'DEKMASH STORE',logo:'',front:'',qr:'',promo:'',promoOn:true,
 cats:[{img:'',name:'IOS'},{img:'',name:'ANDROID'},{img:'',name:'PC'},{img:'',name:'PROXY'}],
@@ -395,7 +395,7 @@ nTop:'',nReg:''};
 const gimg=k=>k[0]==='c'&&k.length===2?SET.cats[+k[1]].img:SET[k];
 const simg=(k,v)=>{if(k[0]==='c'&&k.length===2)SET.cats[+k[1]].img=v;else SET[k]=v};
 const ibox=(k,cls,txt)=>{const v=gimg(k);return `<div class="sbx"><label class="sim ${cls}">${v?`<img src="${v}">`:'<span>+ '+(txt||'ຮູບ')+'</span>'}<input type="file" accept="image/*" data-f="${k}" hidden></label>${v?`<button class="lk" data-rm="${k}">ລຶບຮູບ</button>`:''}</div>`};
-function paintSet(){q('#pg-settings').innerHTML=`<span class="dm">ຂໍ້ມູນທົດລອງ (DEMO)</span>
+function paintSet(){q('#pg-settings').innerHTML=`
 <div class="cd"><div class="ch"><b>ຂໍ້ມູນຮ້ານ</b></div>
 <span class="sl">ຊື່ຮ້ານ</span><input data-k="name" maxlength="40" value="${esc(SET.name)}" placeholder="ຊື່ຮ້ານ">
 <span class="sl">ໂລໂກ້ຮ້ານ</span><div style="width:110px">${ibox('logo','sq ct','ໂລໂກ້')}</div>
@@ -409,7 +409,29 @@ function paintSet(){q('#pg-settings').innerHTML=`<span class="dm">ຂໍ້ມ�
 <span class="sl">ເມື່ອມີຄົນສະໝັກໃໝ່</span><input data-k="nReg" inputmode="url" value="${esc(SET.nReg)}" placeholder="https://…">
 <div class="sub">ໃສ່ລິ້ງ Webhook (ເຊັ່ນ Discord / Telegram) ເພື່ອໃຫ້ລະບົບສົ່ງແຈ້ງເຕືອນ</div></div>
 <button class="hb" id="sSave">ບັນທຶກການຕັ້ງຄ່າ</button>`}
-function initSet(){paintSet();const pt=q('#pg-settings'),U=/^https?:\/\/\S+$/i;
+let SL=false,SV=false;
+const applySet=d=>{const p=(d&&d.pub)||{},v=(d&&d.priv)||{};
+if(p.name)SET.name=p.name;
+SET.logo=p.logo||'';SET.front=p.front||'';SET.qr=p.qr||'';SET.promo=p.promo||'';SET.promoOn=p.promoOn!==false;
+(Array.isArray(p.cats)?p.cats:[]).slice(0,4).forEach((c,i)=>{SET.cats[i]={img:(c&&c.img)||'',name:c&&c.name!=null?c.name:SET.cats[i].name}});
+(Array.isArray(p.links)?p.links:[]).slice(0,4).forEach((x,i)=>{SET.links[i]={l:x&&x.l!=null?x.l:SET.links[i].l,u:(x&&x.u)||''}});
+SET.nTop=v.nTop||'';SET.nReg=v.nReg||''};
+const loadSet=async()=>{try{applySet(await rpc('admin_get_settings'));SL=true;const y=scrollY;paintSet();scrollTo(0,y)}catch(e){toast('ໂຫຼດການຕັ້ງຄ່າບໍ່ສຳເລັດ — ລອງເປີດໃໝ່ອີກຄັ້ງ')}};
+const d2b=u=>{const i=u.indexOf(','),m=/^data:([^;,]+)/.exec(u.slice(0,i)),s=atob(u.slice(i+1)),a=new Uint8Array(s.length);for(let k=0;k<s.length;k++)a[k]=s.charCodeAt(k);return new Blob([a],{type:m?m[1]:'image/jpeg'})};
+const upImg=async(k,v)=>{if(!v||v.slice(0,5)!=='data:')return v||'';const b=d2b(v),ext=b.type==='image/png'?'png':'jpg',path=k+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
+const {error}=await sb.storage.from('site-assets').upload(path,b,{contentType:b.type,cacheControl:'31536000'});if(error)throw error;
+return sb.storage.from('site-assets').getPublicUrl(path).data.publicUrl};
+const saveSet=async()=>{if(!SL)return toast('ການຕັ້ງຄ່າຍັງໂຫຼດບໍ່ສຳເລັດ — ບໍ່ບັນທຶກເພື່ອກັນຂໍ້ມູນເກົ່າຖືກທັບ');if(SV)return;SV=true;
+const btn=q('#sSave');btn&&(btn.disabled=true);
+try{const out={name:SET.name.trim(),promoOn:!!SET.promoOn,nTop:SET.nTop.trim(),nReg:SET.nReg.trim()};
+for(const k of ['logo','front','qr','promo']){SET[k]=await upImg(k,SET[k]);out[k]=SET[k]}
+out.cats=[];for(let i=0;i<4;i++){SET.cats[i].img=await upImg('cat'+i,SET.cats[i].img);out.cats.push({img:SET.cats[i].img,name:SET.cats[i].name.trim()})}
+out.links=SET.links.map(x=>({l:x.l.trim(),u:x.u.trim()}));
+await rpc('admin_save_settings',{p:out});
+const y=scrollY;paintSet();scrollTo(0,y);toast('ບັນທຶກການຕັ້ງຄ່າແລ້ວ')}
+catch(er){toast(er&&er.code==='42501'?'ບໍ່ມີສິດແອດມິນ':'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ')}
+finally{SV=false;const b2=q('#sSave');b2&&(b2.disabled=false)}};
+function initSet(){paintSet();loadSet();const pt=q('#pg-settings'),U=/^https?:\/\/\S+$/i;
 const setK=(k,v)=>{if(k==='name'||k==='nTop'||k==='nReg')SET[k]=v;else if(k==='promoOn')SET.promoOn=v;else if(/^c\d$/.test(k))SET.cats[+k[1]].name=v;else{const m=k.match(/^l(\d)([lu])$/);if(m)SET.links[+m[1]][m[2]]=v}};
 pt.addEventListener('input',e=>{const k=e.target.dataset.k;if(k&&e.target.type!=='checkbox')setK(k,e.target.value)});
 pt.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
@@ -417,7 +439,7 @@ if(b.dataset.rm){simg(b.dataset.rm,'');const y=scrollY;paintSet();scrollTo(0,y);
 if(b.id==='sSave'){if(!SET.name.trim())return toast('ໃສ່ຊື່ຮ້ານກ່ອນ');
 const bad=[...SET.links.map(x=>x.u),SET.nTop,SET.nReg].map(v=>v.trim()).find(v=>v&&!U.test(v));
 if(bad)return toast('ລິ້ງຕ້ອງຂຶ້ນຕົ້ນດ້ວຍ http:// ຫຼື https://');
-toast('ບັນທຶກແລ້ວ (ໂໝດທົດລອງ — ຍັງບໍ່ເກັບຖາວອນ)')}});
+saveSet()}});
 pt.addEventListener('change',e=>{const t=e.target;
 if(t.dataset.k==='promoOn')return setK('promoOn',t.checked);
 const k=t.dataset.f;if(!k||!t.files[0])return;
