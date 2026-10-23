@@ -929,3 +929,6 @@ input,textarea,select{font-size:16px!important}
 .cm-card .tp-cta{color:#c4203f}
 .cm-card .tp-cta:disabled{opacity:.6}
 .cm-card .tp-slip .sn{color:#3a0710}
+
+/* รูปสินค้าให้สัดส่วนเท่ากันทุกใบ (เดิมรูปจริงใช้สัดส่วนของตัวเอง การ์ดข้างกันเลยสูงไม่เท่ากัน) */
+.pc img.im{display:block;width:100%;height:auto;aspect-ratio:1/1.04;object-fit:cover;object-position:center}

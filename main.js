@@ -40,7 +40,7 @@ const okImg=u=>typeof u==='string'&&/^(data:image\/|https?:\/\/)/i.test(u)&&!/["
 // แปลงสินค้าจากฐานข้อมูล -> แถวที่ card() ใช้: [ชื่อ, ราคา, รูป, สต็อก, HOT, ขายแล้ว, รายละเอียด, ตัวเลือก]
 const toRow=p=>{const opts=(p.opts||[]).map(o=>({id:o.id,n:String(o.label),pr:(+o.price||0)*1000,left:+o.stock||0,sold:+o.sold||0})),
  stock=opts.reduce((a,o)=>a+o.left,0),sold=opts.reduce((a,o)=>a+o.sold,0),min=opts.length?Math.min(...opts.map(o=>o.pr)):0;
- return[String(p.name),min.toLocaleString('en-US')+' @cur',okImg(p.img),stock,0,sold,String(p.desc||''),opts,String(p.status||'').toLowerCase(),+p.new_at||Date.parse(p.created_at||'')||0]};
+ return[String(p.name),(()=>{const f=v=>(v/1000).toLocaleString('en-US',{maximumFractionDigits:2}),mx=opts.length?Math.max(...opts.map(o=>o.pr)):0;return(mx>min?f(min)+'-'+f(mx):f(min))})(),okImg(p.img),stock,0,sold,String(p.desc||''),opts,String(p.status||'').toLowerCase(),+p.new_at||Date.parse(p.created_at||'')||0]};
 const applyCat=()=>{const R=CAT.list.map(toRow);F=R;
  W=R.filter(r=>r[5]>0).sort((a,b)=>b[5]-a[5]).slice(0,8).map(r=>{const x=r.slice();x[4]=1;return x});
  const st=R.reduce((a,r)=>a+r[3],0),e=$$('.stat .cnt')[1];
@@ -59,7 +59,7 @@ function render(){PR.length=0;
 const _ordHTML=O.map(o=>`<div class="ord">${slot(o[2],"th")}<div><b>${o[0]}</b><span>${o[1].replace('@day',t('day'))}</span><em><svg class="ic c-blue ico-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path class="hand" d="M12 12V7"/><path d="M12 12l3.500 2"/></svg>${o[3]} ${t('ago')}</em></div></div>`).join('');
 $('#orders').innerHTML='<div class="mq">'+_ordHTML+'</div>';
 requestAnimationFrame(()=>{const r=$('#orders'),q=r.firstChild;if(!q)return;const w=q.scrollWidth;if(!w)return;const k=Math.max(1,Math.ceil(r.clientWidth/w));q.innerHTML=_ordHTML.repeat(k*2);q.style.setProperty('--d',(w*k/38)+'s')});
-const card=(p,i)=>!p?`<div class="pc ph"><div class="im"></div><i style="width:70%"></i><i style="width:40%"></i></div>`:`<div class="pc">${p[4]?'<span class="hot">HOT</span>':''}${slot(p[2],"im",escH(p[0]))}<h3>${escH(p[0].replace('@day',t('day')))}</h3><div class="pr"><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="8" cy="9" r="1.500" fill="currentColor"/></svg>${p[1].replace('@cur',t('cur'))}</div>${p[3]!=null?`<div class="stk ${(+p[3])>=30?'hi':(+p[3])>=10?'mid':'low'}"><span class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span>${p[3]} ${t('pcs')}</div>`:''}<button class="buy${p[3]<=0?' out':''}" data-msg="${p[3]<=0?'out':'login'}" data-pi="${PR.push(p)-1}">${p[3]<=0?t('out'):t('buy')+' '+cart}</button>${p[3]!=null?`<div class="st">${box}${t('sold')} ${p[5]!==undefined?p[5]:p[3]}</div>`:''}</div>`;
+const card=(p,i)=>!p?`<div class="pc ph"><div class="im"></div><i style="width:70%"></i><i style="width:40%"></i></div>`:`<div class="pc">${p[4]?'<span class="hot">HOT</span>':''}${slot(p[2],"im",escH(p[0]))}<h3>${escH(p[0].replace('@day',t('day')))}</h3><div class="pr"><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="8" cy="9" r="1.500" fill="currentColor"/></svg>${p[1].replace('@cur',t('cur'))}</div>${p[3]!=null?`<div class="stk ${(+p[3])>=30?'hi':(+p[3])>=10?'mid':'low'}"><span class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span>${p[3]}</div>`:''}<button class="buy${p[3]<=0?' out':''}" data-msg="${p[3]<=0?'out':'login'}" data-pi="${PR.push(p)-1}">${p[3]<=0?t('out'):t('buy')+' '+cart}</button>${p[3]!=null?`<div class="st">${box}${t('sold')} ${p[5]!==undefined?p[5]:p[3]}</div>`:''}</div>`;
 {const _w=W.map(card).join('');$('#weekRail').innerHTML='<div class="wt">'+_w+'</div>';$('#weekRail').dataset.n=W.length;window._wkSrc=_w;requestAnimationFrame(()=>window._wkSetup&&window._wkSetup())}$('#featGrid').innerHTML=CAT.state==='load'?Array.from({length:4},()=>card(null)).join(''):F.length?F.map(card).join(''):'<div class="emp">'+t(CAT.state==='err'?'loadErr':'noProd')+'</div>';
 {const hide=(id,on)=>{const e=document.getElementById(id);const sec=e&&e.closest('.sec');if(sec)sec.style.display=on?'':'none'};hide('weekRail',W.length);hide('orders',O.length);hide('catList',C.length)}
 $('#catList').innerHTML=C.map(c=>`<div class="cat${c[4]?' hv':''}" data-msg="soon"><div class="bn">${slot(c[1],"",c[0])}<button><svg class="ic  " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>${t('detail')}</button></div><h3>${c[0]}</h3>${c[2]!==undefined?`<div class="mt"><span><s><svg class="ic c-vio " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a2 2 0 012-2h4l2 3h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>0 ${t('cats')}</s><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>${c[2]} ${t('items')}</span><u><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.800 9.500c-.5-1.100-1.500-1.600-2.800-1.600-1.500 0-2.700.8-2.700 2 0 2.900 5.500 1.400 5.500 4.300 0 1.200-1.200 2-2.800 2-1.200 0-2.300-.6-2.800-1.700M12 6v1.900M12 16.100V18"/></svg>${c[3]}</u></div>`:''}</div>`).join('');
@@ -209,6 +209,7 @@ const BXI='<svg class="cf-bx" viewBox="0 0 24 24" fill="none" stroke="currentCol
 const CK='<span class="dk-k"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="10"/><path d="M5.8 10.4l2.9 2.9 5.5-5.9" pathLength="24"/></svg></span>';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nf=n=>(+n).toLocaleString('en-US',{maximumFractionDigits:2});
+const pf=n=>nf((+n||0)/1000); // ราคาในระบบเก็บเป็นหลักพัน (20 = 20.000) หน้าร้านโชว์แค่ 20
 const dayName=n=>String(n).replace('@day',t('day'));
 
 const R=26,EO='cubic-bezier(.22,1,.36,1)',EC='cubic-bezier(.65,0,.35,1)';
@@ -223,9 +224,9 @@ const rectOf=b=>{const r=b&&b.isConnected?b.getBoundingClientRect():null;
 const geo=(B,C)=>{const ix=Math.max(0,(C.width-B.width)/2),iy=Math.max(0,(C.height-B.height)/2);
  return{t:'translate3d('+(B.left+B.width/2-C.left-C.width/2)+'px,'+(B.top+B.height/2-C.top-C.height/2)+'px,0)',c:'inset('+iy+'px '+ix+'px '+iy+'px '+ix+'px round '+B.height/2+'px)'}};
 const FULL='inset(0px 0px 0px 0px round '+R+'px)';
-const setTot=(to,now)=>{cancelAnimationFrame(raf);if(now){shown=to;tn.textContent=nf(to);return}
+const setTot=(to,now)=>{cancelAnimationFrame(raf);if(now){shown=to;tn.textContent=pf(to);return}
  const from=shown,s0=performance.now();
- const f=t0=>{const p=Math.min(1,(t0-s0)/420);shown=from+(to-from)*(1-Math.pow(1-p,3));tn.textContent=nf(Math.round(shown));if(p<1)raf=requestAnimationFrame(f);else{shown=to;tn.textContent=nf(to)}};
+ const f=t0=>{const p=Math.min(1,(t0-s0)/420);shown=from+(to-from)*(1-Math.pow(1-p,3));tn.textContent=pf(Math.round(shown));if(p<1)raf=requestAnimationFrame(f);else{shown=to;tn.textContent=pf(to)}};
  raf=requestAnimationFrame(f)};
 const upd=(bump,anim)=>{qEl.textContent=qty;if(bump){qEl.classList.remove('bump');void qEl.offsetWidth;qEl.classList.add('bump')}minus.disabled=qty<=1;plus.disabled=qty>=max;setTot(unit*qty,!anim)};
 let srcKey='';
@@ -240,7 +241,7 @@ const pkgsOf=p=>(p[7]||[]).map(o=>({id:o.id,n:o.n,pr:o.pr,left:o.left,sold:o.sol
 const buildList=()=>{
  dk.innerHTML=pk.map((x,i)=>{const tot=x.left+x.sold,pct=tot?Math.round(x.sold/tot*100):0;
   return '<div class="dk-c'+(x.left<=0?' off':'')+'" role="radio" aria-checked="false" aria-disabled="'+(x.left<=0)+'" tabindex="'+(x.left<=0?'-1':'0')+'" data-k="'+i+'" style="--g:'+PAL[i%PAL.length]+'">'
-   +'<div class="dk-r"><span class="dk-n">'+CK+esc(dayName(x.n))+'</span><span class="dk-p">'+nf(x.pr)+'<i>'+esc(t('cur'))+'</i></span></div>'
+   +'<div class="dk-r"><span class="dk-n">'+CK+esc(dayName(x.n))+'</span><span class="dk-p">'+pf(x.pr)+'</span></div>'
    +'<div class="dk-r dk-m"><span>'+esc(t('left'))+' <b>'+nf(x.left)+'</b></span><span>'+esc(t('sold'))+' <b>'+nf(x.sold)+'</b></span></div>'
    +'<div class="dk-bar"><i style="width:'+pct+'%"></i></div></div>'}).join('');
  dk.classList.remove('has');curEl=null;
@@ -248,7 +249,7 @@ const buildList=()=>{
 // เลือกแพ็กเกจ → อัปเดตราคา/จำนวนสูงสุด/ยอดรวม
 const apply=(i,anim)=>{
  sel=pk[i];unit=sel.pr;max=Math.max(1,sel.left);const q0=qty;if(qty>max)qty=max;
- $('#cfUn').textContent=nf(unit)+' '+t('cur');upd(q0!==qty,anim);
+ $('#cfUn').textContent=pf(unit);upd(q0!==qty,anim);
 };
 const ripple=(c,x,y)=>{
  const r=c.getBoundingClientRect(),px=x-r.left,py=y-r.top,s=Math.hypot(Math.max(px,r.width-px),Math.max(py,r.height-py))*2;
@@ -278,7 +279,7 @@ window.openBuy=function(btn){
  if(st)return;const p=window._PR&&window._PR[+btn.dataset.pi];if(!p||!(p[7]||[]).some(o=>o.left>0))return;
  prod=p;qty=1;pk=pkgsOf(p);buildList();
  $('#cfNm').textContent=String(p[0]).replace('@day',t('day'));
- $('#cfCur').textContent=t('cur');
+ $('#cfCur').textContent='';
  const txt=p[6]||'';$('#cfDt').textContent=txt;$('#cfDs').hidden=!txt;cd.scrollTop=0;
  th.innerHTML=p[2]?'<img src="'+esc(p[2])+'" alt="">':'<svg class="cf-pt" width="100%" height="100%" aria-hidden="true"><use href="#tbg" width="100%" height="100%"/></svg>'+BXI;
  bg.innerHTML=btn.innerHTML;okb.classList.remove('ld');cf.classList.remove('dn');shown=0;
@@ -722,7 +723,7 @@ function initShop(){
  const row=(x,i)=>{const r=x.r,c=spClosed(r),out=r[3]<=0,dis=c||out,s=+r[3]||0,nm=String(r[0]).replace('@day',t('day'));
   const k=s>=30?'hi':s>=10?'mid':'low',pr=spMin(r);
   const img=r[2]?'<img src="'+escH(r[2])+'" alt="" loading="lazy">':'<svg aria-hidden="true"><use href="#tbg" width="100%" height="100%"/></svg>';
-  return '<div class="sp-r" style="--i:'+Math.min(i,10)+'"><div class="sp-im">'+img+'</div><div class="sp-m"><b>'+escH(nm)+'</b><div class="sp-p">'+fmt(pr)+' '+t('cur')+'</div>'
+  return '<div class="sp-r" style="--i:'+Math.min(i,10)+'"><div class="sp-im">'+img+'</div><div class="sp-m"><b>'+escH(nm)+'</b><div class="sp-p">'+(pr/1000).toLocaleString('en-US',{maximumFractionDigits:2})+'</div>'
   +'<div class="sp-kk">'+(c?'<span class="sp-k cl">'+sp(c==='mt'?'mtB':'upB')+'</span>':'<span class="sp-k '+k+'">'+t('stock')+' '+fmt(s)+'</span>')+(r[5]>0?'<span class="sp-k so">'+t('sold')+' '+fmt(r[5])+'</span>':'')+'</div></div>'
   +'<button type="button" class="sp-buy" data-i="'+x.i+'"'+(dis?' disabled':'')+'>'+(out&&!c?t('out'):c?'—':t('buy')+' '+cart)+'</button></div>'};
  function paint(){
