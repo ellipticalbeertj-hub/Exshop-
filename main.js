@@ -43,8 +43,7 @@ const toRow=p=>{const opts=(p.opts||[]).map(o=>({id:o.id,n:String(o.label),pr:(+
  return[String(p.name),(()=>{const f=v=>(v/1000).toLocaleString('en-US',{maximumFractionDigits:2}),mx=opts.length?Math.max(...opts.map(o=>o.pr)):0;return(mx>min?f(min)+'-'+f(mx):f(min))})(),okImg(p.img),stock,0,sold,String(p.desc||''),opts,String(p.status||'').toLowerCase(),+p.new_at||Date.parse(p.created_at||'')||0]};
 const applyCat=()=>{const R=CAT.list.map(toRow);F=R;
  W=R.filter(r=>r[5]>0).sort((a,b)=>b[5]-a[5]).slice(0,8).map(r=>{const x=r.slice();x[4]=1;return x});
- const st=R.reduce((a,r)=>a+r[3],0),e=$$('.stat .cnt')[1];
- if(e){e.dataset.n=st;setTimeout(()=>{e.textContent=st.toLocaleString('en-US')},Math.max(0,1500-performance.now()))}};
+ window.refreshStats&&window.refreshStats()};
 async function loadCatalog(){
  try{const go=n=>fetch(SBU+'/rest/v1/rpc/'+n,{method:'POST',headers:{apikey:SBK,Authorization:'Bearer '+SBK,'Content-Type':'application/json'},body:'{}'});let r=await go('shop_catalog_ex');if(!r.ok)r=await go('shop_catalog');
   if(!r.ok)throw 0;const j=await r.json();if(!Array.isArray(j))throw 0;
@@ -86,7 +85,7 @@ document.documentElement.classList.add('js');
 $$('.sec').forEach(e=>e.classList.add('rv'));
 const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.06});
 $$('.rv').forEach(e=>io.observe(e));
-$$('.cnt').forEach(e=>{const n=+e.dataset.n,s0=performance.now();const f=now=>{const p=Math.min(1,(now-s0)/1400);e.textContent=Math.round(n*(1-Math.pow(1-p,3))).toLocaleString('en-US');if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
+$$('.cnt:not([data-live])').forEach(e=>{const n=+e.dataset.n,s0=performance.now();const f=now=>{const p=Math.min(1,(now-s0)/1400);e.textContent=Math.round(n*(1-Math.pow(1-p,3))).toLocaleString('en-US');if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
 })();
 if(matchMedia('(prefers-reduced-motion:reduce)').matches)document.querySelectorAll('.stat svg').forEach(v=>v.pauseAnimations&&v.pauseAnimations());
 
@@ -938,4 +937,17 @@ document.addEventListener('click',e=>{
     if(!error&&data&&data.status){cb({status:data.status,reason:data.reason||''});if(data.status!=='pending')return}}catch(e){}
    if(!stop)tm=setTimeout(poll,4000)};
   poll();return()=>{stop=true;clearTimeout(tm)}};
+})();
+
+/* ---- สถิติหน้าแรก: ผู้ใช้งาน + สต็อก ดึงจากฐานข้อมูลจริง (rpc shop_stats) ---- */
+(()=>{
+ const sbx=window._sb,cn=[...document.querySelectorAll('.stat .cnt[data-live]')];if(!sbx||cn.length<2)return;
+ const run=(e,to)=>{const from=+String(e.textContent).replace(/,/g,'')||0;cancelAnimationFrame(e._r);
+  if(from===to||matchMedia('(prefers-reduced-motion:reduce)').matches){e.textContent=to.toLocaleString('en-US');return}
+  const s0=performance.now(),D=900,f=t=>{const p=Math.min(1,(t-s0)/D);e.textContent=Math.round(from+(to-from)*(1-Math.pow(1-p,3))).toLocaleString('en-US');if(p<1)e._r=requestAnimationFrame(f)};e._r=requestAnimationFrame(f)};
+ let busy=false;
+ const load=()=>{if(busy)return;busy=true;sbx.rpc('shop_stats').then(({data,error})=>{busy=false;if(error||!data)return;run(cn[0],Math.max(0,+data.users||0));run(cn[1],Math.max(0,+data.stock||0))}).catch(()=>{busy=false})};
+ window.refreshStats=load;load();
+ setInterval(()=>{if(!document.hidden)load()},30000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
 })();
