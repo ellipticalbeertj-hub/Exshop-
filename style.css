@@ -845,3 +845,22 @@ input,textarea,select{font-size:16px!important}
 .sp-s input::placeholder{color:#8a7479}
 .sp-k.so,.sp-k.cl{background:rgba(0,0,0,.1);color:#4d3238}
 .sp-buy[disabled]{background:#c9c1c3;color:#6f5c61}
+
+/* ===== codes shown after a purchase ===== */
+.cf-codes{width:100%;max-width:320px;margin:10px auto 2px;display:flex;flex-direction:column;gap:6px;text-align:center}
+.cf-codes small{color:var(--tx2)}
+.cf-codes pre{margin:0;padding:10px 12px;max-height:150px;overflow:auto;border-radius:12px;background:rgba(0,0,0,.08);color:var(--tx);font:600 14px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-all;user-select:text;-webkit-user-select:text;text-align:left}
+.cf-codes button{height:36px;border:0;border-radius:999px;background:var(--pur-bg);color:var(--pur);font:600 14px Prompt,'Noto Sans Lao Looped',sans-serif;cursor:pointer}
+.cf.dn .cf-codes{animation:cfaup .7s cubic-bezier(.22,.8,.24,1) 1.05s backwards}
+.cf-codes{max-width:340px;margin-top:14px}
+.cf-codes small{font-size:13px;font-weight:600;color:var(--tx2)}
+.cf-codes pre{background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);font-size:15px;text-align:center}
+:root:not([data-theme=dark]) .cf-codes pre{background:rgba(0,0,0,.07);box-shadow:inset 0 0 0 1px rgba(0,0,0,.16)}
+.cf-codes button{height:42px;background:linear-gradient(135deg,#ff3b57,#e0001f 55%,#a80017);color:#fff;box-shadow:0 8px 16px -8px rgba(255,0,26,.85)}
+.cf-codes button:active{transform:scale(.96)}
+
+/* confirm card: no header, product image inset from the card border */
+.cf-in{padding:16px 16px 18px}
+.cf-hero{margin:0 0 6px;height:min(28dvh,260px);border-radius:20px;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 14px 26px -16px rgba(0,0,0,.8)}
+.cf-hero::after{display:none}
+.cf-th{-webkit-mask-image:none;mask-image:none}
