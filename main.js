@@ -335,14 +335,61 @@ window.placeOrder=async o=>{
  loadCatalog();window.refreshBalance&&window.refreshBalance();   // สต็อก/ขายแล้ว/ยอดเงิน อัปเดตทันที
  return data;
 };
+Object.assign(L.th,{cfHelp:'ติดต่อแอดมิน · แจ้งปัญหา',cfHelpS:'มีปัญหากับโค้ดหรือการสั่งซื้อ ทักมาได้เลย',cfNoCh:'แอดมินยังไม่ได้เพิ่มช่องทางติดต่อ'});
+Object.assign(L.lo,{cfHelp:'ຕິດຕໍ່ແອດມິນ · ແຈ້ງບັນຫາ',cfHelpS:'ມີບັນຫາກັບໂຄ້ດ ຫຼື ການສັ່ງຊື້ ທັກມາໄດ້ເລີຍ',cfNoCh:'ແອດມິນຍັງບໍ່ໄດ້ເພີ່ມຊ່ອງທາງຕິດຕໍ່'});
+/* ---- ช่องทางติดต่อแอดมิน: ดึงจาก site_settings.links (ห้องแอดมิน > ตั้งค่า > ช่องทางติดต่อลูกค้า) ---- */
+const CF_ICO={
+ fb:['#1877f2','<path d="M14 8h2V5h-2.5C11.3 5 10 6.4 10 8.5V10H8v3h2v6h3v-6h2.2l.5-3H13V8.7c0-.5.2-.7 1-.7z" fill="currentColor" stroke="none"/>'],
+ line:['#06c755','<path d="M12 4.5c-4.4 0-8 2.7-8 6.1 0 2.1 1.4 4 3.5 5.1-.1.6-.4 1.7-.5 2 0 .1.1.2.2.2.4 0 3.1-1.9 3.6-2.3.4.1.8.1 1.2.1 4.4 0 8-2.7 8-6.1s-3.6-5.1-8-5.1z" fill="currentColor" stroke="none"/>'],
+ wa:['#25d366','<path d="M12 3.5a8.5 8.5 0 0 0-7.4 12.7L3.5 20.5l4.4-1.1A8.5 8.5 0 1 0 12 3.5z"/><path d="M9 8.5c0 3.2 2.3 5.5 5.5 6.5l1.2-1.4-1.9-1-.8.7c-.9-.4-1.6-1.1-2-2l.7-.8-1-1.9z" fill="currentColor" stroke="none"/>'],
+ dc:['#5865f2','<path d="M7 7.5c1.6-.8 3.3-1.2 5-1.2s3.4.4 5 1.2c1.4 2.2 2.1 4.5 2.2 7-1.1.9-2.3 1.4-3.6 1.8l-.8-1.4M7 7.5c-1.4 2.2-2.1 4.5-2.2 7 1.1.9 2.3 1.4 3.6 1.8l.8-1.4"/><circle cx="9.7" cy="12" r="1" fill="currentColor"/><circle cx="14.3" cy="12" r="1" fill="currentColor"/>'],
+ tg:['#229ed9','<path d="M20.5 4.5L3.5 11l5 1.8 1.8 5.2 2.6-3.2 4.2 3.1z"/><path d="M8.5 12.8l8-5"/>'],
+ ig:['#e1306c','<rect x="4.5" y="4.5" width="15" height="15" rx="4.5"/><circle cx="12" cy="12" r="3.3"/><circle cx="16.6" cy="7.4" r=".8" fill="currentColor" stroke="none"/>'],
+ tt:['#111','<path d="M14 4v10.2a3.2 3.2 0 1 1-3.2-3.2M14 4c.3 2.2 1.8 3.6 4 3.8"/>'],
+ yt:['#ff0000','<rect x="3.5" y="6.5" width="17" height="11" rx="3.5"/><path d="M10.5 9.5v5l4.2-2.5z" fill="currentColor" stroke="none"/>'],
+ ln:['#e0001f','<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1"/>']
+};
+const cfKind=(n,u)=>{let h='';try{h=new URL(u).hostname}catch(e){}
+ const s=(n+' '+h).toLowerCase();
+ return /facebook|fb\.|messenger|m\.me/.test(s)?'fb':/(^|[^a-z])line([^a-z]|$)|line\.me|lin\.ee|ไลน์|ໄລນ໌/.test(s)?'line':/whatsapp|wa\.me/.test(s)?'wa':/discord/.test(s)?'dc':/telegram|t\.me/.test(s)?'tg':/instagram/.test(s)?'ig':/tiktok/.test(s)?'tt':/youtube|youtu\.be/.test(s)?'yt':'ln'};
+const cfIco=k=>'<span class="ci" style="background:'+CF_ICO[k][0]+'"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:#fff">'+CF_ICO[k][1]+'</svg></span>';
+let cfLinksP=null;
+const cfLinks=()=>{const s=window._sb;if(!s)return Promise.resolve([]);
+ return Promise.race([s.rpc('get_site_settings').then(({data})=>(data&&Array.isArray(data.links)?data.links:[])),new Promise(r=>setTimeout(()=>r(null),7000))]).catch(()=>null)};
+const cfHelpBox=box=>{
+ const w=document.createElement('div');w.className='cf-ct';
+ w.innerHTML='<div class="cf-bar"><div class="cf-bi"><div class="cf-chs"><span class="cf-ld"></span></div></div></div>'
+  +'<button type="button" class="cf-help" aria-expanded="false"><span class="hi"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/><path d="M19 19c0 1.5-1.5 2-4 2h-2"/></svg></span>'
+  +'<span class="ht"><b>'+t('cfHelp')+'</b><small>'+t('cfHelpS')+'</small></span>'
+  +'<svg class="hc" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>';
+ box.appendChild(w);
+ const btn=w.querySelector('.cf-help'),chs=w.querySelector('.cf-chs');
+ const paint=ls=>{const U=/^https?:\/\/\S+$/i;
+  const ok=(ls||[]).filter(x=>x&&typeof x.u==='string'&&U.test(x.u.trim()));
+  chs.innerHTML=ok.length?ok.map((x,i)=>{const u=x.u.trim(),n=String(x.l||'').trim()||(()=>{try{return new URL(u).hostname}catch(e){return 'Link'}})();
+   return '<a class="cf-chip" style="--i:'+i+'" href="'+escH(u)+'" target="_blank" rel="noopener noreferrer">'+cfIco(cfKind(n,u))+'<span>'+escH(n)+'</span></a>'}).join(''):'<span class="cf-none">'+t('cfNoCh')+'</span>'};
+ cfLinks().then(paint);
+ btn.onclick=()=>{const o=!w.classList.contains('open');w.classList.toggle('open',o);btn.setAttribute('aria-expanded',o)};
+};
 window.showCodes=d=>{
  const box=document.querySelector('.cf-done');if(!box)return;
- box.querySelectorAll('.cf-codes').forEach(n=>n.remove());
- const cs=d&&Array.isArray(d.codes)?d.codes:[];if(!cs.length)return;
- const w=document.createElement('div');w.className='cf-codes';
- w.innerHTML='<small>'+t('cfCodes')+'</small><pre>'+escH(cs.join('\n'))+'</pre><button type="button">'+t('cfCopy')+'</button>';
- w.querySelector('button').onclick=async e=>{const b=e.currentTarget;try{await navigator.clipboard.writeText(cs.join('\n'));b.textContent=t('cfCopied')}catch(x){const r=document.createRange();r.selectNodeContents(w.querySelector('pre'));const g=getSelection();g.removeAllRanges();g.addRange(r)}};
- box.insertBefore(w,box.querySelector('.cf-fin'));
+ const fin=box.querySelector('.cf-fin');
+ box.querySelectorAll('.cf-codes,.cf-row,.cf-ct').forEach(n=>{if(fin&&n.contains(fin))box.appendChild(fin);n.remove()});
+ const cs=d&&Array.isArray(d.codes)?d.codes:[];
+ if(cs.length){
+  const w=document.createElement('div');w.className='cf-codes';
+  w.innerHTML='<small>'+t('cfCodes')+'</small><pre>'+escH(cs.join('\n'))+'</pre>';
+  box.insertBefore(w,fin);
+  const row=document.createElement('div');row.className='cf-row';
+  box.insertBefore(row,fin);row.appendChild(fin);   // ปิด = ซ้าย, สำเนา = ขวา
+  const b=document.createElement('button');b.type='button';b.className='cf-cp';
+  b.innerHTML='<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg><span>'+t('cfCopy')+'</span>';
+  row.appendChild(b);
+  b.onclick=async()=>{const sp=b.querySelector('span');
+   try{await navigator.clipboard.writeText(cs.join('\n'));sp.textContent=t('cfCopied');setTimeout(()=>{sp.textContent=t('cfCopy')},1800)}
+   catch(x){const r=document.createRange();r.selectNodeContents(w.querySelector('pre'));const g=getSelection();g.removeAllRanges();g.addRange(r)}};
+ }
+ cfHelpBox(box);
 };
 
 
