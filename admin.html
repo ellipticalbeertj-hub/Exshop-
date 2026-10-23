@@ -113,6 +113,9 @@ body.ok .tw{display:block;animation:tup .7s cubic-bezier(.22,.8,.24,1) backwards
 .fi{display:block;margin-top:10px;color:var(--tx3);font-size:13px}.fi input,.fi textarea{margin-top:5px}
 .im{display:grid;place-items:center;width:120px;height:120px;border:1px dashed #444;border-radius:18px;overflow:hidden;color:var(--tx3);cursor:pointer;background:#0a0a0a}.im img{width:100%;height:100%;object-fit:cover}
 .or{display:grid;grid-template-columns:1fr 110px 40px;gap:8px;margin-bottom:8px}
+.pw{position:relative;display:block}.pw input{padding-right:50px !important}.pw span{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--tx3);font-size:14px;font-weight:600;pointer-events:none}
+.or.bad .pw input{border-color:#ff5566 !important;box-shadow:0 0 0 3px rgba(255,85,102,.18)}.or.bad .pw span{color:#ff5566}
+.pcr{display:flex;align-items:center;gap:8px;margin:10px 0 0;padding:11px 14px;border:1px solid var(--line);border-radius:14px;background:#101010;font-size:14px}.pcr span{flex:1;min-width:0;color:var(--tx3)}.pcr b{color:#ff5566}.pcr i{font-style:normal;color:#2fcf6f;font-weight:700}
 .or .x{border:1px solid var(--line);background:#101010;color:#ff5566;border-radius:12px;cursor:pointer}
 .qk{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.qk button,.pb button,.rb button{border:1px solid var(--line);background:#101010;color:var(--tx);border-radius:999px;padding:7px 12px;font:500 12.5px Prompt,'Noto Sans Lao Looped',sans-serif;cursor:pointer}
 .lk{border:0;background:none;color:var(--pur-l);font:inherit;cursor:pointer}
@@ -280,11 +283,11 @@ add:()=>`<div class="cd"><div class="ch"><b>${D.id?'ແກ້ໄຂສິນຄ�
 <label class="fi">ຊື່ສິນຄ້າ<input id="pN" maxlength="60" value="${esc(D.name)}"></label>
 <label class="fi">ລາຍລະອຽດສິນຄ້າ<textarea id="pD" rows="3" maxlength="500">${esc(D.desc)}</textarea></label>
 <div class="ch" style="margin-top:14px"><b>ຕົວເລືອກ / ໄລຍະເວລາ + ລາຄາ</b></div>
-${D.opts.map((o,i)=>`<div class="or"><input data-o="${i}" data-k="label" maxlength="40" placeholder="ເຊັ່ນ 1 ມື້" value="${esc(o.label)}"><input data-o="${i}" data-k="price" inputmode="numeric" placeholder="ລາຄາ" value="${esc(o.price)}"><button class="x" data-ox="${i}">✕</button></div>`).join('')}
+${D.opts.map((o,i)=>`<div class="or${+o.price>=1000?' bad':''}"><input data-o="${i}" data-k="label" maxlength="40" placeholder="ເຊັ່ນ 1 ມື້" value="${esc(o.label)}"><label class="pw"><input data-o="${i}" data-k="price" inputmode="numeric" placeholder="ລາຄາ" value="${esc(o.price)}"><span>.000</span></label><button class="x" data-ox="${i}">✕</button></div>`).join('')}
 <div class="qk">${['1 ມື້','3 ມື້','7 ມື້','30 ມື້'].map(t=>`<button data-q="${t}">+ ${t}</button>`).join('')}<button data-q="">+ ກຳນົດເອງ</button></div>
 ${D.id?'<div class="sub">ລຶບຕົວເລືອກ = ລະຫັດໃນຕົວເລືອກນັ້ນຫາຍໄປນຳ</div>':''}
 <button class="hb" id="pSave">${D.id?'ບັນທຶກການແກ້ໄຂ':'ເພີ່ມສິນຄ້າ'}</button></div>`,
-mng:()=>PR.length?PR.map(p=>`<div class="cd pc"><div class="th">${p.img?`<img src="${p.img}">`:esc(p.name[0]||'?')}</div><div class="pi"><b>${esc(p.name)}</b><small>${p.opts.map(o=>esc(o.label)+' '+fm(o.price)).join(' · ')}</small><small>ສະຕັອກ ${stk(p)} ຊິ້ນ</small></div><div class="pb"><button data-ed="${p.id}">ແກ້ໄຂ</button><button class="dl" data-dl="${p.id}">ລຶບ</button></div></div>`).join(''):NO,
+mng:()=>PR.length?PR.map(p=>`<div class="cd pc"><div class="th">${p.img?`<img src="${p.img}">`:esc(p.name[0]||'?')}</div><div class="pi"><b>${esc(p.name)}</b><small>${p.opts.map(o=>esc(o.label)+' '+fm(o.price*1000)).join(' · ')}</small><small>ສະຕັອກ ${stk(p)} ຊິ້ນ</small></div><div class="pb"><button data-ed="${p.id}">ແກ້ໄຂ</button><button class="dl" data-dl="${p.id}">ລຶບ</button></div></div>`).join(''):NO,
 cin:()=>{if(!PR.length)return NO;const o=co(cp());if(!o)return NO;return `<div class="cd"><div class="ch"><b>ເພີ່ມລະຫັດເຂົ້າສິນຄ້າ</b><span>ສະຕັອກ ${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<textarea id="cTx" rows="7" placeholder="ວາງລະຫັດ — 1 ບັນທັດ = 1 ລະຫັດ">${esc(PS.t)}</textarea><div class="sub" id="cCt">${uq(PS.t).length} ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)</div><button class="hb" id="cOk">ເພີ່ມເຂົ້າສະຕັອກ</button></div>`},
 cout:()=>{if(!PR.length)return NO;const o=co(cp());if(!o)return NO;return `<div class="cd"><div class="ch"><b>ເອົາລະຫັດອອກຈາກສິນຄ້າ</b><span>${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<input id="rF" placeholder="ຄົ້ນຫາລະຫັດ" value="${esc(PS.f)}" style="margin-top:8px">
 <div class="rb"><button data-r="all">ເລືອກທັງໝົດທີ່ເຫັນ</button><button data-r="none">ຍົກເລີກເລືອກ</button><input id="rN" type="number" min="1" value="1"><button data-r="n">ເລືອກ N ອັນທຳອິດ</button></div>
@@ -304,7 +307,11 @@ if(i!==SX){const f=SX<0;if(f)ind.style.transition='none';ind.style.transform='tr
 if(f){void ind.offsetWidth;ind.style.transition=''}else{ind.classList.remove('go');void ind.offsetWidth;ind.classList.add('go')}SX=i}
 q('#pv').innerHTML=VW[PV]()}
 const ask=(h,t,o)=>{PX=o;sheet(`<h3>${h}</h3><p>${t}</p><button class="hb" id="pYes">ຢືນຢັນ</button><button class="hb gh" id="pNo">ຍົກເລີກ</button>`)};
-async function save(){const nm=D.name.trim(),os=D.opts;if(!nm)return toast('ໃສ່ຊື່ສິນຄ້າກ່ອນ');if(!os.length||os.some(o=>!o.label.trim()||!(+o.price>0)))return toast('ຕົວເລືອກຕ້ອງມີຊື່ ແລະ ລາຄາ');
+async function save(force){const nm=D.name.trim(),os=D.opts;if(!nm)return toast('ໃສ່ຊື່ສິນຄ້າກ່ອນ');if(!os.length||os.some(o=>!o.label.trim()||!(+o.price>0)))return toast('ຕົວເລືອກຕ້ອງມີຊື່ ແລະ ລາຄາ');
+// ລະບົບເຕີມ .000 ໃຫ້ເອງ: ຖ້າພິມ 10.000 (=10000) ຈະກາຍເປັນ 10.000.000 → ຖາມກ່ອນ ແລະ ມີປຸ່ມແກ້ອັດຕະໂນມັດ
+const big=os.filter(o=>+o.price>=1000);if(big.length&&!force){const fx=big.every(o=>+o.price%1000===0);
+ const rows=big.map(o=>`<div class="pcr"><span>${esc(o.label)}</span><b>${fm(+o.price*1000)}</b>${fx?`<i>→ ${fm(+o.price)}</i>`:''}</div>`).join('');
+ return sheet(`<h3>ຕ້ອງການຕັ້ງລາຄານີ້ແມ່ນບໍ?</h3><p>ລະບົບເຕີມ .000 ໃຫ້ອັດຕະໂນມັດ ລາຄານີ້ຈຶ່ງກາຍເປັນຈຳນວນສູງຫຼາຍ — ອາດພິມຜິດ</p>${rows}${fx?'<button class="hb" id="pFix">ແກ້ໄຂໃຫ້ອັດຕະໂນມັດ</button>':''}<button class="hb gh" id="pKeep">ຕັ້ງລາຄານີ້</button><button class="hb gh" id="pNo">ກັບໄປແກ້ເອງ</button>`)}
 const edit=!!D.id,payload={id:D.id>0?D.id:null,name:nm,desc:D.desc.trim(),img:D.img||'',opts:os.map(o=>({id:o.id>0?o.id:null,label:o.label.trim(),price:Math.round(+o.price)}))};
 const ok=await run(()=>rpc('admin_save_product',{p:payload}),edit?'ບັນທຶກການແກ້ໄຂແລ້ວ':'ເພີ່ມສິນຄ້າແລ້ວ');
 if(ok){D=nd();PV='mng';pr()}}
@@ -331,13 +338,15 @@ if(d.dl){const p=PR.find(x=>x.id==d.dl);return ask('ລຶບສິນຄ້າ�
 if(id==='cOk')return addCodes();if(d.r)rsel(d.r)});
 pt.addEventListener('input',e=>{const t=e.target;
 if(t.id==='pN')D.name=t.value;else if(t.id==='pD')D.desc=t.value;
-else if(t.dataset.o!==undefined){const k=t.dataset.k;D.opts[+t.dataset.o][k]=k==='price'?(t.value=t.value.replace(/\D/g,'')):t.value}
+else if(t.dataset.o!==undefined){const k=t.dataset.k;D.opts[+t.dataset.o][k]=k==='price'?(t.value=t.value.replace(/\D/g,'')):t.value;if(k==='price'){const r=t.closest('.or');r&&r.classList.toggle('bad',+t.value>=1000)}}
 else if(t.id==='cTx'){PS.t=t.value;q('#cCt').textContent=uq(t.value).length+' ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)'}
 else if(t.id==='rF'){PS.f=t.value;q('.cl').innerHTML=clh()}});
 pt.addEventListener('change',e=>{const t=e.target;
 if(t.dataset.s){if(t.dataset.s==='p'){PS.p=t.value;PS.o=''}else PS.o=t.value;PSEL.clear();PS.f='';return pr()}
 if(t.dataset.c!==undefined){t.checked?PSEL.add(t.dataset.c):PSEL.delete(t.dataset.c);return updS()}
 if(t.id==='pFile'&&t.files[0]){const f=new FileReader();f.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);D.img=c.toDataURL('image/jpeg',.8);pr()};im.src=f.result};f.readAsDataURL(t.files[0])}});
+q('#sh').addEventListener('click',e=>{const fixB=e.target.closest('#pFix'),keepB=e.target.closest('#pKeep');if(!fixB&&!keepB)return;closeSheet();
+ if(fixB){D.opts.forEach(o=>{if(+o.price>=1000&&+o.price%1000===0)o.price=String(+o.price/1000)});pr();save()}else save(true)});
 q('#sh').addEventListener('click',async e=>{if(e.target.closest('#pNo'))closeSheet();if(e.target.closest('#pYes')){closeSheet();const x=PX,o=co(cp());if(!x)return;
 if(x.k==='dp')await run(()=>rpc('admin_delete_product',{pid:x.id}),'ລຶບສິນຄ້າແລ້ວ');
 else if(x.k==='rm'){const L=[...PSEL];if(!o||!L.length)return;if(await run(async()=>{const n=await rpc('admin_remove_codes',{oid:o.id,codes:L});return 'ເອົາອອກ '+n+' ລະຫັດແລ້ວ'}))PSEL.clear()}
