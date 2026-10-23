@@ -352,7 +352,7 @@ let ov,card,body,tile,ghost,busy=false,openF=false,prevFocus,cleanup=null;
 let pend=null,liveShow=null; // pend = {ref,amount,thumb,status:'pending'|'approved'|'rejected',reason,unsub}
 const hd=title=>'<div class="cm-hd cm-it"><h2>'+title+'</h2></div>';
 const mk=()=>{
- ov=document.createElement('div');ov.className='cm-ov';
+ ov=document.createElement('div');ov.className='cm-ov';ov.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
  card=document.createElement('div');card.className='cm-card';card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');
  card.innerHTML='<svg class="bg" aria-hidden="true"><use href="#tbg"/></svg><div class="cm-body"></div>';
  body=card.querySelector('.cm-body');
@@ -398,7 +398,36 @@ function initHist(){
  const load=async()=>{
   if(!window._user||!window._sb){msg(hs('login'));return}
   try{const {data,error}=await window._sb.rpc('my_topup_history');if(error)throw error;paint(data)}catch(e){msg(hs('err'),true)}};
- load();
+ return load();
+}
+/* ---- ประวัติสั่งซื้อ (การ์ดที่เปิดจากปุ่ม HISTORY): อ่านจาก rpc my_orders() ของตัวเองเท่านั้น (สร้างด้วย orders.sql) ---- */
+const OS={
+ th:{total:'ยอดซื้อรวม',cnt:'สั่งซื้อแล้ว',times:'ครั้ง',last:'ซื้อล่าสุด',list:'รายการทั้งหมด',none:'ยังไม่มีรายการสั่งซื้อ',err:'โหลดประวัติไม่สำเร็จ ลองใหม่อีกครั้ง',login:'เข้าสู่ระบบเพื่อดูประวัติ',retry:'ลองใหม่',item:'สินค้า'},
+ lo:{total:'ຍອດຊື້ລວມ',cnt:'ສັ່ງຊື້ແລ້ວ',times:'ຄັ້ງ',last:'ຊື້ຄັ້ງລ່າສຸດ',list:'ລາຍການທັງໝົດ',none:'ຍັງບໍ່ມີລາຍການສັ່ງຊື້',err:'ໂຫຼດປະຫວັດບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ',login:'ເຂົ້າສູ່ລະບົບເພື່ອເບິ່ງປະຫວັດ',retry:'ລອງໃໝ່',item:'ສິນຄ້າ'}
+};
+const os=k=>(OS[lang]||OS.lo)[k];
+function buildOrders(){
+ return hd(t('tHistory'))+'<div class="hs-box cm-it" id="osBox"><div class="hs-msg">…</div></div>';
+}
+function initOrders(){
+ const box=document.getElementById('osBox');if(!box)return;
+ const msg=(m,retry)=>{box.innerHTML='<div class="hs-msg">'+hEsc(m)+(retry?'<br><button type="button" class="hs-rt">'+os('retry')+'</button>':'')+'</div>';
+  const b=box.querySelector('.hs-rt');if(b)b.onclick=load};
+ const paint=d=>{const sm=(d&&d.sum)||{},ls=(d&&d.list)||[];
+  const cell=(l,v)=>'<div class="hs-c"><small>'+l+'</small><b>'+v+'</b></div>';
+  let h='<div class="hs-sum"><div class="hs-c w"><small><i class="hs-dot o"></i>'+os('total')+'</small><b>'+fmt(+sm.total||0)+' ₭</b></div>'
+   +cell(os('cnt'),(+sm.count||0)+' '+os('times'))+cell(os('last'),sm.last?hDate(sm.last):'-')+'</div>';
+  if(!ls.length){box.innerHTML=h+'<div class="hs-msg">'+os('none')+'</div>';return}
+  h+='<div class="hs-lbl">'+os('list')+'</div><div class="hs-list">'+ls.map(x=>
+   '<div class="hs-r"><i class="hs-dot o"></i><div class="hs-m"><b>'+hEsc(x.name||os('item'))+'</b><div class="hs-d">'+hDate(x.at)+' · '+hTime(x.at)+'</div></div>'
+   +'<span class="hs-am">-'+fmt(+x.amount||0)+' ₭</span></div>').join('')+'</div>';
+  box.innerHTML=h};
+ const load=async()=>{
+  if(!window._user||!window._sb){msg(os('login'));return}
+  try{const {data,error}=await window._sb.rpc('my_orders');
+   if(error){if(error.code==='PGRST202'||/my_orders/.test(error.message||'')){paint(null);return}throw error}
+   paint(data)}catch(e){msg(os('err'),true)}};
+ return load();
 }
 /* ---- pending top-up: badge on the home tile + status updates ---- */
 const setBadge=()=>{const t=document.querySelector('[data-cm="topup"]');if(!t)return;let b=t.querySelector('.tp-badge');
@@ -576,25 +605,33 @@ addEventListener('storage',e=>{if(!e.key||e.key!==PK())return;
  if(!pend||pend.ref!==s.ref){detach();load();return}
  if(s.status!==pend.status)onStatus({status:s.status,reason:s.reason},true)});
 {const o=window._authUI;window._authUI=function(){const r=o&&o.apply(this,arguments);sync();setBadge();pill();return r};sync()}
-const KINDS={contact:{build:buildContact,init:initHist},topup:{build:buildTopup,init:initTopup}};
+const KINDS={contact:{build:buildContact,init:initHist},orders:{build:buildOrders,init:initOrders},topup:{build:buildTopup,init:initTopup}};
 const clip=(r,c,rad)=>'inset('+(r.top-c.top)+'px '+(c.right-r.right)+'px '+(c.bottom-r.bottom)+'px '+(r.left-c.left)+'px round '+rad+'px)';
 const FULL='inset(0px 0px 0px 0px round 26px)';
-function open(el,kind){
+/* ---- ล็อกหน้าเว็บด้านหลังตอนเปิดการ์ด (ใช้ได้บน iOS: ตรึง body แล้วคืนตำแหน่งเลื่อนตอนปิด) ---- */
+let lockY=0,locked=false,lockPrev='';
+const lockScroll=()=>{if(locked)return;locked=true;lockY=window.pageYOffset||0;const b=document.body;lockPrev=b.style.cssText;
+ b.style.cssText+=';position:fixed;top:'+(-lockY)+'px;left:0;right:0;width:100%;overflow:hidden'};
+const unlockScroll=()=>{if(!locked)return;locked=false;document.body.style.cssText=lockPrev;window.scrollTo({top:lockY,left:0,behavior:'instant'})};
+async function open(el,kind){
  if(busy||openF)return;busy=true;tile=el;pill();
  if(!ov)mk();
- const K=KINDS[kind];body.innerHTML=K.build();if(K.init)K.init();
+ const K=KINDS[kind];body.innerHTML=K.build();
+ const pr=K.init?K.init():null;
+ if(pr&&pr.then)await Promise.race([pr.catch(()=>{}),new Promise(r=>setTimeout(r,1200))]); // wait for the list so the card is measured at its real height (no jump/gap while it opens)
  const r=el.getBoundingClientRect();
  ov.classList.add('on');card.style.display='';
  // card sits on top of the tile: same top, centred on the tile, kept inside the viewport
  const vw=innerWidth,vh=innerHeight,cw=card.offsetWidth,ch=card.offsetHeight;
- const L=Math.max(12,Math.min(r.left+r.width/2-cw/2,vw-cw-12)),T=Math.max(12,Math.min(r.top,vh-ch-12));
+ const hdEl=document.querySelector('header.hd'),topY=Math.max(70,hdEl?Math.round(hdEl.getBoundingClientRect().bottom)+16:96); // card opens just under the top bar (above the banner), not at the tile's height
+ const L=Math.max(12,Math.min(r.left+r.width/2-cw/2,vw-cw-12)),T=Math.max(12,Math.min(topY,vh-ch-12));
  card.style.left=L+'px';card.style.top=T+'px';
  const c=card.getBoundingClientRect(),from=clip(r,c,20);
  ghost=document.createElement('div');ghost.className='tl cm-ghost';
  ghost.style.cssText='left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;--k:'+(el.style.getPropertyValue('--k')||10.5);
  el.querySelectorAll('.tx,.ico').forEach(n=>ghost.appendChild(n.cloneNode(true)));
  document.body.appendChild(ghost);
- document.body.style.overflow='hidden';prevFocus=document.activeElement;
+ lockScroll();prevFocus=document.activeElement;
  const items=[...body.querySelectorAll('.cm-it')];
  items.forEach(i=>i.style.opacity=0);
  const swap=card.animate([{opacity:0,filter:'blur(12px)'},{opacity:1,filter:'blur(0px)'}],{duration:D(420),easing:'ease-out',fill:'backwards'});
@@ -617,7 +654,13 @@ function close(){
  const r=tile.getBoundingClientRect(),c=card.getBoundingClientRect(),to=clip(r,c,20);
  const items=[...body.querySelectorAll('.cm-it')];
  tile.style.visibility=''; // real tile returns underneath while the card blurs out on top
+ // ghost copy of the tile's text+icon, exactly on the tile: it fades in as the card shrinks onto the tile, so the end of the shrink lines up with the real tile
+ const cg=document.createElement('div');cg.className='tl cm-ghost';
+ cg.style.cssText='left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;--k:'+(tile.style.getPropertyValue('--k')||10.5);
+ tile.querySelectorAll('.tx,.ico').forEach(n=>cg.appendChild(n.cloneNode(true)));
+ document.body.appendChild(cg);
  const A=[
+  cg.animate([{opacity:0,filter:'blur(8px)',transform:'scale(.94)'},{opacity:1,filter:'blur(0px)',transform:'scale(1)'}],{duration:D(380),delay:D(480),easing:'ease-out',fill:'both'}),
   ...items.map(i=>i.animate([{opacity:1,transform:'none'},{opacity:0,transform:'scale(.92)'}],{duration:D(220),easing:'ease-in',fill:'both'})),
   card.animate([{clipPath:FULL},{clipPath:to}],{duration:D(850),delay:D(120),easing:EASE_IO,fill:'both'}),
   card.animate([{opacity:1,filter:'blur(0px)'},{opacity:0,filter:'blur(12px)'}],{duration:D(380),delay:D(600),easing:'ease-in-out',fill:'both'}),
@@ -625,14 +668,14 @@ function close(){
   ov.animate([{opacity:1},{opacity:0}],{duration:D(650),delay:D(260),easing:'ease-in-out',fill:'both'})
  ];
  Promise.all(A.map(a=>a.finished)).catch(()=>{}).then(()=>{
-  A.forEach(a=>a.cancel());card.style.display='none';ov.classList.remove('on');body.innerHTML='';
-  document.body.style.overflow='';busy=false;pill();prevFocus&&prevFocus.focus&&prevFocus.focus({preventScroll:true});
+  A.forEach(a=>a.cancel());cg.remove();card.style.display='none';ov.classList.remove('on');body.innerHTML='';
+  unlockScroll();busy=false;pill();prevFocus&&prevFocus.focus&&prevFocus.focus({preventScroll:true});
  });
 }
 document.addEventListener('click',e=>{
  const el=e.target.closest('[data-cm]');if(!el)return;
  e.preventDefault();const k=el.dataset.cm;
- if((k==='topup'||k==='contact')&&!window._user){window.needLogin&&window.needLogin();return} // top-up needs a signed-in member
+ if((k==='topup'||k==='contact'||k==='orders')&&!window._user){window.needLogin&&window.needLogin();return} // top-up needs a signed-in member
  open(el,k);
 });
 })();
