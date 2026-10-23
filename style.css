@@ -864,3 +864,26 @@ input,textarea,select{font-size:16px!important}
 .cf-hero{margin:0 0 6px;height:min(28dvh,260px);border-radius:20px;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 14px 26px -16px rgba(0,0,0,.8)}
 .cf-hero::after{display:none}
 .cf-th{-webkit-mask-image:none;mask-image:none}
+
+/* ===== history cards (เติมเงิน + สั่งซื้อ): off-white grey, faint black gradient top-left -> bottom-right, black shadow under ===== */
+.hs-c,.hs-c.w,.hs-r{
+ background:linear-gradient(135deg,rgba(0,0,0,.14) 0%,rgba(0,0,0,.05) 45%,rgba(0,0,0,0) 100%),#e6e6e8;
+ box-shadow:0 12px 22px -8px rgba(0,0,0,.65),0 3px 6px rgba(0,0,0,.35)
+}
+.hs-c.w::after{display:none}
+
+/* ===== เติมเงิน (top-up): drop the glass look, same grey cards as history ===== */
+.cm-card .tp-sheet{background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;text-shadow:none;padding:0}
+.cm-card .tp-chip,.cm-card .tp-amt,.cm-card .tp-pay,.cm-card .tp-slip{
+ -webkit-backdrop-filter:none;backdrop-filter:none;text-shadow:none;border:0;color:#3a0710;
+ background:linear-gradient(135deg,rgba(0,0,0,.14) 0%,rgba(0,0,0,.05) 45%,rgba(0,0,0,0) 100%),#e6e6e8;
+ box-shadow:0 12px 22px -8px rgba(0,0,0,.65),0 3px 6px rgba(0,0,0,.35)}
+.cm-card .tp-chip[aria-pressed=true]{background:#fff;color:#c4112f;box-shadow:0 0 0 2.5px #c4112f,0 12px 22px -8px rgba(0,0,0,.65)}
+.cm-card .tp-amt:focus-within{background:#f2f2f3;box-shadow:0 0 0 2.5px #c4112f,0 12px 22px -8px rgba(0,0,0,.65)}
+.cm-card .tp-amt input{color:#3a0710}.cm-card .tp-amt input::placeholder{color:#3a0710;opacity:.35}
+.cm-card .tp-amt span{color:#c4112f}
+.cm-card .tp-pay small{color:#8e757a}
+.cm-card .tp-pay .qi{background:#c4112f;color:#fff}.cm-card .tp-pay .ck{color:#c4112f}
+.cm-card .tp-cta{background:linear-gradient(135deg,rgba(0,0,0,.14) 0%,rgba(0,0,0,.05) 45%,rgba(0,0,0,0) 100%),#e6e6e8;color:#c4112f;box-shadow:0 12px 22px -8px rgba(0,0,0,.65),0 3px 6px rgba(0,0,0,.35)}
+.cm-card .tp-cta:disabled{opacity:.6;box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
+.cm-card .tp-slip .sn{color:#3a0710}
