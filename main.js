@@ -40,7 +40,7 @@ const okImg=u=>typeof u==='string'&&/^(data:image\/|https?:\/\/)/i.test(u)&&!/["
 // แปลงสินค้าจากฐานข้อมูล -> แถวที่ card() ใช้: [ชื่อ, ราคา, รูป, สต็อก, HOT, ขายแล้ว, รายละเอียด, ตัวเลือก]
 const toRow=p=>{const opts=(p.opts||[]).map(o=>({n:String(o.label),pr:+o.price||0,left:+o.stock||0,sold:+o.sold||0})),
  stock=opts.reduce((a,o)=>a+o.left,0),sold=opts.reduce((a,o)=>a+o.sold,0),min=opts.length?Math.min(...opts.map(o=>o.pr)):0;
- return[String(p.name),min.toLocaleString('en-US')+' @cur',okImg(p.img),stock,0,sold,String(p.desc||''),opts]};
+ return[String(p.name),min.toLocaleString('en-US')+' @cur',okImg(p.img),stock,0,sold,String(p.desc||''),opts,String(p.status||'').toLowerCase(),Date.parse(p.created_at||p.createdAt||'')||0]};
 const applyCat=()=>{const R=CAT.list.map(toRow);F=R;
  W=R.filter(r=>r[5]>0).sort((a,b)=>b[5]-a[5]).slice(0,8).map(r=>{const x=r.slice();x[4]=1;return x});
  const st=R.reduce((a,r)=>a+r[3],0),e=$$('.stat .cnt')[1];
@@ -605,7 +605,87 @@ addEventListener('storage',e=>{if(!e.key||e.key!==PK())return;
  if(!pend||pend.ref!==s.ref){detach();load();return}
  if(s.status!==pend.status)onStatus({status:s.status,reason:s.reason},true)});
 {const o=window._authUI;window._authUI=function(){const r=o&&o.apply(this,arguments);sync();setBadge();pill();return r};sync()}
-const KINDS={contact:{build:buildContact,init:initHist},orders:{build:buildOrders,init:initOrders},topup:{build:buildTopup,init:initTopup}};
+
+/* ---- ซื้อสินค้า (การ์ดที่เปิดจากปุ่ม SHOPS): แท็บเลื่อนได้ + ไอคอนค้นหาที่ขยายเป็นช่องพิมพ์ ---- */
+const SP={
+ th:{ttl:'ซื้อสินค้า',ph:'พิมพ์ชื่อสินค้า...',all:'ทั้งหมด',best:'ขายดี',many:'ของเยอะ',nw:'เติมใหม่ๆ',low:'กำลังหมด',cheap:'ราคาถูก',pricey:'ราคาแพง',mt:'ปิดปรับปรุง',up:'ปิดอัพเดต',
+  n:'รายการ',none:'ไม่พบสินค้า',noneT:'ยังไม่มีสินค้าในหมวดนี้',mtB:'ปิดปรับปรุง',upB:'ปิดอัพเดต',srch:'ค้นหา',clr:'ล้าง'},
+ lo:{ttl:'ຊື້ສິນຄ້າ',ph:'ພິມຊື່ສິນຄ້າ...',all:'ທັງໝົດ',best:'ຂາຍດີ',many:'ຂອງຫຼາຍ',nw:'ເຕີມໃໝ່ໆ',low:'ກຳລັງຈະໝົດ',cheap:'ລາຄາຖືກ',pricey:'ລາຄາແພງ',mt:'ປິດປັບປຸງ',up:'ປິດອັບເດດ',
+  n:'ລາຍການ',none:'ບໍ່ພົບສິນຄ້າ',noneT:'ຍັງບໍ່ມີສິນຄ້າໃນໝວດນີ້',mtB:'ປິດປັບປຸງ',upB:'ປິດອັບເດດ',srch:'ຄົ້ນຫາ',clr:'ລ້າງ'}};
+const sp=k=>(SP[lang]||SP.lo)[k];
+const SPT=['all','best','many','nw','low','cheap','pricey','mt','up'];
+const spMin=r=>{const o=r[7]||[];return o.length?Math.min(...o.map(x=>x.pr)):0};
+const spClosed=r=>/maint|repair|ปรับปรุง|ปรับปุง/.test(r[8]||'')?'mt':/updat|upgrade|อัพเดต|อัปเดต/.test(r[8]||'')?'up':'';
+function spFilter(k){
+ const rows=(F||[]).map((r,i)=>({r,i})),open=x=>!spClosed(x.r);
+ switch(k){
+  case 'best':return rows.filter(x=>open(x)&&x.r[5]>0).sort((a,b)=>b.r[5]-a.r[5]);
+  case 'many':return rows.filter(x=>open(x)&&x.r[3]>=30).sort((a,b)=>b.r[3]-a.r[3]);
+  case 'nw':return rows.filter(open).sort((a,b)=>(b.r[9]-a.r[9])||(b.i-a.i));
+  case 'low':return rows.filter(x=>open(x)&&x.r[3]>0&&x.r[3]<10).sort((a,b)=>a.r[3]-b.r[3]);
+  case 'cheap':return rows.filter(open).sort((a,b)=>spMin(a.r)-spMin(b.r));
+  case 'pricey':return rows.filter(open).sort((a,b)=>spMin(b.r)-spMin(a.r));
+  case 'mt':return rows.filter(x=>spClosed(x.r)==='mt');
+  case 'up':return rows.filter(x=>spClosed(x.r)==='up');
+  default:return rows}}
+function buildShop(){
+ const ic='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
+ const x='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+ return '<div class="cm-hd cm-it"><h2>'+sp('ttl')+'</h2><button class="cm-x" type="button" aria-label="close">'+x+'</button></div>'
+ +'<div class="hs-box sp-box">'
+ +'<div class="sp-bar cm-it" id="spBar"><div class="sp-s"><button type="button" class="sp-si" id="spSi" aria-label="'+sp('srch')+'">'+ic+'</button><input id="spIn" type="search" enterkeyhint="search" autocomplete="off" placeholder="'+sp('ph')+'"><button type="button" class="sp-sx" id="spSx" aria-label="'+sp('clr')+'">'+x+'</button></div>'
+ +'<div class="sp-tabs" id="spTabs"><div class="sp-tr" id="spTr"><i class="sp-ind" id="spInd"></i>'+SPT.map((k,i)=>'<button type="button" class="sp-t'+(i?'':' on')+'" data-k="'+k+'">'+sp(k)+'</button>').join('')+'</div></div></div>'
+ +'<div class="sp-cnt cm-it" id="spCnt"></div><div class="sp-list cm-it" id="spList"></div></div>'}
+function initShop(){
+ const bar=document.getElementById('spBar'),inp=document.getElementById('spIn'),tabs=document.getElementById('spTabs'),tr=document.getElementById('spTr'),ind=document.getElementById('spInd'),list=document.getElementById('spList'),cnt=document.getElementById('spCnt');
+ if(!bar||!list)return;
+ let cur='all',q='';
+ const moveInd=()=>{const b=tr.querySelector('.sp-t.on');if(!b)return;ind.style.width=b.offsetWidth+'px';ind.style.transform='translateX('+b.offsetLeft+'px)'};
+ const tick=()=>{if(!list.isConnected)return clearInterval(w);if(CAT.state!=='load'){clearInterval(w);paint()}};
+ const norm=s=>String(s||'').toLowerCase().normalize('NFC').trim();
+ const row=(x,i)=>{const r=x.r,c=spClosed(r),out=r[3]<=0,dis=c||out,s=+r[3]||0,nm=String(r[0]).replace('@day',t('day'));
+  const k=s>=30?'hi':s>=10?'mid':'low',pr=spMin(r);
+  const img=r[2]?'<img src="'+escH(r[2])+'" alt="" loading="lazy">':'<svg aria-hidden="true"><use href="#tbg" width="100%" height="100%"/></svg>';
+  return '<div class="sp-r" style="--i:'+Math.min(i,10)+'"><div class="sp-im">'+img+'</div><div class="sp-m"><b>'+escH(nm)+'</b><div class="sp-p">'+fmt(pr)+' '+t('cur')+'</div>'
+  +'<div class="sp-kk">'+(c?'<span class="sp-k cl">'+sp(c==='mt'?'mtB':'upB')+'</span>':'<span class="sp-k '+k+'">'+t('stock')+' '+fmt(s)+'</span>')+(r[5]>0?'<span class="sp-k so">'+t('sold')+' '+fmt(r[5])+'</span>':'')+'</div></div>'
+  +'<button type="button" class="sp-buy" data-i="'+x.i+'"'+(dis?' disabled':'')+'>'+(out&&!c?t('out'):c?'—':t('buy')+' '+cart)+'</button></div>'};
+ function paint(){
+  list.scrollTop=0;
+  if(CAT.state==='load'){cnt.textContent='';list.innerHTML='<div class="hs-msg">…</div>';return}
+  if(CAT.state==='err'&&!F.length){cnt.textContent='';list.innerHTML='<div class="hs-msg">'+escH(t('loadErr'))+'</div>';return}
+  let a=spFilter(cur);const n=norm(q);
+  if(n)a=a.filter(x=>norm(String(x.r[0]).replace('@day',t('day'))).includes(n));
+  cnt.textContent=a.length+' '+sp('n');
+  list.innerHTML=a.length?a.map(row).join(''):'<div class="hs-msg">'+sp(n?'none':'noneT')+'</div>'}
+ const pick=b=>{if(!b||b.classList.contains('on'))return;tr.querySelectorAll('.sp-t.on').forEach(e=>e.classList.remove('on'));b.classList.add('on');cur=b.dataset.k;moveInd();
+  tabs.scrollTo({left:b.offsetLeft-(tabs.clientWidth-b.offsetWidth)/2,behavior:'smooth'});paint()};
+ tr.addEventListener('click',e=>pick(e.target.closest('.sp-t')));
+ // เลื่อนแท็บด้วยเมาส์ (บนมือถือเลื่อนด้วยนิ้วได้อยู่แล้ว)
+ let dx=0,sx=0,drag=false,moved=false;
+ tabs.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')return;drag=true;moved=false;sx=e.clientX;dx=tabs.scrollLeft});
+ const pm=e=>{if(!drag)return;const d=e.clientX-sx;if(Math.abs(d)>4)moved=true;tabs.scrollLeft=dx-d},pu=()=>{drag=false};
+ addEventListener('pointermove',pm);addEventListener('pointerup',pu);
+ tabs.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false}},true);
+ // ไอคอนค้นหา -> ช่องพิมพ์เลื่อนออกมา
+ const openS=()=>{bar.classList.add('sr');setTimeout(()=>inp.focus({preventScroll:true}),260)};
+ const closeS=()=>{bar.classList.remove('sr');inp.blur()};
+ document.getElementById('spSi').addEventListener('click',()=>bar.classList.contains('sr')?(inp.value?inp.focus():closeS()):openS());
+ document.getElementById('spSx').addEventListener('click',()=>{inp.value='';q='';paint();closeS()});
+ inp.addEventListener('input',()=>{q=inp.value;paint()});
+ inp.addEventListener('blur',()=>{if(!inp.value)setTimeout(closeS,120)});
+ inp.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();inp.value='';q='';paint();closeS()}else if(e.key==='Enter')inp.blur()});
+ // ปุ่มซื้อ: ปิดการ์ดนี้ก่อน แล้วเปิดการ์ดยืนยันการสั่งซื้อเดิมของเว็บ (login เช็คที่เดิม)
+ list.addEventListener('click',e=>{const b=e.target.closest('.sp-buy');if(!b||b.disabled)return;
+  const r=F[+b.dataset.i];if(!r)return;e.stopPropagation();close();
+  let n=0;const w2=setInterval(()=>{if(++n>60)return clearInterval(w2);if(card.style.display!=='none'||busy)return;clearInterval(w2);
+   const pi=PR.indexOf(r),btn=pi>=0&&document.querySelector('#featGrid .buy[data-pi="'+pi+'"]');if(!btn)return;
+   btn.scrollIntoView({block:'center',behavior:'instant'});
+   if(window._user&&window.openBuy)window.openBuy(btn);else window.needLogin&&window.needLogin()},60)});
+ paint();requestAnimationFrame(moveInd);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(moveInd);
+ const w=CAT.state==='load'?setInterval(tick,400):0;
+ cleanup=()=>{clearInterval(w);drag=false;removeEventListener('pointermove',pm);removeEventListener('pointerup',pu)};
+}
+const KINDS={contact:{build:buildContact,init:initHist},orders:{build:buildOrders,init:initOrders},topup:{build:buildTopup,init:initTopup},shop:{build:buildShop,init:initShop}};
 const clip=(r,c,rad)=>'inset('+(r.top-c.top)+'px '+(c.right-r.right)+'px '+(c.bottom-r.bottom)+'px '+(r.left-c.left)+'px round '+rad+'px)';
 const FULL='inset(0px 0px 0px 0px round 26px)';
 /* ---- ล็อกหน้าเว็บด้านหลังตอนเปิดการ์ด (ใช้ได้บน iOS: ตรึง body แล้วคืนตำแหน่งเลื่อนตอนปิด) ---- */
