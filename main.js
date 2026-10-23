@@ -893,16 +893,16 @@ document.addEventListener('click',e=>{
 /* ---- ใช้ค่าจากห้องแอดมิน > ตั้งค่าร้าน (site_settings ผ่าน rpc get_site_settings): ชื่อร้าน, โลโก้, รูปหน้าร้าน, หมวดหมู่ ---- */
 (()=>{
  const sbx=window._sb;if(!sbx)return;
- const apply=d=>{if(!d||typeof d!=='object')return;
+ let FL=[];const apply=d=>{if(!d||typeof d!=='object')return;
   const nm=typeof d.name==='string'?d.name.trim().slice(0,40):'';
   if(nm){document.title=nm;
    const a=document.querySelector('#dr .t>div');if(a&&a.lastChild&&a.lastChild.nodeType===3)a.lastChild.nodeValue=nm;
    const b=document.querySelector('.hd2 b');if(b)b.textContent=nm}
   IMG.logo=okImg(d.logo);IMG.banner=okImg(d.front);
   C.length=0;
-  (Array.isArray(d.cats)?d.cats:[]).forEach(c=>{const n=c&&typeof c.name==='string'?c.name.trim():'';if(n)C.push([n,okImg(c.img)])});
+  (Array.isArray(d.cats)?d.cats:[]).forEach((c,i)=>{const n=c&&typeof c.name==='string'?c.name.trim():'';if(n&&FL[i]!==false)C.push([n,okImg(c.img)])});
   render()};
- const load=()=>sbx.rpc('get_site_settings').then(({data,error})=>{if(!error)apply(data)}).catch(()=>{});
+ const load=()=>Promise.all([sbx.rpc('get_site_settings'),sbx.rpc('shop_cat_flags_get').then(r=>r,()=>({data:null}))]).then(([s,f])=>{if(f&&Array.isArray(f.data))FL=f.data;if(s&&!s.error)apply(s.data)}).catch(()=>{});
  load();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
 })();

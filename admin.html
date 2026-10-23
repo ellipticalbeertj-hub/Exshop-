@@ -260,10 +260,10 @@ closePeriod:async note=>{await rpc('admin_close_period',{note:(note||'').trim().
 const q=s=>document.querySelector(s);
 // ===== ຈັດການສິນຄ້າ (ຂໍ້ມູນຈິງ) — ເຊື່ອມ Supabase ຜ່ານ rpc admin_* (ກວດສິດແອດມິນຝັ່ງຖານຂໍ້ມູນ) =====
 var PR=[];let PV='add',PS={p:'',o:'',f:'',t:''},PSEL=new Set(),PX=null,OID=0,BUSY=false;
-const nd=()=>({id:0,name:'',desc:'',img:'',opts:[{id:--OID,label:'1 ມື້',price:''}]});let D=nd();
+const nd=()=>({id:0,name:'',desc:'',img:'',cat:'',opts:[{id:--OID,label:'1 ມື້',price:''}]});let D=nd();
 // ເອີ້ນ rpc ແລ້ວໂຍນ error ຖ້າລົ້ມເຫຼວ
 const rpc=async(fn,args)=>{const {data,error}=await sb.rpc(fn,args||{});if(error)throw error;return data};
-const loadCat=async()=>{const d=await rpc('admin_catalog');PR=Array.isArray(d)?d.map(p=>({id:p.id,name:p.name,desc:p.desc||'',img:p.img||'',opts:(p.opts||[]).map(o=>({id:o.id,label:o.label,price:+o.price,codes:o.codes||[]}))})):[]};
+const loadCat=async()=>{const d=await rpc('admin_catalog');let cm={};try{cm=(await rpc('shop_product_cats_get'))||{}}catch(e){}PR=Array.isArray(d)?d.map(p=>({id:p.id,name:p.name,desc:p.desc||'',img:p.img||'',cat:cm[p.id]!=null?String(cm[p.id]):'',opts:(p.opts||[]).map(o=>({id:o.id,label:o.label,price:+o.price,codes:o.codes||[]}))})):[]};
 // ເຮັດວຽກກັບຖານຂໍ້ມູນ: ກັນກົດຊ້ຳ, ໂຫຼດຂໍ້ມູນໃໝ່ຫຼັງສຳເລັດ, ແຈ້ງຂໍ້ຜິດພາດ
 const run=async(fn,okMsg)=>{if(BUSY)return false;BUSY=true;document.body.style.cursor='progress';
 try{const m=await fn();await loadCat();pr();toast(typeof m==='string'&&m?m:okMsg);return true}
@@ -282,12 +282,13 @@ add:()=>`<div class="cd"><div class="ch"><b>${D.id?'ແກ້ໄຂສິນຄ�
 <label class="im">${D.img?`<img src="${D.img}">`:'<span>+ ຮູບ</span>'}<input type="file" accept="image/*" id="pFile" hidden></label>
 <label class="fi">ຊື່ສິນຄ້າ<input id="pN" maxlength="60" value="${esc(D.name)}"></label>
 <label class="fi">ລາຍລະອຽດສິນຄ້າ<textarea id="pD" rows="3" maxlength="500">${esc(D.desc)}</textarea></label>
+<label class="fi">ໝວດໝູ່<select id="pCat"><option value="">— ບໍ່ເລືອກໝວດໝູ່ —</option>${SET.cats.map((c,i)=>`<option value="${i}" ${String(D.cat)===String(i)?'selected':''}>${esc(c.name||('ໝວດ '+(i+1)))}</option>`).join('')}</select></label>
 <div class="ch" style="margin-top:14px"><b>ຕົວເລືອກ / ໄລຍະເວລາ + ລາຄາ</b></div>
 ${D.opts.map((o,i)=>`<div class="or${+o.price>=1000?' bad':''}"><input data-o="${i}" data-k="label" maxlength="40" placeholder="ເຊັ່ນ 1 ມື້" value="${esc(o.label)}"><label class="pw"><input data-o="${i}" data-k="price" inputmode="numeric" placeholder="ລາຄາ" value="${esc(o.price)}"><span>.000</span></label><button class="x" data-ox="${i}">✕</button></div>`).join('')}
 <div class="qk">${['1 ມື້','3 ມື້','7 ມື້','30 ມື້'].map(t=>`<button data-q="${t}">+ ${t}</button>`).join('')}<button data-q="">+ ກຳນົດເອງ</button></div>
 ${D.id?'<div class="sub">ລຶບຕົວເລືອກ = ລະຫັດໃນຕົວເລືອກນັ້ນຫາຍໄປນຳ</div>':''}
 <button class="hb" id="pSave">${D.id?'ບັນທຶກການແກ້ໄຂ':'ເພີ່ມສິນຄ້າ'}</button></div>`,
-mng:()=>PR.length?PR.map(p=>`<div class="cd pc"><div class="th">${p.img?`<img src="${p.img}">`:esc(p.name[0]||'?')}</div><div class="pi"><b>${esc(p.name)}</b><small>${p.opts.map(o=>esc(o.label)+' '+fm(o.price*1000)).join(' · ')}</small><small>ສະຕັອກ ${stk(p)} ຊິ້ນ</small></div><div class="pb"><button data-ed="${p.id}">ແກ້ໄຂ</button><button class="dl" data-dl="${p.id}">ລຶບ</button></div></div>`).join(''):NO,
+mng:()=>PR.length?PR.map(p=>`<div class="cd pc"><div class="th">${p.img?`<img src="${p.img}">`:esc(p.name[0]||'?')}</div><div class="pi"><b>${esc(p.name)}</b><small>${p.opts.map(o=>esc(o.label)+' '+fm(o.price*1000)).join(' · ')}</small><small>ສະຕັອກ ${stk(p)} ຊິ້ນ${p.cat!==''&&SET.cats[+p.cat]?' · ໝວດ '+esc(SET.cats[+p.cat].name):''}</small></div><div class="pb"><button data-ed="${p.id}">ແກ້ໄຂ</button><button class="dl" data-dl="${p.id}">ລຶບ</button></div></div>`).join(''):NO,
 cin:()=>{if(!PR.length)return NO;const o=co(cp());if(!o)return NO;return `<div class="cd"><div class="ch"><b>ເພີ່ມລະຫັດເຂົ້າສິນຄ້າ</b><span>ສະຕັອກ ${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<textarea id="cTx" rows="7" placeholder="ວາງລະຫັດ — 1 ບັນທັດ = 1 ລະຫັດ">${esc(PS.t)}</textarea><div class="sub" id="cCt">${uq(PS.t).length} ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)</div><button class="hb" id="cOk">ເພີ່ມເຂົ້າສະຕັອກ</button></div>`},
 cout:()=>{if(!PR.length)return NO;const o=co(cp());if(!o)return NO;return `<div class="cd"><div class="ch"><b>ເອົາລະຫັດອອກຈາກສິນຄ້າ</b><span>${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<input id="rF" placeholder="ຄົ້ນຫາລະຫັດ" value="${esc(PS.f)}" style="margin-top:8px">
 <div class="rb"><button data-r="all">ເລືອກທັງໝົດທີ່ເຫັນ</button><button data-r="none">ຍົກເລີກເລືອກ</button><input id="rN" type="number" min="1" value="1"><button data-r="n">ເລືອກ N ອັນທຳອິດ</button></div>
@@ -313,7 +314,10 @@ const big=os.filter(o=>+o.price>=1000);if(big.length&&!force){const fx=big.every
  const rows=big.map(o=>`<div class="pcr"><span>${esc(o.label)}</span><b>${fm(+o.price*1000)}</b>${fx?`<i>→ ${fm(+o.price)}</i>`:''}</div>`).join('');
  return sheet(`<h3>ຕ້ອງການຕັ້ງລາຄານີ້ແມ່ນບໍ?</h3><p>ລະບົບເຕີມ .000 ໃຫ້ອັດຕະໂນມັດ ລາຄານີ້ຈຶ່ງກາຍເປັນຈຳນວນສູງຫຼາຍ — ອາດພິມຜິດ</p>${rows}${fx?'<button class="hb" id="pFix">ແກ້ໄຂໃຫ້ອັດຕະໂນມັດ</button>':''}<button class="hb gh" id="pKeep">ຕັ້ງລາຄານີ້</button><button class="hb gh" id="pNo">ກັບໄປແກ້ເອງ</button>`)}
 const edit=!!D.id,payload={id:D.id>0?D.id:null,name:nm,desc:D.desc.trim(),img:D.img||'',opts:os.map(o=>({id:o.id>0?o.id:null,label:o.label.trim(),price:Math.round(+o.price)}))};
-const ok=await run(()=>rpc('admin_save_product',{p:payload}),edit?'ບັນທຶກການແກ້ໄຂແລ້ວ':'ເພີ່ມສິນຄ້າແລ້ວ');
+let catErr=false;
+const ok=await run(async()=>{const pid=await rpc('admin_save_product',{p:payload});
+if(pid){try{await rpc('admin_set_product_cat',{pid:pid,cat:(D.cat===''||D.cat==null)?null:+D.cat})}catch(e){catErr=true}}
+return catErr?'ບັນທຶກສິນຄ້າແລ້ວ ແຕ່ບັນທຶກໝວດໝູ່ບໍ່ໄດ້ ລອງແກ້ໄຂສິນຄ້າແລ້ວເລືອກໝວດໝູ່ອີກຄັ້ງ':''},edit?'ບັນທຶກການແກ້ໄຂແລ້ວ':'ເພີ່ມສິນຄ້າແລ້ວ');
 if(ok){D=nd();PV='mng';pr()}}
 async function addCodes(){const o=co(cp()),L=uq(PS.t);if(!L.length)return toast('ວາງລະຫັດກ່ອນ');
 const ok=await run(async()=>{let n=0;for(let i=0;i<L.length;i+=1000)n+=+(await rpc('admin_add_codes',{oid:o.id,codes:L.slice(i,i+1000)}))||0;PS.t='';return 'ເພີ່ມ '+n+' ລະຫັດ'+(L.length>n?' · ຂ້າມຊ້ຳ '+(L.length-n):'')})}
@@ -333,7 +337,7 @@ if(id==='pCan'){D=nd();return pr()}
 if(d.q!==undefined){D.opts.push({id:--OID,label:d.q,price:''});return pr()}
 if(d.ox!==undefined){D.opts.splice(+d.ox,1);if(!D.opts.length)D.opts.push(nd().opts[0]);return pr()}
 if(id==='pSave')return save();
-if(d.ed){const p=PR.find(x=>x.id==d.ed);D={id:p.id,name:p.name,desc:p.desc,img:p.img,opts:p.opts.map(o=>({id:o.id,label:o.label,price:String(o.price)}))};PV='add';pr();return scrollTo(0,0)}
+if(d.ed){const p=PR.find(x=>x.id==d.ed);D={id:p.id,name:p.name,desc:p.desc,img:p.img,cat:p.cat,opts:p.opts.map(o=>({id:o.id,label:o.label,price:String(o.price)}))};PV='add';pr();return scrollTo(0,0)}
 if(d.dl){const p=PR.find(x=>x.id==d.dl);return ask('ລຶບສິນຄ້ານີ້ບໍ?','"'+esc(p.name)+'" ແລະ ລະຫັດທັງໝົດ ('+stk(p)+' ຊິ້ນ) ຈະຖືກລຶບ',{k:'dp',id:p.id})}
 if(id==='cOk')return addCodes();if(d.r)rsel(d.r)});
 pt.addEventListener('input',e=>{const t=e.target;
@@ -342,6 +346,7 @@ else if(t.dataset.o!==undefined){const k=t.dataset.k;D.opts[+t.dataset.o][k]=k==
 else if(t.id==='cTx'){PS.t=t.value;q('#cCt').textContent=uq(t.value).length+' ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)'}
 else if(t.id==='rF'){PS.f=t.value;q('.cl').innerHTML=clh()}});
 pt.addEventListener('change',e=>{const t=e.target;
+if(t.id==='pCat'){D.cat=t.value;return}
 if(t.dataset.s){if(t.dataset.s==='p'){PS.p=t.value;PS.o=''}else PS.o=t.value;PSEL.clear();PS.f='';return pr()}
 if(t.dataset.c!==undefined){t.checked?PSEL.add(t.dataset.c):PSEL.delete(t.dataset.c);return updS()}
 if(t.id==='pFile'&&t.files[0]){const f=new FileReader();f.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);D.img=c.toDataURL('image/jpeg',.8);pr()};im.src=f.result};f.readAsDataURL(t.files[0])}});
@@ -438,7 +443,7 @@ function paintSet(){q('#pg-settings').innerHTML=`
 <span class="sl">ຊື່ຮ້ານ</span><input data-k="name" maxlength="40" value="${esc(SET.name)}" placeholder="ຊື່ຮ້ານ">
 <span class="sl">ໂລໂກ້ຮ້ານ</span><div style="width:110px">${ibox('logo','sq ct','ໂລໂກ້')}</div>
 <span class="sl">ຮູບໜ້າຮ້ານ</span>${ibox('front','wd','ຮູບໜ້າຮ້ານ')}</div>
-<div class="cd"><div class="ch"><b>ໝວດໝູ່ສິນຄ້າ</b><span>4 ໝວດ</span></div><div class="cg">${SET.cats.map((c,i)=>`<div class="sbx">${ibox('c'+i,'sq','ຮູບໝວດ '+(i+1))}<input data-k="c${i}" maxlength="20" value="${esc(c.name)}" placeholder="ຊື່ໝວດໝູ່ ${i+1}"></div>`).join('')}</div></div>
+<div class="cd"><div class="ch"><b>ໝວດໝູ່ສິນຄ້າ</b><span>4 ໝວດ</span></div><div class="cg">${SET.cats.map((c,i)=>`<div class="sbx">${ibox('c'+i,'sq','ຮູບໝວດ '+(i+1))}<input data-k="c${i}" maxlength="20" value="${esc(c.name)}" placeholder="ຊື່ໝວດໝູ່ ${i+1}"><label class="tg cf"><input type="checkbox" data-cf="${i}" ${c.on!==false?'checked':''}><span>ສະແດງ</span><b class="tgs ${c.on!==false?'on':''}">${c.on!==false?'ເປີດ':'ປິດ'}</b></label></div>`).join('')}</div><div class="sub">ປິດ = ລູກຄ້າຈະບໍ່ເຫັນໝວດໝູ່ນັ້ນໜ້າເວັບ · ສະວິດບັນທຶກທັນທີ</div></div>
 <div class="cd"><div class="ch"><b>ຊ່ອງທາງຕິດຕໍ່ລູກຄ້າ</b><span>4 ຊ່ອງ</span></div>${SET.links.map((x,i)=>`<div class="lr"><input data-k="l${i}l" maxlength="20" value="${esc(x.l)}" placeholder="ຊື່ຊ່ອງທາງ"><input data-k="l${i}u" inputmode="url" value="${esc(x.u)}" placeholder="https://…"></div>`).join('')}<div class="sub">ເວັ້ນວ່າງໄວ້ = ບໍ່ສະແດງຊ່ອງນັ້ນ</div></div>
 <div class="cd"><div class="ch"><b>QR ຮັບໂອນເງິນ</b></div><div style="max-width:220px">${ibox('qr','sq ct','ໃສ່ QR')}</div></div>
 <div class="cd"><div class="ch"><b>ຮູບໂປຣໂມຊັນຕອນເຂົ້າເວັບ</b></div>${ibox('promo','wd','ຮູບໂປຣໂມຊັນ')}<label class="tg"><input type="checkbox" data-k="promoOn" ${SET.promoOn?'checked':''}><span>ສະແດງປ໊ອບອັບນີ້ຕອນລູກຄ້າເຂົ້າເວັບ</span><b class="tgs ${SET.promoOn?'on':''}">${SET.promoOn?'ເປີດ':'ປິດ'}</b></label><div class="sub">ສະວິດນີ້ບັນທຶກທັນທີ · ປິດ = ລູກຄ້າຈະບໍ່ເຫັນປ໊ອບອັບ</div></div>
@@ -454,7 +459,7 @@ SET.logo=p.logo||'';SET.front=p.front||'';SET.qr=p.qr||'';SET.promo=p.promo||'';
 (Array.isArray(p.cats)?p.cats:[]).slice(0,4).forEach((c,i)=>{SET.cats[i]={img:(c&&c.img)||'',name:c&&c.name!=null?c.name:SET.cats[i].name}});
 (Array.isArray(p.links)?p.links:[]).slice(0,4).forEach((x,i)=>{SET.links[i]={l:x&&x.l!=null?x.l:SET.links[i].l,u:(x&&x.u)||''}});
 SET.nTop=v.nTop||'';SET.nReg=v.nReg||''};
-const loadSet=async()=>{try{applySet(await rpc('admin_get_settings'));SL=true;const y=scrollY;paintSet();scrollTo(0,y)}catch(e){toast('ໂຫຼດການຕັ້ງຄ່າບໍ່ສຳເລັດ — ລອງເປີດໃໝ່ອີກຄັ້ງ')}};
+const loadSet=async()=>{try{applySet(await rpc('admin_get_settings'));try{const f=await rpc('shop_cat_flags_get');if(Array.isArray(f))f.slice(0,4).forEach((v,i)=>{SET.cats[i].on=v!==false})}catch(e){}SL=true;try{pr()}catch(e){}const y=scrollY;paintSet();scrollTo(0,y)}catch(e){toast('ໂຫຼດການຕັ້ງຄ່າບໍ່ສຳເລັດ — ລອງເປີດໃໝ່ອີກຄັ້ງ')}};
 const d2b=u=>{const i=u.indexOf(','),m=/^data:([^;,]+)/.exec(u.slice(0,i)),s=atob(u.slice(i+1)),a=new Uint8Array(s.length);for(let k=0;k<s.length;k++)a[k]=s.charCodeAt(k);return new Blob([a],{type:m?m[1]:'image/jpeg'})};
 const upImg=async(k,v)=>{if(!v||v.slice(0,5)!=='data:')return v||'';const b=d2b(v),ext=b.type==='image/png'?'png':'jpg',path=k+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
 const {error}=await sb.storage.from('site-assets').upload(path,b,{contentType:b.type,cacheControl:'31536000'});if(error)throw error;
@@ -470,13 +475,18 @@ if(!np){const y=scrollY;paintSet();scrollTo(0,y);toast('ບັນທຶກກາ
 catch(er){toast(er&&er.code==='42501'?'ບໍ່ມີສິດແອດມິນ':'ບັນທຶກບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ');return false}
 finally{SV=false;const b2=q('#sSave');b2&&(b2.disabled=false)}};
 const togglePromo=async t=>{const on=t.checked,prev=!on;SET.promoOn=on;
-const paintT=v=>{const l=q('#pg-settings .tgs');if(l){l.textContent=v?'ເປີດ':'ປິດ';l.classList.toggle('on',v)}};paintT(on);
+const paintT=v=>{const l=t.closest('.tg').querySelector('.tgs');if(l){l.textContent=v?'ເປີດ':'ປິດ';l.classList.toggle('on',v)}};paintT(on);
 const revert=()=>{SET.promoOn=prev;t.checked=prev;paintT(prev)};
 const U=/^https?:\/\/\S+$/i,bad=[...SET.links.map(x=>x.u),SET.nTop,SET.nReg].map(v=>v.trim()).find(v=>v&&!U.test(v));
 if(!SET.name.trim()){toast('ໃສ່ຊື່ຮ້ານກ່ອນ');revert();return}
 if(bad){toast('ລິ້ງຕ້ອງຂຶ້ນຕົ້ນດ້ວຍ http:// ຫຼື https://');revert();return}
 t.disabled=true;const ok=await saveSet(true);t.disabled=false;
 if(ok)toast(on?'ເປີດໂປຣໂມຊັນແລ້ວ':'ປິດໂປຣໂມຊັນແລ້ວ');else revert()};
+const toggleCat=async t=>{const i=+t.dataset.cf,on=t.checked,lab=t.closest('.tg').querySelector('.tgs');
+const paintT=v=>{lab.textContent=v?'ເປີດ':'ປິດ';lab.classList.toggle('on',v)};paintT(on);t.disabled=true;
+try{await rpc('admin_set_cat_flag',{i:i,v:on});SET.cats[i].on=on;toast(on?'ເປີດສະແດງໝວດໝູ່ແລ້ວ':'ປິດສະແດງໝວດໝູ່ແລ້ວ')}
+catch(e){t.checked=!on;paintT(!on);toast(e&&e.code==='42501'?'ບໍ່ມີສິດແອດມິນ':'ບັນທຶກບໍ່ສຳເລັດ (ຍັງບໍ່ໄດ້ຮັນ SQL ຫຼືບໍ?)')}
+finally{t.disabled=false}};
 function initSet(){paintSet();loadSet();const pt=q('#pg-settings'),U=/^https?:\/\/\S+$/i;
 const setK=(k,v)=>{if(k==='name'||k==='nTop'||k==='nReg')SET[k]=v;else if(k==='promoOn')SET.promoOn=v;else if(/^c\d$/.test(k))SET.cats[+k[1]].name=v;else{const m=k.match(/^l(\d)([lu])$/);if(m)SET.links[+m[1]][m[2]]=v}};
 pt.addEventListener('input',e=>{const k=e.target.dataset.k;if(k&&e.target.type!=='checkbox')setK(k,e.target.value)});
@@ -487,6 +497,7 @@ const bad=[...SET.links.map(x=>x.u),SET.nTop,SET.nReg].map(v=>v.trim()).find(v=>
 if(bad)return toast('ລິ້ງຕ້ອງຂຶ້ນຕົ້ນດ້ວຍ http:// ຫຼື https://');
 saveSet()}});
 pt.addEventListener('change',e=>{const t=e.target;
+if(t.dataset.cf!==undefined)return toggleCat(t);
 if(t.dataset.k==='promoOn')return togglePromo(t);
 const k=t.dataset.f;if(!k||!t.files[0])return;
 const f=new FileReader();f.onload=()=>{const im=new Image();im.onload=()=>{const keep=k==='logo'||k==='qr',mx=k==='logo'?256:k==='qr'?640:900,sc=Math.min(1,mx/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*sc;c.height=im.height*sc;const g=c.getContext('2d');if(!keep){g.fillStyle='#000';g.fillRect(0,0,c.width,c.height)}g.drawImage(im,0,0,c.width,c.height);simg(k,keep?c.toDataURL('image/png'):c.toDataURL('image/jpeg',.82));const y=scrollY;paintSet();scrollTo(0,y)};im.onerror=()=>toast('ໄຟລ໌ຮູບນີ້ເປີດບໍ່ໄດ້');im.src=f.result};f.readAsDataURL(t.files[0])})}
