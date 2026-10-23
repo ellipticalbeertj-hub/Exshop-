@@ -327,18 +327,12 @@ okb.onclick=async()=>{
 
 
 /* ===== Tile -> card morph (CONTACT and TOPUP tiles) =====
-   Edit CM_CH to put the shop's real contact links.
    Top-up payment hooks (optional, set these from your own code when the QR provider is connected):
      window.createTopupQR(amount) -> Promise<{qr:string, ref:string}>   (qr = text to draw as the QR code)
      window.submitSlip({ref,amount,file}) -> Promise   (upload the slip image `file` + save a pending top-up for the admin to verify)
      window.watchTopup(ref, cb) -> unsubscribe fn      (call cb({status:'pending'|'approved'|'rejected', reason}) whenever the admin decides; e.g. Supabase realtime)
    Without the hooks the top-up card runs as a demo (sample QR, slip is not sent anywhere). */
 (function(){
-const CM_CH=[
- {n:'Facebook',s:'Facebook Page',u:'https://facebook.com/',c:'#1877f2',l:'f'},
- {n:'WhatsApp',s:'WhatsApp',u:'https://wa.me/',c:'#12a150',l:'W'},
- {n:'Telegram',s:'Telegram',u:'https://t.me/',c:'#229ed9',l:'T'}
-];
 const TP={
  lo:{title:"ເຕີມເງິນ",pick:"ເລືອກຈຳນວນເງິນ",own:"ຫຼືພິມຈຳນວນທີ່ຕ້ອງການ",method:"ຊ່ອງທາງຊຳລະ",qrOnly:"ຊຳລະດ້ວຍ QR",qrSub:"ສະແກນຈ່າຍຜ່ານແອັບທະນາຄານ",make:"ສ້າງ QR",scan:"ສະແກນເພື່ອຊຳລະ",exp:"QR ໝົດອາຍຸໃນ",dead:"QR ໝົດອາຍຸ",check:"ກວດສອບການຊຳລະ",demo:"ໂຫມດຕົວຢ່າງ: ກົດກວດສອບເພື່ອຈຳລອງວ່າຊຳລະແລ້ວ",done:"ເຕີມເງິນສຳເລັດ",added:"ເພີ່ມເຂົ້າບັນຊີແລ້ວ",close:"ປິດ",min:"ຂັ້ນຕ່ຳ",max:"ສູງສຸດ",ok:"ຈຳນວນນີ້ໃຊ້ໄດ້",again:"ສ້າງ QR ໃໝ່",wait:"ຍັງບໍ່ພົບການຊຳລະ ລອງໃໝ່ອີກຄັ້ງ"},
  th:{title:"เติมเงิน",pick:"เลือกจำนวนเงิน",own:"หรือพิมพ์จำนวนที่ต้องการ",method:"ช่องทางชำระเงิน",qrOnly:"ชำระด้วย QR",qrSub:"สแกนจ่ายผ่านแอปธนาคาร",make:"สร้าง QR",scan:"สแกนเพื่อชำระ",exp:"QR หมดอายุใน",dead:"QR หมดอายุ",check:"ตรวจสอบการชำระเงิน",demo:"โหมดตัวอย่าง: กดตรวจสอบเพื่อจำลองว่าชำระแล้ว",done:"เติมเงินสำเร็จ",added:"เพิ่มเข้าบัญชีแล้ว",close:"ปิด",min:"ขั้นต่ำ",max:"สูงสุด",ok:"จำนวนนี้ใช้ได้",again:"สร้าง QR ใหม่",wait:"ยังไม่พบการชำระเงิน ลองใหม่อีกครั้ง"}};
@@ -388,9 +382,8 @@ function initHist(){
  const paint=d=>{const sm=(d&&d.sum)||{},ls=(d&&d.list)||[];
   const cell=(l,v,c)=>'<div class="hs-c'+(c?' '+c:'')+'"><small>'+l+'</small><b>'+v+'</b></div>';
   let h='<div class="hs-sum">'
-   +cell(hs('total'),fmt(+sm.total||0)+' ₭','w')
+   +'<div class="hs-c w"><small><i class="hs-dot o"></i>'+hs('total')+'</small><b>'+fmt(+sm.total||0)+' ₭</b></div>'
    +cell(hs('cnt'),(+sm.ok||0)+' '+hs('times'))
-   +cell(hs('big'),fmt(+sm.biggest||0)+' ₭')
    +cell(hs('last'),sm.last?hDate(sm.last):hs('nolast'))
    +'</div>';
   if((+sm.pending||0)>0||(+sm.rejected||0)>0)h+='<div class="hs-fl">'+((+sm.pending||0)>0?'<span class="hs-bd p">'+hs('pend')+' '+sm.pending+'</span>':'')+((+sm.rejected||0)>0?'<span class="hs-bd n">'+hs('rej')+' '+sm.rejected+'</span>':'')+'</div>';
@@ -398,8 +391,9 @@ function initHist(){
   h+='<div class="hs-lbl">'+hs('list')+'</div><div class="hs-list">'+ls.map(x=>{
    const st=x.status==='approved'?'o':x.status==='rejected'?'n':'p',nm=st==='o'?hs('ok'):st==='n'?hs('rej'):hs('pend');
    const sub=x.src==='adm'?hs('adm')+(x.note?' · '+hEsc(x.note):''):hs('ref')+' '+hEsc(x.note);
-   return '<div class="hs-r"><div class="hs-t"><b class="'+st+'">'+(st==='o'?'+':'')+fmt(+x.amount||0)+' ₭</b><span class="hs-bd '+st+'">'+nm+'</span></div>'
-    +'<div class="hs-d">'+hDate(x.at)+' · '+hTime(x.at)+'</div><div class="hs-s">'+sub+(x.reason?'<br>'+hEsc(x.reason):'')+'</div></div>'}).join('')+'</div>';
+   return '<div class="hs-r"><i class="hs-dot '+st+'"></i><div class="hs-m"><b class="'+st+'">'+(st==='o'?'+':'')+fmt(+x.amount||0)+' ₭</b>'
+    +'<div class="hs-d">'+hDate(x.at)+' · '+hTime(x.at)+'</div><div class="hs-s">'+sub+(x.reason?'<br>'+hEsc(x.reason):'')+'</div></div>'
+    +'<span class="hs-bd '+st+'">'+nm+'</span></div>'}).join('')+'</div>';
   box.innerHTML=h};
  const load=async()=>{
   if(!window._user||!window._sb){msg(hs('login'));return}
