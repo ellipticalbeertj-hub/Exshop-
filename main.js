@@ -17,8 +17,8 @@ const slot=(src,cls,alt)=>src?`<img class="${cls}" src="${src}" alt="${alt||''}"
 const fill=(el,src)=>{el.classList.toggle('slot',!src);el.innerHTML=src?`<img src="${src}" alt="">`:ph()};
 
 // ข้อความหลายภาษา (ไทย / ລາວ)
-const L={th:{addImg:"ใส่รูป",tTopup:"เติมเงิน",tContact:"ติดต่อ",tHistory:"ประวัติการสั่งซื้อ",tShop:"ซื้อสินค้า",lang:"ภาษา",theme:"ธีม",menu:"เมนู",home:"หน้าหลัก",list:"รายการสินค้า",about:"เกี่ยวกับเรา",review:"รีวิวร้าน",help:"ช่วยเหลือ",contact:"ติดต่อเรา",auth:"เข้าสู่ระบบ / สมัครสมาชิก",login:"เข้าสู่ระบบ",users:"ผู้ใช้งาน",unitU:"คน",stock:"สต็อก",unitS:"ชิ้น",recent:"รายการสั่งซื้อล่าสุด",recentS:"รายการสินค้าที่เพิ่งถูกสั่งซื้อ",week:"ขายดีประจำสัปดาห์",weekS:"สินค้าขายดีที่ลูกค้าเลือกมากที่สุด",all:"ดูทั้งหมด",cat:"หมวดหมู่",catS:"รวมสินค้าแนะนำและไอเทมยอดนิยม คัดสรรมาเพื่อคุณโดยเรา",feat:"สินค้าแนะนำ",featS:"รวมสินค้าแนะนำและไอเทมยอดนิยม คัดสรรมาเพื่อคุณโดยเรา",buy:"ซื้อ",left:"คงเหลือ",sold:"ขายแล้ว",pcs:"ชิ้น",ago:"นาทีที่แล้ว",cats:"หมวดหมู่",items:"สินค้า",detail:"ดูรายละเอียด",day:"วัน",login_m:"กรุณาเข้าสู่ระบบก่อน (ระบบสมาชิกยังไม่เชื่อมต่อ)",needlogin_m:"กรุณาเข้าสู่ระบบจากเมนูก่อนนะครับ",soon_m:"ฟังก์ชันนี้ยังไม่เชื่อมต่อข้อมูลจริง",out:"หมด",out_m:"สินค้านี้หมดแล้ว",noProd:"ยังไม่มีสินค้า",loadErr:"โหลดสินค้าไม่สำเร็จ ลองใหม่อีกครั้ง"},
-lo:{addImg:"ໃສ່ຮູບ",tTopup:"ເຕີມເງິນ",tContact:"ຕິດຕໍ່",tHistory:"ປະຫວັດການສັ່ງຊື້",tShop:"ຊື້ສິນຄ້າ",lang:"ພາສາ",theme:"ຮູບແບບ",menu:"ເມນູ",home:"ໜ້າຫຼັກ",list:"ລາຍການສິນຄ້າ",about:"ກ່ຽວກັບພວກເຮົາ",review:"ຣີວິວຮ້ານ",help:"ຊ່ວຍເຫຼືອ",contact:"ຕິດຕໍ່ພວກເຮົາ",auth:"ເຂົ້າສູ່ລະບົບ / ສະໝັກສະມາຊິກ",login:"ເຂົ້າສູ່ລະບົບ",users:"ຜູ້ໃຊ້ງານ",unitU:"ຄົນ",stock:"ສະຕັອກ",unitS:"ຊິ້ນ",recent:"ລາຍການສັ່ງຊື້ຫຼ້າສຸດ",recentS:"ລາຍການສິນຄ້າທີ່ຫາກໍຖືກສັ່ງຊື້",week:"ຂາຍດີປະຈຳອາທິດ",weekS:"ສິນຄ້າຂາຍດີທີ່ລູກຄ້າເລືອກຫຼາຍທີ່ສຸດ",all:"ເບິ່ງທັງໝົດ",cat:"ໝວດໝູ່",catS:"ລວມສິນຄ້າແນະນຳ ແລະ ໄອເທັມຍອດນິຍົມ ຄັດສັນມາເພື່ອທ່ານໂດຍພວກເຮົາ",feat:"ສິນຄ້າແນະນຳ",featS:"ລວມສິນຄ້າແນະນຳ ແລະ ໄອເທັມຍອດນິຍົມ ຄັດສັນມາເພື່ອທ່ານໂດຍພວກເຮົາ",buy:"ຊື້",left:"ຍັງເຫຼືອ",sold:"ຂາຍແລ້ວ",pcs:"ຊິ້ນ",ago:"ນາທີກ່ອນ",cats:"ໝວດໝູ່",items:"ສິນຄ້າ",detail:"ເບິ່ງລາຍລະອຽດ",day:"ມື້",login_m:"ກະລຸນາເຂົ້າສູ່ລະບົບກ່ອນ (ລະບົບສະມາຊິກຍັງບໍ່ເຊື່ອມຕໍ່)",needlogin_m:"ກະລຸນາເຂົ້າສູ່ລະບົບຈາກເມນູກ່ອນ",soon_m:"ຟັງຊັນນີ້ຍັງບໍ່ເຊື່ອມຕໍ່ຂໍ້ມູນຈິງ",out:"ໝົດ",out_m:"ສິນຄ້ານີ້ໝົດແລ້ວ",noProd:"ຍັງບໍ່ມີສິນຄ້າ",loadErr:"ໂຫຼດສິນຄ້າບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ"}};
+const L={th:{addImg:"ใส่รูป",tTopup:"เติมเงิน",tContact:"ติดต่อ",tHistory:"ประวัติการสั่งซื้อ",tHistory2:"ประวัติการเติมเงิน",tShop:"ซื้อสินค้า",lang:"ภาษา",theme:"ธีม",menu:"เมนู",home:"หน้าหลัก",list:"รายการสินค้า",about:"เกี่ยวกับเรา",review:"รีวิวร้าน",help:"ช่วยเหลือ",contact:"ติดต่อเรา",auth:"เข้าสู่ระบบ / สมัครสมาชิก",login:"เข้าสู่ระบบ",users:"ผู้ใช้งาน",unitU:"คน",stock:"สต็อก",unitS:"ชิ้น",recent:"รายการสั่งซื้อล่าสุด",recentS:"รายการสินค้าที่เพิ่งถูกสั่งซื้อ",week:"ขายดีประจำสัปดาห์",weekS:"สินค้าขายดีที่ลูกค้าเลือกมากที่สุด",all:"ดูทั้งหมด",cat:"หมวดหมู่",catS:"รวมสินค้าแนะนำและไอเทมยอดนิยม คัดสรรมาเพื่อคุณโดยเรา",feat:"สินค้าแนะนำ",featS:"รวมสินค้าแนะนำและไอเทมยอดนิยม คัดสรรมาเพื่อคุณโดยเรา",buy:"ซื้อ",left:"คงเหลือ",sold:"ขายแล้ว",pcs:"ชิ้น",ago:"นาทีที่แล้ว",cats:"หมวดหมู่",items:"สินค้า",detail:"ดูรายละเอียด",day:"วัน",login_m:"กรุณาเข้าสู่ระบบก่อน (ระบบสมาชิกยังไม่เชื่อมต่อ)",needlogin_m:"กรุณาเข้าสู่ระบบจากเมนูก่อนนะครับ",soon_m:"ฟังก์ชันนี้ยังไม่เชื่อมต่อข้อมูลจริง",out:"หมด",out_m:"สินค้านี้หมดแล้ว",noProd:"ยังไม่มีสินค้า",loadErr:"โหลดสินค้าไม่สำเร็จ ลองใหม่อีกครั้ง"},
+lo:{addImg:"ໃສ່ຮູບ",tTopup:"ເຕີມເງິນ",tContact:"ຕິດຕໍ່",tHistory:"ປະຫວັດການສັ່ງຊື້",tHistory2:"ປະຫວັດການເຕີມເງິນ",tShop:"ຊື້ສິນຄ້າ",lang:"ພາສາ",theme:"ຮູບແບບ",menu:"ເມນູ",home:"ໜ້າຫຼັກ",list:"ລາຍການສິນຄ້າ",about:"ກ່ຽວກັບພວກເຮົາ",review:"ຣີວິວຮ້ານ",help:"ຊ່ວຍເຫຼືອ",contact:"ຕິດຕໍ່ພວກເຮົາ",auth:"ເຂົ້າສູ່ລະບົບ / ສະໝັກສະມາຊິກ",login:"ເຂົ້າສູ່ລະບົບ",users:"ຜູ້ໃຊ້ງານ",unitU:"ຄົນ",stock:"ສະຕັອກ",unitS:"ຊິ້ນ",recent:"ລາຍການສັ່ງຊື້ຫຼ້າສຸດ",recentS:"ລາຍການສິນຄ້າທີ່ຫາກໍຖືກສັ່ງຊື້",week:"ຂາຍດີປະຈຳອາທິດ",weekS:"ສິນຄ້າຂາຍດີທີ່ລູກຄ້າເລືອກຫຼາຍທີ່ສຸດ",all:"ເບິ່ງທັງໝົດ",cat:"ໝວດໝູ່",catS:"ລວມສິນຄ້າແນະນຳ ແລະ ໄອເທັມຍອດນິຍົມ ຄັດສັນມາເພື່ອທ່ານໂດຍພວກເຮົາ",feat:"ສິນຄ້າແນະນຳ",featS:"ລວມສິນຄ້າແນະນຳ ແລະ ໄອເທັມຍອດນິຍົມ ຄັດສັນມາເພື່ອທ່ານໂດຍພວກເຮົາ",buy:"ຊື້",left:"ຍັງເຫຼືອ",sold:"ຂາຍແລ້ວ",pcs:"ຊິ້ນ",ago:"ນາທີກ່ອນ",cats:"ໝວດໝູ່",items:"ສິນຄ້າ",detail:"ເບິ່ງລາຍລະອຽດ",day:"ມື້",login_m:"ກະລຸນາເຂົ້າສູ່ລະບົບກ່ອນ (ລະບົບສະມາຊິກຍັງບໍ່ເຊື່ອມຕໍ່)",needlogin_m:"ກະລຸນາເຂົ້າສູ່ລະບົບຈາກເມນູກ່ອນ",soon_m:"ຟັງຊັນນີ້ຍັງບໍ່ເຊື່ອມຕໍ່ຂໍ້ມູນຈິງ",out:"ໝົດ",out_m:"ສິນຄ້ານີ້ໝົດແລ້ວ",noProd:"ຍັງບໍ່ມີສິນຄ້າ",loadErr:"ໂຫຼດສິນຄ້າບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ"}};
 Object.assign(L.th,{"aLogin": "เข้าสู่ระบบ", "aReg": "สมัครสมาชิก", "aUser": "ชื่อผู้ใช้", "aPass": "รหัสผ่าน", "aPass2": "ยืนยันรหัสผ่าน", "aHi": "ยินดีต้อนรับกลับ", "aHiR": "สร้างบัญชีใหม่", "aNo": "ยังไม่มีบัญชี?", "aHave": "มีบัญชีแล้ว?", "aE1": "กรุณากรอกข้อมูลให้ครบ", "aE2": "รหัสผ่านไม่ตรงกัน", "aE3": "รหัสผ่านอย่างน้อย 6 ตัวอักษร", "aOk": "ยังไม่ได้เชื่อมต่อระบบสมาชิกจริง"});Object.assign(L.lo,{"aLogin": "ເຂົ້າສູ່ລະບົບ", "aReg": "ສະໝັກສະມາຊິກ", "aUser": "ຊື່ຜູ້ໃຊ້", "aPass": "ລະຫັດຜ່ານ", "aPass2": "ຢືນຢັນລະຫັດຜ່ານ", "aHi": "ຍິນດີຕ້ອນຮັບກັບຄືນ", "aHiR": "ສ້າງບັນຊີໃໝ່", "aNo": "ຍັງບໍ່ມີບັນຊີ?", "aHave": "ມີບັນຊີແລ້ວ?", "aE1": "ກະລຸນາຕື່ມຂໍ້ມູນໃຫ້ຄົບ", "aE2": "ລະຫັດຜ່ານບໍ່ກົງກັນ", "aE3": "ລະຫັດຜ່ານຢ່າງໜ້ອຍ 6 ຕົວ", "aOk": "ຍັງບໍ່ໄດ້ເຊື່ອມຕໍ່ລະບົບສະມາຊິກຈິງ"});
 Object.assign(L.th,{"aShow": "แสดง", "aHide": "ซ่อน"});
 Object.assign(L.th,{"aRem":"จำบัญชีไว้ (ไม่ต้องลงชื่อใหม่)","aE4":"ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง","aE5":"ชื่อผู้ใช้นี้ถูกใช้แล้ว","aE6":"ชื่อผู้ใช้ใช้ได้เฉพาะ a-z 0-9 _ . ยาว 3–20 ตัว","aE7":"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง","aWel":"ยินดีต้อนรับ","aOut":"ออกจากระบบ","aAcc":"บัญชีของฉัน","aBye":"ออกจากระบบแล้ว","aAdm":"ห้องควบคุมแอดมิน"});
@@ -368,8 +368,43 @@ const mk=()=>{
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openF)close()});
 };
 /* ---- contact ---- */
+/* ---- ประวัติเติมเงิน (การ์ดที่เปิดจากปุ่ม CONTACT): อ่านจาก rpc my_topup_history() ของตัวเองเท่านั้น ---- */
+const HS={
+ th:{total:'ยอดที่เติมรวม',cnt:'เติมสำเร็จ',times:'ครั้ง',last:'เติมล่าสุด',big:'สูงสุดต่อครั้ง',pend:'รอตรวจสอบ',rej:'ไม่ผ่าน',ok:'สำเร็จ',adm:'แอดมินเติมให้',ref:'อ้างอิง',none:'ยังไม่มีรายการเติมเงิน',err:'โหลดประวัติไม่สำเร็จ ลองใหม่อีกครั้ง',login:'เข้าสู่ระบบเพื่อดูประวัติ',list:'รายการทั้งหมด',retry:'ลองใหม่',nolast:'-'},
+ lo:{total:'ຍອດເຕີມລວມ',cnt:'ເຕີມສຳເລັດ',times:'ຄັ້ງ',last:'ເຕີມຄັ້ງລ່າສຸດ',big:'ສູງສຸດຕໍ່ຄັ້ງ',pend:'ລໍຖ້າກວດສອບ',rej:'ບໍ່ຜ່ານ',ok:'ສຳເລັດ',adm:'ແອດມິນເຕີມໃຫ້',ref:'ອ້າງອີງ',none:'ຍັງບໍ່ມີລາຍການເຕີມເງິນ',err:'ໂຫຼດປະຫວັດບໍ່ສຳເລັດ ລອງໃໝ່ອີກຄັ້ງ',login:'ເຂົ້າສູ່ລະບົບເພື່ອເບິ່ງປະຫວັດ',list:'ລາຍການທັງໝົດ',retry:'ລອງໃໝ່',nolast:'-'}
+};
+const hs=k=>(HS[lang]||HS.lo)[k];
+const p2=n=>String(n).padStart(2,'0');
+const hDate=ms=>{const d=new Date(+ms);return p2(d.getDate())+'/'+p2(d.getMonth()+1)+'/'+d.getFullYear()};
+const hTime=ms=>{const d=new Date(+ms);return p2(d.getHours())+':'+p2(d.getMinutes())};
+const hEsc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function buildContact(){
- return hd(t('contact'))+'<div class="cm-list">'+CM_CH.map(c=>'<a class="cm-row cm-it" href="'+c.u+'" target="_blank" rel="noopener"><span class="ci" style="background:'+c.c+'">'+c.l+'</span><span>'+c.n+'<small>'+c.s+'</small></span><svg class="go" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></a>').join('')+'</div>';
+ return hd(t('tHistory2'))+'<div class="hs-box cm-it" id="hsBox"><div class="hs-msg">…</div></div>';
+}
+function initHist(){
+ const box=document.getElementById('hsBox');if(!box)return;
+ const msg=(m,retry)=>{box.innerHTML='<div class="hs-msg">'+hEsc(m)+(retry?'<br><button type="button" class="hs-rt">'+hs('retry')+'</button>':'')+'</div>';
+  const b=box.querySelector('.hs-rt');if(b)b.onclick=load};
+ const paint=d=>{const sm=(d&&d.sum)||{},ls=(d&&d.list)||[];
+  const cell=(l,v,c)=>'<div class="hs-c'+(c?' '+c:'')+'"><small>'+l+'</small><b>'+v+'</b></div>';
+  let h='<div class="hs-sum">'
+   +cell(hs('total'),fmt(+sm.total||0)+' ₭','w')
+   +cell(hs('cnt'),(+sm.ok||0)+' '+hs('times'))
+   +cell(hs('big'),fmt(+sm.biggest||0)+' ₭')
+   +cell(hs('last'),sm.last?hDate(sm.last):hs('nolast'))
+   +'</div>';
+  if((+sm.pending||0)>0||(+sm.rejected||0)>0)h+='<div class="hs-fl">'+((+sm.pending||0)>0?'<span class="hs-bd p">'+hs('pend')+' '+sm.pending+'</span>':'')+((+sm.rejected||0)>0?'<span class="hs-bd n">'+hs('rej')+' '+sm.rejected+'</span>':'')+'</div>';
+  if(!ls.length){box.innerHTML=h+'<div class="hs-msg">'+hs('none')+'</div>';return}
+  h+='<div class="hs-lbl">'+hs('list')+'</div><div class="hs-list">'+ls.map(x=>{
+   const st=x.status==='approved'?'o':x.status==='rejected'?'n':'p',nm=st==='o'?hs('ok'):st==='n'?hs('rej'):hs('pend');
+   const sub=x.src==='adm'?hs('adm')+(x.note?' · '+hEsc(x.note):''):hs('ref')+' '+hEsc(x.note);
+   return '<div class="hs-r"><div class="hs-t"><b class="'+st+'">'+(st==='o'?'+':'')+fmt(+x.amount||0)+' ₭</b><span class="hs-bd '+st+'">'+nm+'</span></div>'
+    +'<div class="hs-d">'+hDate(x.at)+' · '+hTime(x.at)+'</div><div class="hs-s">'+sub+(x.reason?'<br>'+hEsc(x.reason):'')+'</div></div>'}).join('')+'</div>';
+  box.innerHTML=h};
+ const load=async()=>{
+  if(!window._user||!window._sb){msg(hs('login'));return}
+  try{const {data,error}=await window._sb.rpc('my_topup_history');if(error)throw error;paint(data)}catch(e){msg(hs('err'),true)}};
+ load();
 }
 /* ---- pending top-up: badge on the home tile + status updates ---- */
 const setBadge=()=>{const t=document.querySelector('[data-cm="topup"]');if(!t)return;let b=t.querySelector('.tp-badge');
@@ -547,7 +582,7 @@ addEventListener('storage',e=>{if(!e.key||e.key!==PK())return;
  if(!pend||pend.ref!==s.ref){detach();load();return}
  if(s.status!==pend.status)onStatus({status:s.status,reason:s.reason},true)});
 {const o=window._authUI;window._authUI=function(){const r=o&&o.apply(this,arguments);sync();setBadge();pill();return r};sync()}
-const KINDS={contact:{build:buildContact},topup:{build:buildTopup,init:initTopup}};
+const KINDS={contact:{build:buildContact,init:initHist},topup:{build:buildTopup,init:initTopup}};
 const clip=(r,c,rad)=>'inset('+(r.top-c.top)+'px '+(c.right-r.right)+'px '+(c.bottom-r.bottom)+'px '+(r.left-c.left)+'px round '+rad+'px)';
 const FULL='inset(0px 0px 0px 0px round 26px)';
 function open(el,kind){
@@ -603,7 +638,7 @@ function close(){
 document.addEventListener('click',e=>{
  const el=e.target.closest('[data-cm]');if(!el)return;
  e.preventDefault();const k=el.dataset.cm;
- if(k==='topup'&&!window._user){window.needLogin&&window.needLogin();return} // top-up needs a signed-in member
+ if((k==='topup'||k==='contact')&&!window._user){window.needLogin&&window.needLogin();return} // top-up needs a signed-in member
  open(el,k);
 });
 })();
