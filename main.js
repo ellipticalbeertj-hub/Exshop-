@@ -228,7 +228,12 @@ const setTot=(to,now)=>{cancelAnimationFrame(raf);if(now){shown=to;tn.textConten
  const f=t0=>{const p=Math.min(1,(t0-s0)/420);shown=from+(to-from)*(1-Math.pow(1-p,3));tn.textContent=nf(Math.round(shown));if(p<1)raf=requestAnimationFrame(f);else{shown=to;tn.textContent=nf(to)}};
  raf=requestAnimationFrame(f)};
 const upd=(bump,anim)=>{qEl.textContent=qty;if(bump){qEl.classList.remove('bump');void qEl.offsetWidth;qEl.classList.add('bump')}minus.disabled=qty<=1;plus.disabled=qty>=max;setTot(unit*qty,!anim)};
-const fin=()=>{stop();wipe();cf.classList.remove('on','dn');document.body.classList.remove('cf-open');const s=src;src=null;st=0;if(s){s.classList.remove('cf-src');try{s.focus({preventScroll:true})}catch(e){}}};
+let srcKey='';
+const keyOf=p=>p?String(p[0])+'|'+((p[7]&&p[7][0]&&p[7][0].id)||''):'';
+// หน้าร้านวาดการ์ดใหม่ได้ระหว่างที่การ์ดสั่งซื้อเปิดอยู่ (รีเฟรชข้อมูล) → ปุ่มเดิมหลุดจากหน้าจอ ต้องหาปุ่มของสินค้าเดิมใหม่ ไม่งั้นอนิเมชั่นปิดจะวิ่งไปกลางจอ
+const findSrc=()=>{if(src&&src.isConnected)return src;const P=window._PR||[],hit=[...document.querySelectorAll('.buy[data-pi]')].filter(b=>keyOf(P[+b.dataset.pi])===srcKey);
+ if(!hit.length)return null;const vis=hit.find(b=>{const r=b.getBoundingClientRect();return r.width&&r.bottom>0&&r.top<innerHeight});src=vis||hit[0];src.classList.add('cf-src');return src};
+const fin=()=>{stop();wipe();cf.classList.remove('on','dn');document.body.classList.remove('cf-open');const s=src;src=null;st=0;document.querySelectorAll('.cf-src').forEach(b=>b.classList.remove('cf-src'));if(s&&s.isConnected){try{s.focus({preventScroll:true})}catch(e){}}};
 
 // ---- ข้อมูลแพ็กเกจของสินค้า ----
 const pkgsOf=p=>(p[7]||[]).map(o=>({id:o.id,n:o.n,pr:o.pr,left:o.left,sold:o.sold}));
@@ -278,7 +283,7 @@ window.openBuy=function(btn){
  th.innerHTML=p[2]?'<img src="'+esc(p[2])+'" alt="">':'<svg class="cf-pt" width="100%" height="100%" aria-hidden="true"><use href="#tbg" width="100%" height="100%"/></svg>'+BXI;
  bg.innerHTML=btn.innerHTML;okb.classList.remove('ld');cf.classList.remove('dn');shown=0;
  pick(dk.querySelector('.dk-c:not(.off)')||dk.firstChild,0,0,true);          // เลือกใบแรกให้ก่อน (ไม่มีอนิเมชั่น)
- st=1;src=btn;document.body.classList.add('cf-open');
+ st=1;src=btn;srcKey=keyOf(p);document.body.classList.add('cf-open');
  const B=btn.getBoundingClientRect();cf.classList.add('on');ov.classList.add('on');
  const C=wrap.getBoundingClientRect(),g=geo(B,C);btn.classList.add('cf-src');stop();
  if(reduce()){A(mv,[{opacity:0},{opacity:1}],{duration:160})}
@@ -294,8 +299,12 @@ window.openBuy=function(btn){
 };
 function close(){
  if(st!=1)return;st=2;stop(true);
- const B=rectOf(src),C=wrap.getBoundingClientRect(),g=geo(B,C);ov.classList.remove('on');
- if(reduce()){const a=A(mv,[{opacity:0}],{duration:140});a.onfinish=fin;return}
+ const el=findSrc(),r0=el&&el.isConnected?el.getBoundingClientRect():null,
+  seen=r0&&r0.width&&r0.height&&r0.bottom>0&&r0.top<innerHeight&&r0.right>0&&r0.left<innerWidth;
+ ov.classList.remove('on');
+ // ไม่เจอปุ่มของสินค้านี้บนจอ → ไม่บินไปที่อื่น แค่จางหายไปอยู่กับที่
+ if(reduce()||!seen){const a=A(mv,reduce()?[{opacity:0}]:[{opacity:1,transform:'scale(1)'},{opacity:0,transform:'scale(.95)'}],{duration:reduce()?140:260,easing:EC});a.onfinish=fin;return}
+ const B=r0,C=wrap.getBoundingClientRect(),g=geo(B,C);
  A(inn,[{opacity:0}],{duration:170,easing:'ease-out'});
  A(gl,[{opacity:0}],{duration:200,easing:'ease-out'});
  A(bg,[{opacity:1}],{duration:260,delay:190,easing:'ease-in'});
