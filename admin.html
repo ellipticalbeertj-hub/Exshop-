@@ -245,7 +245,7 @@ ind.style.transition='none';show(h0>=0?h0:0,true);void ind.offsetWidth;ind.style
 // ยอดเติมเงินนับเฉพาะลูกค้า ไม่นับบัญชีแอดมิน · สต็อกใช้สินค้าจริงจากฝั่งจัดการสินค้า
 const DAY=864e5,CUR='₭',LOW=3,RES=10,NOW=Date.now();
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fm=n=>Math.round(n).toLocaleString('en-US')+' '+CUR,p2=n=>String(n).padStart(2,'0');
+const dt=n=>String(n==null?'':n).replace(/\D/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.'),fp=n=>dt(Math.round(n))+' '+CUR,fm=n=>Math.round(n).toLocaleString('en-US')+' '+CUR,p2=n=>String(n).padStart(2,'0');
 const fd=t=>{const d=new Date(t);return p2(d.getDate())+'/'+p2(d.getMonth()+1)};
 const fdt=t=>{const d=new Date(t);return fd(t)+' '+p2(d.getHours())+':'+p2(d.getMinutes())};
 const ago=t=>{const m=Math.max(1,Math.round((Date.now()-t)/6e4));return m<60?m+' ນາທີກ່ອນ':m<1440?Math.round(m/60)+' ຊົ່ວໂມງກ່ອນ':Math.round(m/1440)+' ມື້ກ່ອນ'};
@@ -284,11 +284,11 @@ add:()=>`<div class="cd"><div class="ch"><b>${D.id?'ແກ້ໄຂສິນຄ�
 <label class="fi">ລາຍລະອຽດສິນຄ້າ<textarea id="pD" rows="3" maxlength="500">${esc(D.desc)}</textarea></label>
 <label class="fi">ໝວດໝູ່<select id="pCat"><option value="">— ບໍ່ເລືອກໝວດໝູ່ —</option>${SET.cats.map((c,i)=>`<option value="${i}" ${String(D.cat)===String(i)?'selected':''}>${esc(c.name||('ໝວດ '+(i+1)))}</option>`).join('')}</select></label>
 <div class="ch" style="margin-top:14px"><b>ຕົວເລືອກ / ໄລຍະເວລາ + ລາຄາ</b></div>
-${D.opts.map((o,i)=>`<div class="or${+o.price>=1000?' bad':''}"><input data-o="${i}" data-k="label" maxlength="40" placeholder="ເຊັ່ນ 1 ມື້" value="${esc(o.label)}"><label class="pw"><input data-o="${i}" data-k="price" inputmode="numeric" placeholder="ລາຄາ" value="${esc(o.price)}"><span>.000</span></label><button class="x" data-ox="${i}">✕</button></div>`).join('')}
+${D.opts.map((o,i)=>`<div class="or${+o.price>3000000?' bad':''}"><input data-o="${i}" data-k="label" maxlength="40" placeholder="ເຊັ່ນ 1 ມື້" value="${esc(o.label)}"><label class="pw"><input data-o="${i}" data-k="price" inputmode="numeric" placeholder="ລາຄາ ເຊັ່ນ 20.000" value="${dt(o.price)}"></label><button class="x" data-ox="${i}">✕</button></div>`).join('')}
 <div class="qk">${['1 ມື້','3 ມື້','7 ມື້','30 ມື້'].map(t=>`<button data-q="${t}">+ ${t}</button>`).join('')}<button data-q="">+ ກຳນົດເອງ</button></div>
 ${D.id?'<div class="sub">ລຶບຕົວເລືອກ = ລະຫັດໃນຕົວເລືອກນັ້ນຫາຍໄປນຳ</div>':''}
 <button class="hb" id="pSave">${D.id?'ບັນທຶກການແກ້ໄຂ':'ເພີ່ມສິນຄ້າ'}</button></div>`,
-mng:()=>PR.length?PR.map(p=>`<div class="cd pc"><div class="th">${p.img?`<img src="${p.img}">`:esc(p.name[0]||'?')}</div><div class="pi"><b>${esc(p.name)}</b><small>${p.opts.map(o=>esc(o.label)+' '+fm(o.price*1000)).join(' · ')}</small><small>ສະຕັອກ ${stk(p)} ຊິ້ນ${p.cat!==''&&SET.cats[+p.cat]?' · ໝວດ '+esc(SET.cats[+p.cat].name):''}</small></div><div class="pb"><button data-ed="${p.id}">ແກ້ໄຂ</button><button class="dl" data-dl="${p.id}">ລຶບ</button></div></div>`).join(''):NO,
+mng:()=>PR.length?PR.map(p=>`<div class="cd pc"><div class="th">${p.img?`<img src="${p.img}">`:esc(p.name[0]||'?')}</div><div class="pi"><b>${esc(p.name)}</b><small>${p.opts.map(o=>esc(o.label)+' '+fp(o.price*1000)).join(' · ')}</small><small>ສະຕັອກ ${stk(p)} ຊິ້ນ${p.cat!==''&&SET.cats[+p.cat]?' · ໝວດ '+esc(SET.cats[+p.cat].name):''}</small></div><div class="pb"><button data-ed="${p.id}">ແກ້ໄຂ</button><button class="dl" data-dl="${p.id}">ລຶບ</button></div></div>`).join(''):NO,
 cin:()=>{if(!PR.length)return NO;const o=co(cp());if(!o)return NO;return `<div class="cd"><div class="ch"><b>ເພີ່ມລະຫັດເຂົ້າສິນຄ້າ</b><span>ສະຕັອກ ${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<textarea id="cTx" rows="7" placeholder="ວາງລະຫັດ — 1 ບັນທັດ = 1 ລະຫັດ">${esc(PS.t)}</textarea><div class="sub" id="cCt">${uq(PS.t).length} ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)</div><button class="hb" id="cOk">ເພີ່ມເຂົ້າສະຕັອກ</button></div>`},
 cout:()=>{if(!PR.length)return NO;const o=co(cp());if(!o)return NO;return `<div class="cd"><div class="ch"><b>ເອົາລະຫັດອອກຈາກສິນຄ້າ</b><span>${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<input id="rF" placeholder="ຄົ້ນຫາລະຫັດ" value="${esc(PS.f)}" style="margin-top:8px">
 <div class="rb"><button data-r="all">ເລືອກທັງໝົດທີ່ເຫັນ</button><button data-r="none">ຍົກເລີກເລືອກ</button><input id="rN" type="number" min="1" value="1"><button data-r="n">ເລືອກ N ອັນທຳອິດ</button></div>
@@ -309,11 +309,12 @@ if(f){void ind.offsetWidth;ind.style.transition=''}else{ind.classList.remove('go
 q('#pv').innerHTML=VW[PV]()}
 const ask=(h,t,o)=>{PX=o;sheet(`<h3>${h}</h3><p>${t}</p><button class="hb" id="pYes">ຢືນຢັນ</button><button class="hb gh" id="pNo">ຍົກເລີກ</button>`)};
 async function save(force){const nm=D.name.trim(),os=D.opts;if(!nm)return toast('ໃສ່ຊື່ສິນຄ້າກ່ອນ');if(!os.length||os.some(o=>!o.label.trim()||!(+o.price>0)))return toast('ຕົວເລືອກຕ້ອງມີຊື່ ແລະ ລາຄາ');
-// ລະບົບເຕີມ .000 ໃຫ້ເອງ: ຖ້າພິມ 10.000 (=10000) ຈະກາຍເປັນ 10.000.000 → ຖາມກ່ອນ ແລະ ມີປຸ່ມແກ້ອັດຕະໂນມັດ
-const big=os.filter(o=>+o.price>=1000);if(big.length&&!force){const fx=big.every(o=>+o.price%1000===0);
- const rows=big.map(o=>`<div class="pcr"><span>${esc(o.label)}</span><b>${fm(+o.price*1000)}</b>${fx?`<i>→ ${fm(+o.price)}</i>`:''}</div>`).join('');
- return sheet(`<h3>ຕ້ອງການຕັ້ງລາຄານີ້ແມ່ນບໍ?</h3><p>ລະບົບເຕີມ .000 ໃຫ້ອັດຕະໂນມັດ ລາຄານີ້ຈຶ່ງກາຍເປັນຈຳນວນສູງຫຼາຍ — ອາດພິມຜິດ</p>${rows}${fx?'<button class="hb" id="pFix">ແກ້ໄຂໃຫ້ອັດຕະໂນມັດ</button>':''}<button class="hb gh" id="pKeep">ຕັ້ງລາຄານີ້</button><button class="hb gh" id="pNo">ກັບໄປແກ້ເອງ</button>`)}
-const edit=!!D.id,payload={id:D.id>0?D.id:null,name:nm,desc:D.desc.trim(),img:D.img||'',opts:os.map(o=>({id:o.id>0?o.id:null,label:o.label.trim(),price:Math.round(+o.price)}))};
+if(os.some(o=>+o.price%1000!==0))return toast('ລາຄາຕ້ອງເປັນຫຼັກພັນ ເຊັ່ນ 20.000');
+// ຕັ້ງລາຄາເກີນ 3.000.000 → ຖາມກ່ອນວ່າພິມຜິດບໍ
+const big=os.filter(o=>+o.price>3000000);if(big.length&&!force){
+ const rows=big.map(o=>`<div class="pcr"><span>${esc(o.label)}</span><b>${fp(+o.price)}</b></div>`).join('');
+ return sheet(`<h3>ຕັ້ງລາຄາຜິດບໍ່?</h3><p>ລາຄາສິນຄ້າສູງເກີນ 3.000.000 — ກວດເບິ່ງວ່າພິມຜິດບໍ່ ຖ້າຖືກຕ້ອງແລ້ວກົດຢືນຢັນ</p>${rows}<button class="hb" id="pKeep">ຢືນຢັນ ລາຄາຖືກຕ້ອງ</button><button class="hb gh" id="pNo">ກັບໄປແກ້</button>`)}
+const edit=!!D.id,payload={id:D.id>0?D.id:null,name:nm,desc:D.desc.trim(),img:D.img||'',opts:os.map(o=>({id:o.id>0?o.id:null,label:o.label.trim(),price:Math.round(+o.price/1000)}))};
 let catErr=false;
 const ok=await run(async()=>{const pid=await rpc('admin_save_product',{p:payload});
 if(pid){try{await rpc('admin_set_product_cat',{pid:pid,cat:(D.cat===''||D.cat==null)?null:+D.cat})}catch(e){catErr=true}}
@@ -337,12 +338,12 @@ if(id==='pCan'){D=nd();return pr()}
 if(d.q!==undefined){D.opts.push({id:--OID,label:d.q,price:''});return pr()}
 if(d.ox!==undefined){D.opts.splice(+d.ox,1);if(!D.opts.length)D.opts.push(nd().opts[0]);return pr()}
 if(id==='pSave')return save();
-if(d.ed){const p=PR.find(x=>x.id==d.ed);D={id:p.id,name:p.name,desc:p.desc,img:p.img,cat:p.cat,opts:p.opts.map(o=>({id:o.id,label:o.label,price:String(o.price)}))};PV='add';pr();return scrollTo(0,0)}
+if(d.ed){const p=PR.find(x=>x.id==d.ed);D={id:p.id,name:p.name,desc:p.desc,img:p.img,cat:p.cat,opts:p.opts.map(o=>({id:o.id,label:o.label,price:String(o.price*1000)}))};PV='add';pr();return scrollTo(0,0)}
 if(d.dl){const p=PR.find(x=>x.id==d.dl);return ask('ລຶບສິນຄ້ານີ້ບໍ?','"'+esc(p.name)+'" ແລະ ລະຫັດທັງໝົດ ('+stk(p)+' ຊິ້ນ) ຈະຖືກລຶບ',{k:'dp',id:p.id})}
 if(id==='cOk')return addCodes();if(d.r)rsel(d.r)});
 pt.addEventListener('input',e=>{const t=e.target;
 if(t.id==='pN')D.name=t.value;else if(t.id==='pD')D.desc=t.value;
-else if(t.dataset.o!==undefined){const k=t.dataset.k;D.opts[+t.dataset.o][k]=k==='price'?(t.value=t.value.replace(/\D/g,'')):t.value;if(k==='price'){const r=t.closest('.or');r&&r.classList.toggle('bad',+t.value>=1000)}}
+else if(t.dataset.o!==undefined){const k=t.dataset.k;D.opts[+t.dataset.o][k]=k==='price'?(t.value.replace(/\D/g,'').replace(/^0+/,'')):t.value;if(k==='price'){t.value=dt(D.opts[+t.dataset.o][k]);const r=t.closest('.or');r&&r.classList.toggle('bad',+D.opts[+t.dataset.o][k]>3000000)}}
 else if(t.id==='cTx'){PS.t=t.value;q('#cCt').textContent=uq(t.value).length+' ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)'}
 else if(t.id==='rF'){PS.f=t.value;q('.cl').innerHTML=clh()}});
 pt.addEventListener('change',e=>{const t=e.target;
@@ -350,8 +351,8 @@ if(t.id==='pCat'){D.cat=t.value;return}
 if(t.dataset.s){if(t.dataset.s==='p'){PS.p=t.value;PS.o=''}else PS.o=t.value;PSEL.clear();PS.f='';return pr()}
 if(t.dataset.c!==undefined){t.checked?PSEL.add(t.dataset.c):PSEL.delete(t.dataset.c);return updS()}
 if(t.id==='pFile'&&t.files[0]){const f=new FileReader();f.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);D.img=c.toDataURL('image/jpeg',.8);pr()};im.src=f.result};f.readAsDataURL(t.files[0])}});
-q('#sh').addEventListener('click',e=>{const fixB=e.target.closest('#pFix'),keepB=e.target.closest('#pKeep');if(!fixB&&!keepB)return;closeSheet();
- if(fixB){D.opts.forEach(o=>{if(+o.price>=1000&&+o.price%1000===0)o.price=String(+o.price/1000)});pr();save()}else save(true)});
+q('#sh').addEventListener('click',e=>{const keepB=e.target.closest('#pKeep');if(!keepB)return;closeSheet();
+ save(true)});
 q('#sh').addEventListener('click',async e=>{if(e.target.closest('#pNo'))closeSheet();if(e.target.closest('#pYes')){closeSheet();const x=PX,o=co(cp());if(!x)return;
 if(x.k==='dp')await run(()=>rpc('admin_delete_product',{pid:x.id}),'ລຶບສິນຄ້າແລ້ວ');
 else if(x.k==='rm'){const L=[...PSEL];if(!o||!L.length)return;if(await run(async()=>{const n=await rpc('admin_remove_codes',{oid:o.id,codes:L});return 'ເອົາອອກ '+n+' ລະຫັດແລ້ວ'}))PSEL.clear()}

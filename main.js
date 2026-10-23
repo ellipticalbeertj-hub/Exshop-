@@ -40,7 +40,7 @@ const okImg=u=>typeof u==='string'&&/^(data:image\/|https?:\/\/)/i.test(u)&&!/["
 // แปลงสินค้าจากฐานข้อมูล -> แถวที่ card() ใช้: [ชื่อ, ราคา, รูป, สต็อก, HOT, ขายแล้ว, รายละเอียด, ตัวเลือก]
 const toRow=p=>{const opts=(p.opts||[]).map(o=>({id:o.id,n:String(o.label),pr:(+o.price||0)*1000,left:+o.stock||0,sold:+o.sold||0})),
  stock=opts.reduce((a,o)=>a+o.left,0),sold=opts.reduce((a,o)=>a+o.sold,0),min=opts.length?Math.min(...opts.map(o=>o.pr)):0;
- return[String(p.name),(()=>{const f=v=>(v/1000).toLocaleString('en-US',{maximumFractionDigits:2}),mx=opts.length?Math.max(...opts.map(o=>o.pr)):0;return(mx>min?f(min)+'-'+f(mx):f(min))})(),okImg(p.img),stock,0,sold,String(p.desc||''),opts,String(p.status||'').toLowerCase(),+p.new_at||Date.parse(p.created_at||'')||0]};
+ return[String(p.name),(()=>{const f=v=>Math.round(v).toLocaleString('en-US').replace(/,/g,'.'),mx=opts.length?Math.max(...opts.map(o=>o.pr)):0;return(mx>min?f(min)+'-'+f(mx):f(min))})(),okImg(p.img),stock,0,sold,String(p.desc||''),opts,String(p.status||'').toLowerCase(),+p.new_at||Date.parse(p.created_at||'')||0]};
 const applyCat=()=>{const R=CAT.list.map(toRow);F=R;
  W=R.filter(r=>r[5]>0).sort((a,b)=>b[5]-a[5]).slice(0,8).map(r=>{const x=r.slice();x[4]=1;return x});
  window.refreshStats&&window.refreshStats()};
@@ -208,7 +208,7 @@ const BXI='<svg class="cf-bx" viewBox="0 0 24 24" fill="none" stroke="currentCol
 const CK='<span class="dk-k"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="10"/><path d="M5.8 10.4l2.9 2.9 5.5-5.9" pathLength="24"/></svg></span>';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nf=n=>(+n).toLocaleString('en-US',{maximumFractionDigits:2});
-const pf=n=>nf((+n||0)/1000); // ราคาในระบบเก็บเป็นหลักพัน (20 = 20.000) หน้าร้านโชว์แค่ 20
+const pf=n=>Math.round(+n||0).toLocaleString('en-US').replace(/,/g,'.'); // ราคาในระบบเก็บเป็นหลักพัน (20) แต่หน้าร้านโชว์เต็ม 20.000
 const dayName=n=>String(n).replace('@day',t('day'));
 
 const R=26,EO='cubic-bezier(.22,1,.36,1)',EC='cubic-bezier(.65,0,.35,1)';
@@ -722,7 +722,7 @@ function initShop(){
  const row=(x,i)=>{const r=x.r,c=spClosed(r),out=r[3]<=0,dis=c||out,s=+r[3]||0,nm=String(r[0]).replace('@day',t('day'));
   const k=s>=30?'hi':s>=10?'mid':'low',pr=spMin(r);
   const img=r[2]?'<img src="'+escH(r[2])+'" alt="" loading="lazy">':'<svg aria-hidden="true"><use href="#tbg" width="100%" height="100%"/></svg>';
-  return '<div class="sp-r" style="--i:'+Math.min(i,10)+'"><div class="sp-im">'+img+'</div><div class="sp-m"><b>'+escH(nm)+'</b><div class="sp-p">'+(pr/1000).toLocaleString('en-US',{maximumFractionDigits:2})+'</div>'
+  return '<div class="sp-r" style="--i:'+Math.min(i,10)+'"><div class="sp-im">'+img+'</div><div class="sp-m"><b>'+escH(nm)+'</b><div class="sp-p">'+Math.round(pr).toLocaleString('en-US').replace(/,/g,'.')+'</div>'
   +'<div class="sp-kk">'+(c?'<span class="sp-k cl">'+sp(c==='mt'?'mtB':'upB')+'</span>':'<span class="sp-k '+k+'">'+t('stock')+' '+fmt(s)+'</span>')+(r[5]>0?'<span class="sp-k so">'+t('sold')+' '+fmt(r[5])+'</span>':'')+'</div></div>'
   +'<button type="button" class="sp-buy" data-i="'+x.i+'"'+(dis?' disabled':'')+'>'+(out&&!c?t('out'):c?'—':t('buy')+' '+cart)+'</button></div>'};
  function paint(){
