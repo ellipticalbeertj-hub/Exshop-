@@ -78,7 +78,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('#pop'))$('#pop').cla
 const m=e.target.closest('[data-msg]');if(m){e.preventDefault();if(m.dataset.msg=='admin'){dr(0);location.href='admin.html'}else if(m.dataset.msg=='logout'){dr(0);window.doLogout&&window.doLogout()}else if(m.dataset.msg=='login'){if(window._user){dr(0);if(m.dataset.pi!=null&&window.openBuy)window.openBuy(m);else tip('soon')}else if(m.closest('#dr'))window.openAuth('login',m);else window.needLogin()}else{dr(0);tip(m.dataset.msg)}}
 const g=e.target.closest('[data-go]');if(g){dr(0);const x=g.dataset.go;(x=='top'?window.scrollTo({top:0}):document.getElementById(x).scrollIntoView())}});
 $('#lg').onclick=e=>{const b=e.target.closest('button');if(!b)return;lang=b.dataset.l;document.documentElement.lang=lang;$$('#lg button').forEach(x=>x.classList.toggle('on',x==b));render();window._authUI&&window._authUI()};
-$('#th').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.documentElement.dataset.theme=b.dataset.t;{const tc=document.querySelector('meta[name="theme-color"]');tc&&tc.setAttribute('content',b.dataset.t=='dark'?'#000000':'#ffffff')}$$('#th button').forEach(x=>x.classList.toggle('on',x==b))};
+$('#th').onclick=e=>{const b=e.target.closest('button');if(!b)return;document.documentElement.dataset.theme=b.dataset.t;{const tc=document.querySelector('meta[name="theme-color"]');tc&&tc.setAttribute('content',b.dataset.t=='dark'?'#000000':'#fbf3dc')}$$('#th button').forEach(x=>x.classList.toggle('on',x==b))};
 const up=$('#up');up.onclick=()=>scrollTo({top:0});addEventListener('scroll',()=>up.classList.toggle('on',scrollY>300),{passive:true});
 (()=>{$$('.dr a').forEach((a,i)=>a.style.setProperty('--k',i));
 if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
@@ -203,7 +203,7 @@ const kids=[...inn.querySelectorAll('.cf-st')];
 
 // ---- แพ็กเกจ/ราคา/สต็อก/รายละเอียด มาจากสินค้าจริงในฐานข้อมูล (ตั้งที่ห้องแอดมิน) ----
 // สีการ์ดแพ็กเกจ (โทนแดงเดียวกับกระเบื้องหน้าแรกและปุ่มซื้อ)
-const PAL=['#f0647b,#d93653 55%,#b81d3d','#ff3b57,#e0001f 55%,#a80017','#d93653,#8f0f2b','#e0001f,#7a0014','#b81d3d,#4a0816'];
+const PAL=['var(--g0)','var(--g1)','var(--g2)','var(--g3)','var(--g4)'];
 
 const BXI='<svg class="cf-bx" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>';
 const CK='<span class="dk-k"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="10"/><path d="M5.8 10.4l2.9 2.9 5.5-5.9" pathLength="24"/></svg></span>';
