@@ -1104,3 +1104,13 @@ input,textarea,select{font-size:16px!important}
 :root:not([data-theme=dark]) .dr a:nth-of-type(n) svg{color:#bb9252}
 :root:not([data-theme=dark]) .dr a:nth-of-type(1) svg{color:#b0301c}
 :root:not([data-theme=dark]) .dr a.on{color:var(--pur)}
+
+/* ===== live purchases: 2 cards per screen, loops to the left ===== */
+.ord{width:min(calc((100vw - 33px)/2),260px);height:86px;padding:8px;gap:9px;cursor:pointer;-webkit-user-select:none;user-select:none}
+.ord .th{width:62px;height:62px;border-radius:12px;object-fit:cover}
+.ord div{padding-top:0;justify-content:center;gap:1px}
+.ord b{font-size:14px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx)}
+.ord span{font-size:14px;line-height:20px;font-weight:700!important;color:var(--pur)}
+.ord em{margin-top:2px;align-self:flex-start;font-size:11.5px;line-height:16px}
+.ord em small{font-size:inherit}
+.ord:active{transform:scale(.97)}

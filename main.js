@@ -24,6 +24,7 @@ Object.assign(L.th,{"aShow": "แสดง", "aHide": "ซ่อน"});
 Object.assign(L.th,{"aRem":"จำบัญชีไว้ (ไม่ต้องลงชื่อใหม่)","aE4":"ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง","aE5":"ชื่อผู้ใช้นี้ถูกใช้แล้ว","aE6":"ชื่อผู้ใช้ใช้ได้เฉพาะ a-z 0-9 _ . ยาว 3–20 ตัว","aE7":"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง","aWel":"ยินดีต้อนรับ","aOut":"ออกจากระบบ","aAcc":"บัญชีของฉัน","aBye":"ออกจากระบบแล้ว","aAdm":"ห้องควบคุมแอดมิน"});
 Object.assign(L.lo,{"aRem":"ຈື່ບັນຊີໄວ້ (ບໍ່ຕ້ອງເຂົ້າສູ່ລະບົບໃໝ່)","aE4":"ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ","aE5":"ຊື່ຜູ້ໃຊ້ນີ້ຖືກໃຊ້ແລ້ວ","aE6":"ຊື່ຜູ້ໃຊ້ໃຊ້ໄດ້ສະເພາະ a-z 0-9 _ . ຍາວ 3–20 ຕົວ","aE7":"ເຊື່ອມຕໍ່ບໍ່ໄດ້ ລອງໃໝ່ອີກຄັ້ງ","aWel":"ຍິນດີຕ້ອນຮັບ","aOut":"ອອກຈາກລະບົບ","aAcc":"ບັນຊີຂອງຂ້ອຍ","aBye":"ອອກຈາກລະບົບແລ້ວ","aAdm":"ຫ້ອງຄວບຄຸມແອດມິນ"});Object.assign(L.lo,{"aShow": "ສະແດງ", "aHide": "ເຊື່ອງ"});
 Object.assign(L.th,{cur:"กีบ"});Object.assign(L.lo,{cur:"ກີບ"});
+Object.assign(L.th,{agoNow:"เมื่อสักครู่",agoH:"ชั่วโมงที่แล้ว",agoD:"วันที่แล้ว"});Object.assign(L.lo,{agoNow:"ເມື່ອກີ້ນີ້",agoH:"ຊົ່ວໂມງກ່ອນ",agoD:"ມື້ກ່ອນ"});
 
 // ข้อความการ์ดยืนยันการสั่งซื้อ
 Object.assign(L.th,{cfT:"ยืนยันการสั่งซื้อ",cfS:"ตรวจสอบรายการก่อนยืนยัน",cfTot:"ยอดรวม",cfNo:"ยกเลิก",cfOk:"ยืนยันสั่งซื้อ",cfDet:"รายละเอียดสินค้า",cfDone:"สั่งซื้อสำเร็จ",cfThx:"ขอบคุณที่อุดหนุนนะครับ",cfClose:"ปิด",cfErr_m:"สั่งซื้อไม่สำเร็จ ลองใหม่อีกครั้ง"});
@@ -40,7 +41,7 @@ const okImg=u=>typeof u==='string'&&/^(data:image\/|https?:\/\/)/i.test(u)&&!/["
 // แปลงสินค้าจากฐานข้อมูล -> แถวที่ card() ใช้: [ชื่อ, ราคา, รูป, สต็อก, HOT, ขายแล้ว, รายละเอียด, ตัวเลือก]
 const toRow=p=>{const opts=(p.opts||[]).map(o=>({id:o.id,n:String(o.label),pr:(+o.price||0)*1000,left:+o.stock||0,sold:+o.sold||0})),
  stock=opts.reduce((a,o)=>a+o.left,0),sold=opts.reduce((a,o)=>a+o.sold,0),min=opts.length?Math.min(...opts.map(o=>o.pr)):0;
- return[String(p.name),(()=>{const f=v=>Math.round(v).toLocaleString('en-US').replace(/,/g,'.'),mx=opts.length?Math.max(...opts.map(o=>o.pr)):0;return(mx>min?f(min)+'-'+f(mx):f(min))})(),okImg(p.img),stock,0,sold,String(p.desc||''),opts,String(p.status||'').toLowerCase(),+p.new_at||Date.parse(p.created_at||'')||0]};
+ return[String(p.name),(()=>{const f=v=>Math.round(v).toLocaleString('en-US').replace(/,/g,'.'),mx=opts.length?Math.max(...opts.map(o=>o.pr)):0;return(mx>min?f(min)+'-'+f(mx):f(min))})(),okImg(p.img),stock,0,sold,String(p.desc||''),opts,String(p.status||'').toLowerCase(),+p.new_at||Date.parse(p.created_at||'')||0,+p.id||0]};
 const applyCat=()=>{const R=CAT.list.map(toRow);F=R;
  const TOP=R.filter(r=>r[5]>0).sort((a,b)=>b[5]-a[5]).slice(0,8);TOP.forEach(r=>{r[4]=1});   // สินค้าขายดี = ติดป้าย HOT ทุกที่ (สไลด์ขายดี, สินค้าแนะนำ, ป๊อปอัปซื้อสินค้า)
   W=TOP.map(r=>r.slice());
@@ -51,21 +52,41 @@ async function loadCatalog(){
   const sig=JSON.stringify(j);if(CAT.state==='ok'&&sig===CAT.sig)return;
   CAT.list=j;CAT.sig=sig;CAT.state='ok'}catch(e){if(CAT.state==='ok')return;CAT.state='err'}
  applyCat();render()}
+
+// ===== ซื้อสดๆ: รายการสั่งซื้อล่าสุดจาก Supabase (rpc recent_orders) =====
+let ORAW=[],ORSIG='';
+const fmtK=v=>Math.round(v).toLocaleString('en-US').replace(/,/g,'.');
+const agoTxt=ms=>{const m=Math.max(0,Math.floor((Date.now()-ms)/60000));return m<1?t('agoNow'):m<60?m+' '+t('ago'):m<1440?Math.floor(m/60)+' '+t('agoH'):Math.floor(m/1440)+' '+t('agoD')};
+const buildOrders=()=>{const by={};CAT.list.forEach(p=>{by[p.id]=p});O.length=0;
+ ORAW.forEach(r=>{const p=by[r.pid];if(!p)return;O.push([String(p.name),(+r.price||0)*1000,okImg(p.img),+r.at||0,+r.pid,+r.qty||1,String(r.label||'')])})};
+function paintOrders(){buildOrders();
+ const clock='<svg class="ic c-blue ico-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path class="hand" d="M12 12V7"/><path d="M12 12l3.500 2"/></svg>';
+ const html=O.map(o=>`<div class="ord" role="button" tabindex="0" data-pid="${o[4]}" title="${escH(o[6])}">${slot(o[2],"th")}<div><b>${escH(o[0])}${o[5]>1?' ×'+o[5]:''}</b><span>${fmtK(o[1])}</span><em>${clock}<small class="ag" data-at="${o[3]}">${agoTxt(o[3])}</small></em></div></div>`).join('');
+ const r=$('#orders');if(!r)return;
+ const sec=r.closest('.sec');if(sec)sec.style.display=O.length?'':'none';
+ r.innerHTML='<div class="mq">'+html+'</div>';const q0=r.firstChild;
+ requestAnimationFrame(()=>{const q=r.firstChild;if(!q||q!==q0||!O.length)return;const w=q.scrollWidth;if(!w)return;const k=Math.max(1,Math.ceil(r.clientWidth/w));q.innerHTML=html.repeat(k*2);q.style.setProperty('--d',Math.max(18,w*k/38)+'s')})}
+async function loadOrders(){try{
+ const r=await fetch(SBU+'/rest/v1/rpc/recent_orders',{method:'POST',headers:{apikey:SBK,Authorization:'Bearer '+SBK,'Content-Type':'application/json'},body:'{}'});
+ if(!r.ok)throw 0;const d=await r.json();if(!Array.isArray(d))throw 0;
+ const sig=JSON.stringify(d);if(sig===ORSIG)return;ORSIG=sig;ORAW=d;paintOrders()}catch(e){}}
+document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('#orders .ord[data-pid]');if(!c)return;
+ const pid=+c.dataset.pid,P=window._PR||[],i=P.findIndex(p=>p&&p[10]===pid);if(i<0)return;
+ const b=document.querySelector('.buy[data-pi="'+i+'"]');if(b)b.click()});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('#orders .ord[data-pid]')){e.preventDefault();e.target.click()}});
+setInterval(()=>{document.querySelectorAll('#orders .ag[data-at]').forEach(el=>{el.textContent=agoTxt(+el.dataset.at)})},20000);
 const IMG={banner:"",logo:"",avatar:""}; // ใส่ลิงก์รูป เช่น banner:"https://.../banner.jpg" | ຮູບສິນຄ້າ/ລາຍການ/ໝວດໝູ່ ໃສ່ໃນຊ່ອງທີ 3 ຂອງແຕ່ລະແຖວໃນ O, W, F ແລະ ຊ່ອງທີ 2 ຂອງ C
 
 // วาดการ์ดสินค้า รายการสั่งซื้อ และหมวดหมู่
 const PR=[];window._PR=PR;
 function render(){PR.length=0;
-const _ordHTML=O.map(o=>`<div class="ord">${slot(o[2],"th")}<div><b>${o[0]}</b><span>${o[1].replace('@day',t('day'))}</span><em><svg class="ic c-blue ico-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path class="hand" d="M12 12V7"/><path d="M12 12l3.500 2"/></svg>${o[3]} ${t('ago')}</em></div></div>`).join('');
-$('#orders').innerHTML='<div class="mq">'+_ordHTML+'</div>';
-requestAnimationFrame(()=>{const r=$('#orders'),q=r.firstChild;if(!q)return;const w=q.scrollWidth;if(!w)return;const k=Math.max(1,Math.ceil(r.clientWidth/w));q.innerHTML=_ordHTML.repeat(k*2);q.style.setProperty('--d',(w*k/38)+'s')});
+paintOrders();
 const card=(p,i)=>!p?`<div class="pc ph"><div class="im"></div><i style="width:70%"></i><i style="width:40%"></i></div>`:`<div class="pc">${p[4]?'<span class="hot">HOT</span>':''}${slot(p[2],"im",escH(p[0]))}<h3>${escH(p[0].replace('@day',t('day')))}</h3><div class="pr"><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="8" cy="9" r="1.500" fill="currentColor"/></svg>${p[1].replace('@cur',t('cur'))}</div>${p[3]!=null?`<div class="stk ${(+p[3])>=30?'hi':(+p[3])>=10?'mid':'low'}"><span class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg></span>${p[3]}</div>`:''}<button class="buy${p[3]<=0?' out':''}" data-msg="${p[3]<=0?'out':'login'}" data-pi="${PR.push(p)-1}">${p[3]<=0?t('out'):t('buy')+' '+cart}</button>${p[3]!=null?`<div class="st">${box}${t('sold')} ${p[5]!==undefined?p[5]:p[3]}</div>`:''}</div>`;
 {const _wr=$('#weekRail');if(_wr){const _w=W.map(card).join('');_wr.innerHTML='<div class="wt">'+_w+'</div>';_wr.dataset.n=W.length;window._wkSrc=_w;requestAnimationFrame(()=>window._wkSetup&&window._wkSetup())}}$('#featGrid').innerHTML=CAT.state==='load'?Array.from({length:4},()=>card(null)).join(''):F.length?F.map(card).join(''):'<div class="emp">'+t(CAT.state==='err'?'loadErr':'noProd')+'</div>';
 {const hide=(id,on)=>{const e=document.getElementById(id);const sec=e&&e.closest('.sec');if(sec)sec.style.display=on?'':'none'};hide('weekRail',W.length);hide('orders',O.length);hide('catList',C.length)}
 $('#catList').innerHTML=C.map(c=>`<div class="cat${c[4]?' hv':''}" data-msg="soon"><div class="bn">${slot(c[1],"",c[0])}<button><svg class="ic  " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>${t('detail')}</button></div><h3>${c[0]}</h3>${c[2]!==undefined?`<div class="mt"><span><s><svg class="ic c-vio " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a2 2 0 012-2h4l2 3h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>0 ${t('cats')}</s><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></svg>${c[2]} ${t('items')}</span><u><svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.800 9.500c-.5-1.100-1.500-1.600-2.800-1.600-1.500 0-2.700.8-2.700 2 0 2.900 5.500 1.400 5.500 4.300 0 1.200-1.200 2-2.800 2-1.200 0-2.300-.6-2.800-1.700M12 6v1.900M12 16.100V18"/></svg>${c[3]}</u></div>`:''}</div>`).join('');
 $$('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));$$('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));fill($('#bannerSlot'),IMG.banner);fill($('#logoSlot'),IMG.logo);}
-render();loadCatalog();
-setInterval(()=>{if(!document.hidden)loadCatalog()},45000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadCatalog()});
+render();loadCatalog();loadOrders();setInterval(()=>{if(!document.hidden)loadCatalog()},45000);setInterval(()=>{if(!document.hidden)loadOrders()},15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){loadCatalog();loadOrders()}});
 
 // เมนูข้าง, ปุ่ม, ภาษา, ธีม, เลื่อนขึ้น, อนิเมชั่นตอนเลื่อน
 const tip=m=>{const e=$('#toast');e.innerHTML='<svg class="ic c-gold " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.500v.5"/></svg><span></span>';e.lastChild.textContent=t(m+'_m');e.classList.add('on');clearTimeout(tip.h);tip.h=setTimeout(()=>e.classList.remove('on'),2400)};
@@ -342,7 +363,7 @@ window.placeOrder=async o=>{
  const s=window._sb;if(!window._user||!s)throw new Error('login_required');
  const {data,error}=await s.rpc('buy_product',{p_option:o.optionId,p_qty:o.qty});
  if(error)throw error;
- loadCatalog();window.refreshBalance&&window.refreshBalance();   // สต็อก/ขายแล้ว/ยอดเงิน อัปเดตทันที
+ loadCatalog();loadOrders();window.refreshBalance&&window.refreshBalance();   // สต็อก/ขายแล้ว/ยอดเงิน อัปเดตทันที
  return data;
 };
 Object.assign(L.th,{cfHelp:'ติดต่อแอดมิน · แจ้งปัญหา',cfHelpS:'มีปัญหากับโค้ดหรือการสั่งซื้อ ทักมาได้เลย',cfNoCh:'แอดมินยังไม่ได้เพิ่มช่องทางติดต่อ'});
