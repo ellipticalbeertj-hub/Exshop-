@@ -380,6 +380,42 @@ const cfHelpBox=box=>{
  cfLinks().then(paint);
  btn.onclick=()=>{const o=!w.classList.contains('open');w.classList.toggle('open',o);btn.setAttribute('aria-expanded',o)};
 };
+/* ---- เมนู "ติดต่อเรา": ข้อความ 3 อันเลื่อนไปทางซ้าย แล้วการ์ดช่องทางติดต่อ (ลิงก์จากห้องแอดมิน) เลื่อนเข้ามาแทน ---- */
+Object.assign(L.th,{cxSub:'ช่องทางติดต่อแอดมิน',cxBack:'ย้อนกลับ'});
+Object.assign(L.lo,{cxSub:'ຊ່ອງທາງຕິດຕໍ່ແອດມິນ',cxBack:'ຍ້ອນກັບ'});
+(()=>{
+ const D=document.getElementById('dr'),trg=D&&D.querySelector('a[data-cx]');if(!trg)return;
+ const ab=D.querySelector('h4 [data-i="about"]'),h4=ab&&ab.closest('h4');
+ const grp=[];for(let n=h4&&h4.nextElementSibling;n&&n.tagName==='A';n=n.nextElementSibling){n.classList.add('cx-grp');grp.push(n)}
+ if(!grp.length)return;
+ const P=document.createElement('div');P.className='cx';P.hidden=true;
+ P.innerHTML='<div class="cx-h"><button type="button" class="cx-back" aria-label="'+t('cxBack')+'"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>'
+  +'<span class="cx-t"><b data-i="contact">'+t('contact')+'</b><small data-i="cxSub">'+t('cxSub')+'</small></span></div><div class="cx-l"></div>';
+ grp[grp.length-1].after(P);
+ const LST=P.querySelector('.cx-l'),SK='<i class="cx-sk"></i>'.repeat(3);
+ const ARW='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color:var(--tx)"><path d="M7 17L17 7M9 7h8v8"/></svg>';
+ const paint=ls=>{const U=/^https?:\/\/\S+$/i;
+  const ok=(ls||[]).filter(x=>x&&typeof x.u==='string'&&U.test(x.u.trim()));
+  LST.scrollTop=0;
+  LST.innerHTML=ok.length?ok.map((x,i)=>{const u=x.u.trim();let hn='';try{hn=new URL(u).hostname.replace(/^www\./,'')}catch(e){}
+   const n=String(x.l||'').trim()||hn||'Link',k=cfKind(n,u);
+   return '<a class="cx-card" style="--i:'+i+';--c:'+CF_ICO[k][0]+'" href="'+escH(u)+'" target="_blank" rel="noopener noreferrer">'+cfIco(k)
+    +'<span class="cx-n"><b>'+escH(n)+'</b><small>'+escH(hn)+'</small></span><span class="cx-go">'+ARW+'</span></a>'}).join(''):'<div class="cx-none">'+t('cfNoCh')+'</div>'};
+ let tk=0,busy=0;
+ const open=e=>{e&&e.preventDefault();if(busy||P.classList.contains('on'))return;busy=1;const my=++tk;
+  grp.forEach(a=>a.classList.add('cx-gone'));
+  let got=0,res=null;const lp=cfLinks();lp.then(v=>{got=1;res=v;if(my===tk&&P.classList.contains('on'))paint(v)});
+  setTimeout(()=>{if(my!==tk){return}P.hidden=false;if(got)paint(res);else LST.innerHTML=SK;void P.offsetWidth;P.classList.add('on');busy=0},280)};
+ const back=()=>{if(busy||!P.classList.contains('on'))return;busy=1;++tk;P.classList.add('leave');
+  setTimeout(()=>{P.hidden=true;P.classList.remove('on','leave');grp.forEach(a=>a.classList.remove('cx-gone'));busy=0},320)};
+ trg.addEventListener('click',open);
+ P.querySelector('.cx-back').addEventListener('click',back);
+ // ปิดเมนู -> รีเซ็ตกลับเป็นสภาพเดิมแบบไม่มีแอนิเมชัน (เปิดครั้งหน้าจะเห็นข้อความ 3 อันตามปกติ)
+ new MutationObserver(()=>{if(D.classList.contains('on'))return;
+  setTimeout(()=>{if(D.classList.contains('on')||(P.hidden&&!grp[0].classList.contains('cx-gone')))return;
+   ++tk;busy=0;D.classList.add('nt');P.hidden=true;P.classList.remove('on','leave');grp.forEach(a=>a.classList.remove('cx-gone'));void D.offsetWidth;D.classList.remove('nt')},480)
+ }).observe(D,{attributes:true,attributeFilter:['class']});
+})();
 window.showCodes=d=>{
  const box=document.querySelector('.cf-done');if(!box)return;
  const fin=box.querySelector('.cf-fin');
