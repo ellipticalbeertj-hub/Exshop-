@@ -42,7 +42,8 @@ const toRow=p=>{const opts=(p.opts||[]).map(o=>({id:o.id,n:String(o.label),pr:(+
  stock=opts.reduce((a,o)=>a+o.left,0),sold=opts.reduce((a,o)=>a+o.sold,0),min=opts.length?Math.min(...opts.map(o=>o.pr)):0;
  return[String(p.name),(()=>{const f=v=>Math.round(v).toLocaleString('en-US').replace(/,/g,'.'),mx=opts.length?Math.max(...opts.map(o=>o.pr)):0;return(mx>min?f(min)+'-'+f(mx):f(min))})(),okImg(p.img),stock,0,sold,String(p.desc||''),opts,String(p.status||'').toLowerCase(),+p.new_at||Date.parse(p.created_at||'')||0]};
 const applyCat=()=>{const R=CAT.list.map(toRow);F=R;
- W=R.filter(r=>r[5]>0).sort((a,b)=>b[5]-a[5]).slice(0,8).map(r=>{const x=r.slice();x[4]=1;return x});
+ const TOP=R.filter(r=>r[5]>0).sort((a,b)=>b[5]-a[5]).slice(0,8);TOP.forEach(r=>{r[4]=1});   // สินค้าขายดี = ติดป้าย HOT ทุกที่ (สไลด์ขายดี, สินค้าแนะนำ, ป๊อปอัปซื้อสินค้า)
+  W=TOP.map(r=>r.slice());
  window.refreshStats&&window.refreshStats()};
 async function loadCatalog(){
  try{const go=n=>fetch(SBU+'/rest/v1/rpc/'+n,{method:'POST',headers:{apikey:SBK,Authorization:'Bearer '+SBK,'Content-Type':'application/json'},body:'{}'});let r=await go('shop_catalog_ex');if(!r.ok)r=await go('shop_catalog');
