@@ -65,11 +65,11 @@ function paintOrders(){buildOrders();
  const r=$('#orders');if(!r)return;
  const sec=r.closest('.sec');if(sec)sec.style.display=O.length?'':'none';
  r.innerHTML='<div class="mq">'+html+'</div>';const q0=r.firstChild;
- requestAnimationFrame(()=>{const q=r.firstChild;if(!q||q!==q0||!O.length)return;const w=q.scrollWidth;if(!w)return;const k=Math.max(1,Math.ceil(r.clientWidth/w));q.innerHTML=html.repeat(k*2);q.style.setProperty('--d',Math.max(18,w*k/38)+'s')})}
+ const fit=n=>{const q=r.firstChild;if(!q||q!==q0||!O.length)return;const w=q.scrollWidth;if(!w){if(n<10)setTimeout(()=>fit(n+1),300);return}const k=Math.max(1,Math.ceil(r.clientWidth/w));q.innerHTML=html.repeat(k*2);q.style.setProperty('--d',Math.max(18,w*k/38)+'s')};requestAnimationFrame(()=>fit(0))}
 async function loadOrders(){try{
  const r=await fetch(SBU+'/rest/v1/rpc/recent_orders',{method:'POST',headers:{apikey:SBK,Authorization:'Bearer '+SBK,'Content-Type':'application/json'},body:'{}'});
  if(!r.ok)throw 0;const d=await r.json();if(!Array.isArray(d))throw 0;
- const sig=JSON.stringify(d);if(sig===ORSIG)return;ORSIG=sig;ORAW=d;paintOrders()}catch(e){}}
+ const sig=JSON.stringify(d);if(sig===ORSIG)return;ORSIG=sig;ORAW=d;paintOrders()}catch(e){clearTimeout(loadOrders.t);if(!document.hidden)loadOrders.t=setTimeout(loadOrders,5000)}}
 document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('#orders .ord[data-pid]');if(!c)return;
  const pid=+c.dataset.pid,P=window._PR||[],i=P.findIndex(p=>p&&p[10]===pid);if(i<0)return;
  const b=document.querySelector('.buy[data-pi="'+i+'"]');if(b)b.click()});
