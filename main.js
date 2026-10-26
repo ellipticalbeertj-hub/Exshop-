@@ -49,6 +49,7 @@ const applyCat=()=>{const R=CAT.list.map(toRow);F=R;
 async function loadCatalog(){
  try{const go=n=>fetch(SBU+'/rest/v1/rpc/'+n,{method:'POST',headers:{apikey:SBK,Authorization:'Bearer '+SBK,'Content-Type':'application/json'},body:'{}'});let r=await go('shop_catalog_ex');if(!r.ok)r=await go('shop_catalog');
   if(!r.ok)throw 0;const j=await r.json();if(!Array.isArray(j))throw 0;
+   try{const rs=await go('shop_product_status_get');if(rs.ok){const sm=await rs.json();if(sm&&typeof sm==='object')j.forEach(p=>{if(sm[p.id]!=null)p.status=sm[p.id]==='open'?'':String(sm[p.id])})}}catch(e){}
   const sig=JSON.stringify(j);if(CAT.state==='ok'&&sig===CAT.sig)return;
   CAT.list=j;CAT.sig=sig;CAT.state='ok'}catch(e){if(CAT.state==='ok')return;CAT.state='err'}
  applyCat();render()}

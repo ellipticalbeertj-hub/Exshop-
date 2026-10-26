@@ -119,7 +119,7 @@ body.ok .tw{display:block;animation:tup .7s cubic-bezier(.22,.8,.24,1) backwards
 .or .x{border:1px solid var(--line);background:#101010;color:#ff5566;border-radius:12px;cursor:pointer}
 .qk{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.qk button,.pb button,.rb button{border:1px solid var(--line);background:#101010;color:var(--tx);border-radius:999px;padding:7px 12px;font:500 12.5px Prompt,'Noto Sans Lao Looped',sans-serif;cursor:pointer}
 .lk{border:0;background:none;color:var(--pur-l);font:inherit;cursor:pointer}
-.pc{display:flex;gap:12px;align-items:center}.th{flex:none;width:56px;height:56px;border-radius:14px;background:#161616;display:grid;place-items:center;font-size:22px;font-weight:700;color:var(--pur-l);overflow:hidden}.th img{width:100%;height:100%;object-fit:cover}
+.pc{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.pc .ps{flex:1 0 100%;margin:0;padding-top:10px;border-top:1px solid var(--line)}.pc.cl2{opacity:.92}.pc.cl2 .th{filter:grayscale(.7)}.tgs.up{color:#f59e0b}.th{flex:none;width:56px;height:56px;border-radius:14px;background:#161616;display:grid;place-items:center;font-size:22px;font-weight:700;color:var(--pur-l);overflow:hidden}.th img{width:100%;height:100%;object-fit:cover}
 .pi{flex:1;min-width:0}.pi b{display:block;font-weight:600}.pi small{display:block;color:var(--tx3);font-size:12px;margin-top:2px}
 .pb{display:flex;flex-direction:column;gap:6px}.pb .dl{color:#ff5566;border-color:rgba(255,0,26,.4)}
 .rb{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;align-items:center}.rb input{width:64px!important;padding:7px 10px!important}
@@ -175,17 +175,17 @@ body.ok .tw{display:block;animation:tup .7s cubic-bezier(.22,.8,.24,1) backwards
 .sl:first-child{margin-top:0}
 .lr{display:grid;grid-template-columns:104px 1fr;gap:8px;margin-bottom:8px}
 .tg{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--tx);font-size:14px;cursor:pointer}
-#pg-settings .tg input[type=checkbox]{-webkit-appearance:none;appearance:none;order:3;margin:0 0 0 auto;position:relative;width:50px;height:30px;border-radius:99px;background:#2d2d2d;border:1px solid var(--line);transition:background .35s,border-color .35s;cursor:pointer;flex:none}
-#pg-settings .tg input[type=checkbox]::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.45);transition:left .45s cubic-bezier(.3,1.6,.5,1),width .18s}
-#pg-settings .tg input[type=checkbox]:active::after{width:28px}
-#pg-settings .tg input[type=checkbox]:checked{background:#ff001a;border-color:#ff001a;animation:tgGlow .7s ease-out}
-#pg-settings .tg input[type=checkbox]:checked::after{left:23px}
-#pg-settings .tg input[type=checkbox]:checked:active::after{left:17px}
-#pg-settings .tg input[type=checkbox]:disabled{opacity:.6}
-#pg-settings .tg input[type=checkbox]:focus-visible{outline:2px solid #fff;outline-offset:3px}
+#pg-settings .tg input[type=checkbox],#pg-products .tg input[type=checkbox]{-webkit-appearance:none;appearance:none;order:3;margin:0 0 0 auto;position:relative;width:50px;height:30px;border-radius:99px;background:#2d2d2d;border:1px solid var(--line);transition:background .35s,border-color .35s;cursor:pointer;flex:none}
+#pg-settings .tg input[type=checkbox]::after,#pg-products .tg input[type=checkbox]::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.45);transition:left .45s cubic-bezier(.3,1.6,.5,1),width .18s}
+#pg-settings .tg input[type=checkbox]:active::after,#pg-products .tg input[type=checkbox]:active::after{width:28px}
+#pg-settings .tg input[type=checkbox]:checked,#pg-products .tg input[type=checkbox]:checked{background:#ff001a;border-color:#ff001a;animation:tgGlow .7s ease-out}
+#pg-settings .tg input[type=checkbox]:checked::after,#pg-products .tg input[type=checkbox]:checked::after{left:23px}
+#pg-settings .tg input[type=checkbox]:checked:active::after,#pg-products .tg input[type=checkbox]:checked:active::after{left:17px}
+#pg-settings .tg input[type=checkbox]:disabled,#pg-products .tg input[type=checkbox]:disabled{opacity:.6}
+#pg-settings .tg input[type=checkbox]:focus-visible,#pg-products .tg input[type=checkbox]:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .tg span{order:1}.tgs{order:2;font-weight:600;color:#9a9a9a}.tgs.on{color:#22c55e}
 @keyframes tgGlow{0%{box-shadow:0 0 0 0 rgba(255,0,26,.55)}100%{box-shadow:0 0 0 11px rgba(255,0,26,0)}}
-@media (prefers-reduced-motion:reduce){#pg-settings .tg input[type=checkbox],#pg-settings .tg input[type=checkbox]::after{transition:none;animation:none}}
+@media (prefers-reduced-motion:reduce){#pg-settings .tg input[type=checkbox],#pg-settings .tg input[type=checkbox]::after,#pg-products .tg input[type=checkbox],#pg-products .tg input[type=checkbox]::after{transition:none;animation:none}}
 html{-webkit-text-size-adjust:100%}input,textarea,select{font-size:16px!important}#pg-topups{border:0;padding:0;align-items:stretch;justify-content:flex-start;text-align:left;gap:12px;min-height:0;color:var(--tx);font-size:14px}
 #pg-topups .th{display:flex;align-items:center;justify-content:space-between;gap:8px}
 #pg-topups .th b{font-size:17px}
@@ -263,7 +263,7 @@ var PR=[];let PV='add',PS={p:'',o:'',f:'',t:''},PSEL=new Set(),PX=null,OID=0,BUS
 const nd=()=>({id:0,name:'',desc:'',img:'',cat:'',opts:[{id:--OID,label:'1 ມື້',price:''}]});let D=nd();
 // ເອີ້ນ rpc ແລ້ວໂຍນ error ຖ້າລົ້ມເຫຼວ
 const rpc=async(fn,args)=>{const {data,error}=await sb.rpc(fn,args||{});if(error)throw error;return data};
-const loadCat=async()=>{const d=await rpc('admin_catalog');let cm={};try{cm=(await rpc('shop_product_cats_get'))||{}}catch(e){}PR=Array.isArray(d)?d.map(p=>({id:p.id,name:p.name,desc:p.desc||'',img:p.img||'',cat:cm[p.id]!=null?String(cm[p.id]):'',opts:(p.opts||[]).map(o=>({id:o.id,label:o.label,price:+o.price,codes:o.codes||[]}))})):[]};
+const loadCat=async()=>{const d=await rpc('admin_catalog');let cm={},sm={};try{cm=(await rpc('shop_product_cats_get'))||{}}catch(e){}try{sm=(await rpc('shop_product_status_get'))||{}}catch(e){}PR=Array.isArray(d)?d.map(p=>({id:p.id,name:p.name,desc:p.desc||'',img:p.img||'',cat:cm[p.id]!=null?String(cm[p.id]):'',closed:sm[p.id]==='update',opts:(p.opts||[]).map(o=>({id:o.id,label:o.label,price:+o.price,codes:o.codes||[]}))})):[]};
 // ເຮັດວຽກກັບຖານຂໍ້ມູນ: ກັນກົດຊ້ຳ, ໂຫຼດຂໍ້ມູນໃໝ່ຫຼັງສຳເລັດ, ແຈ້ງຂໍ້ຜິດພາດ
 const run=async(fn,okMsg)=>{if(BUSY)return false;BUSY=true;document.body.style.cursor='progress';
 try{const m=await fn();await loadCat();pr();toast(typeof m==='string'&&m?m:okMsg);return true}
@@ -288,7 +288,7 @@ ${D.opts.map((o,i)=>`<div class="or${+o.price>3000000?' bad':''}"><input data-o=
 <div class="qk">${['1 ມື້','3 ມື້','7 ມື້','30 ມື້'].map(t=>`<button data-q="${t}">+ ${t}</button>`).join('')}<button data-q="">+ ກຳນົດເອງ</button></div>
 ${D.id?'<div class="sub">ລຶບຕົວເລືອກ = ລະຫັດໃນຕົວເລືອກນັ້ນຫາຍໄປນຳ</div>':''}
 <button class="hb" id="pSave">${D.id?'ບັນທຶກການແກ້ໄຂ':'ເພີ່ມສິນຄ້າ'}</button></div>`,
-mng:()=>PR.length?PR.map(p=>`<div class="cd pc"><div class="th">${p.img?`<img src="${p.img}">`:esc(p.name[0]||'?')}</div><div class="pi"><b>${esc(p.name)}</b><small>${p.opts.map(o=>esc(o.label)+' '+fp(o.price*1000)).join(' · ')}</small><small>ສະຕັອກ ${stk(p)} ຊິ້ນ${p.cat!==''&&SET.cats[+p.cat]?' · ໝວດ '+esc(SET.cats[+p.cat].name):''}</small></div><div class="pb"><button data-ed="${p.id}">ແກ້ໄຂ</button><button class="dl" data-dl="${p.id}">ລຶບ</button></div></div>`).join(''):NO,
+mng:()=>PR.length?PR.map(p=>`<div class="cd pc${p.closed?' cl2':''}"><div class="th">${p.img?`<img src="${p.img}">`:esc(p.name[0]||'?')}</div><div class="pi"><b>${esc(p.name)}</b><small>${p.opts.map(o=>esc(o.label)+' '+fp(o.price*1000)).join(' · ')}</small><small>ສະຕັອກ ${stk(p)} ຊິ້ນ${p.cat!==''&&SET.cats[+p.cat]?' · ໝວດ '+esc(SET.cats[+p.cat].name):''}</small></div><div class="pb"><button data-ed="${p.id}">ແກ້ໄຂ</button><button class="dl" data-dl="${p.id}">ລຶບ</button></div><label class="tg ps"><input type="checkbox" data-pt="${p.id}" ${p.closed?'':'checked'}><span>ສະຖານະຂາຍ</span><b class="tgs ${p.closed?'up':'on'}">${p.closed?'ປິດອັບເດດ':'ເປີດ'}</b></label></div>`).join(''):NO,
 cin:()=>{if(!PR.length)return NO;const o=co(cp());if(!o)return NO;return `<div class="cd"><div class="ch"><b>ເພີ່ມລະຫັດເຂົ້າສິນຄ້າ</b><span>ສະຕັອກ ${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<textarea id="cTx" rows="7" placeholder="ວາງລະຫັດ — 1 ບັນທັດ = 1 ລະຫັດ">${esc(PS.t)}</textarea><div class="sub" id="cCt">${uq(PS.t).length} ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)</div><button class="hb" id="cOk">ເພີ່ມເຂົ້າສະຕັອກ</button></div>`},
 cout:()=>{if(!PR.length)return NO;const o=co(cp());if(!o)return NO;return `<div class="cd"><div class="ch"><b>ເອົາລະຫັດອອກຈາກສິນຄ້າ</b><span>${o.codes.length} ຊິ້ນ</span></div>${selP()}${selO()}<input id="rF" placeholder="ຄົ້ນຫາລະຫັດ" value="${esc(PS.f)}" style="margin-top:8px">
 <div class="rb"><button data-r="all">ເລືອກທັງໝົດທີ່ເຫັນ</button><button data-r="none">ຍົກເລີກເລືອກ</button><input id="rN" type="number" min="1" value="1"><button data-r="n">ເລືອກ N ອັນທຳອິດ</button></div>
@@ -328,6 +328,13 @@ if(k==='all'||k==='none'||k==='n'){if(k!=='all')PSEL.clear();(k==='none'?[]:k===
 if(!PSEL.size)return toast('ຍັງບໍ່ໄດ້ເລືອກລະຫັດ');
 if(k==='cp'){const t=[...PSEL].join('\n');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('ຄັດລອກ '+PSEL.size+' ລະຫັດແລ້ວ'),()=>toast('ຄັດລອກບໍ່ໄດ້ໃນໂໝດນີ້'));return}
 ask('ເອົາລະຫັດອອກບໍ?',PSEL.size+' ລະຫັດ ຈະຖືກເອົາອອກຈາກສະຕັອກ',{k:'rm'})}
+// ===== สวิตช์ เปิด / ปิดอัปเดต ของสินค้าแต่ละตัว — rpc admin_set_product_status (หน้าร้านจะล็อกปุ่มซื้อ + โชว์แท็บ ປິດອັບເດດ) =====
+async function toggleProd(t){const id=t.dataset.pt,on=t.checked,p=PR.find(x=>String(x.id)===String(id)),card=t.closest('.pc'),lab=t.closest('.tg').querySelector('.tgs');
+const paint=v=>{lab.textContent=v?'ເປີດ':'ປິດອັບເດດ';lab.className='tgs '+(v?'on':'up');card&&card.classList.toggle('cl2',!v)};
+paint(on);t.disabled=true;
+try{await rpc('admin_set_product_status',{pid:+id,st:on?'open':'update'});if(p)p.closed=!on;toast(on?'ເປີດຂາຍສິນຄ້າແລ້ວ':'ປິດອັບເດດສິນຄ້າແລ້ວ')}
+catch(e){t.checked=!on;paint(!on);toast(e&&e.code==='42501'?'ບໍ່ມີສິດແອດມິນ':'ບັນທຶກບໍ່ສຳເລັດ (ຍັງບໍ່ໄດ້ຮັນ SQL ຫຼືບໍ?)')}
+finally{t.disabled=false}}
 async function initProd(){
 try{await loadCat()}catch(e){PR=[];toast('ໂຫຼດສິນຄ້າບໍ່ສຳເລັດ')}
 pr();const pt=q('#pg-products');
@@ -347,6 +354,7 @@ else if(t.dataset.o!==undefined){const k=t.dataset.k;D.opts[+t.dataset.o][k]=k==
 else if(t.id==='cTx'){PS.t=t.value;q('#cCt').textContent=uq(t.value).length+' ລະຫັດ (ຂ້າມບັນທັດວ່າງ/ຊ້ຳໃຫ້ອັດຕະໂນມັດ)'}
 else if(t.id==='rF'){PS.f=t.value;q('.cl').innerHTML=clh()}});
 pt.addEventListener('change',e=>{const t=e.target;
+if(t.dataset.pt!==undefined)return toggleProd(t);
 if(t.id==='pCat'){D.cat=t.value;return}
 if(t.dataset.s){if(t.dataset.s==='p'){PS.p=t.value;PS.o=''}else PS.o=t.value;PSEL.clear();PS.f='';return pr()}
 if(t.dataset.c!==undefined){t.checked?PSEL.add(t.dataset.c):PSEL.delete(t.dataset.c);return updS()}
