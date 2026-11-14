@@ -1114,3 +1114,14 @@ input,textarea,select{font-size:16px!important}
 .ord em{margin-top:2px;align-self:flex-start;font-size:11.5px;line-height:16px}
 .ord em small{font-size:inherit}
 .ord:active{transform:scale(.97)}
+
+/* ===== สินค้าปิดอัปเดต / ปิดปรับปรุง (สวิตช์ในห้องแอดมิน) ===== */
+.pc .imw{position:relative;overflow:hidden;border-radius:12px;container-type:inline-size}
+.pc .imw .im{filter:grayscale(1) brightness(.62);transform:none!important}
+.pc .stamp{position:absolute;left:50%;top:50%;z-index:2;transform:translate(-50%,-50%) rotate(-9deg);max-width:92%;padding:6px 10px 8px;border:3px solid #c97a28;border-radius:12px;background:rgba(0,0,0,.22);text-align:center;white-space:nowrap;pointer-events:none;box-shadow:0 0 0 1px rgba(0,0,0,.45),0 6px 16px -6px rgba(0,0,0,.7)}
+.pc .stamp b{display:block;font:800 26px/1.05 Prompt,sans-serif;letter-spacing:.04em;color:#c97a28}
+.pc .stamp span{display:block;margin-top:5px;padding:3px 12px;border-radius:7px;background:#c97a28;color:#1b1209;font:700 13.5px/1.4 Prompt,'Noto Sans Lao Looped','Noto Sans Thai',sans-serif}
+@supports (font-size:1cqw){.pc .stamp b{font-size:clamp(20px,17cqw,36px)}.pc .stamp span{font-size:clamp(11px,6.4cqw,15px)}}
+.pc .buy.off,:root:not([data-theme=dark]) .pc .buy.off{background:var(--line)!important;color:var(--tx3)!important;box-shadow:none!important;text-shadow:none;cursor:not-allowed;pointer-events:none}
+.pc .buy.off::after{display:none}.pc .buy.off svg{filter:none;transform:none!important}
+.pc.pcl .stk{opacity:.75}
